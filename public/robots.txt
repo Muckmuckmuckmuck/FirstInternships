@@ -1,0 +1,9 @@
+# FirstInternships — robots.txt
+User-agent: *
+Allow: /
+
+# Keep the logged-in app out of the index (thin/duplicate for SEO; gated anyway)
+Disallow: /app
+Disallow: /checkout
+
+Sitemap: https://firstinternships.com/sitemap.xml

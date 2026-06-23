@@ -19,6 +19,7 @@
 -- ============================================================================
 
 create extension if not exists "pgcrypto";
+create extension if not exists "pg_trgm";
 
 -- ── PROFILES ────────────────────────────────────────────────────────────────
 -- One row per auth user. Holds plan/credit state + deliverability counters.

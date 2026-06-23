@@ -1,7 +1,4 @@
 {
-  "crons": [
-    { "path": "/api/process-queue", "schedule": "*/3 * * * *" }
-  ],
   "functions": {
     "api/process-queue.js": { "maxDuration": 60 }
   }

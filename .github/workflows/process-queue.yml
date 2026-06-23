@@ -1,0 +1,19 @@
+name: Process Send Queue
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes (GitHub Actions minimum)
+  workflow_dispatch:         # allow manual trigger for testing
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger queue processor
+        run: |
+          curl -s -X POST https://firstinternships.vercel.app/api/process-queue \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --max-time 60 \
+            -w "\nHTTP %{http_code}" \
+            -o /dev/null

@@ -29,7 +29,7 @@
 <div class="wrap">
   <a href="/" class="back">← firstinternships.com</a>
   <h1>Privacy Policy</h1>
-  <p class="meta">Last updated: June 18, 2026 · Effective: June 18, 2026</p>
+  <p class="meta">Last updated: June 23, 2026 · Effective: June 23, 2026</p>
 
   <p>This Privacy Policy explains how FirstInternships (the "Service"), a personal project operated by <strong>Jay Reddy</strong> as an individual, handles personal data. References to "we," "us," or "our" mean Jay Reddy acting in a personal capacity.</p>
 
@@ -46,6 +46,10 @@
     </tbody>
   </table>
   <p>We request a <strong>send-only</strong> email permission. We do not read, store, or access the contents of your inbox.</p>
+
+  <h2>1A. Google User Data and Limited Use</h2>
+  <p>When you connect your Google account, we request only the <code>https://www.googleapis.com/auth/gmail.send</code> scope, which lets us send email on your behalf. We cannot read, search, download, or otherwise access any message in your mailbox.</p>
+  <p>FirstInternships's use and transfer of information received from Google APIs to any other app will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank">Google API Services User Data Policy</a>, including the <strong>Limited Use</strong> requirements. Specifically, data obtained through Google APIs — including your Gmail send authorization and anything derived from it — is used <strong>only</strong> to provide and improve the user-facing feature of sending emails you compose, is <strong>never</strong> sold, shared, transferred, or used for advertising, and is <strong>never</strong> used to train generalized AI/ML models. Humans do not read this data except where you give explicit consent, where required for security or to comply with law, or as needed for limited internal operations with data de-identified or aggregated.</p>
 
   <h2>2. How We Use Your Information</h2>
   <ul>
@@ -64,6 +68,7 @@
 
   <h2>3A. Marketing, Sharing, and Sale of Personal Information</h2>
   <p>If you opted in to marketing at signup, we may use and share the personal information associated with your account — name, contact details, profile, and outreach activity — to send you opportunities and to share, license, or sell it to vetted third-party partners, advertisers, and affiliated services for their own marketing. Under some US state privacy laws, this sharing may be considered a "sale" or "sharing" of personal information.</p>
+  <p><strong>This never includes data obtained through Google APIs.</strong> Your Gmail send authorization, and any data derived from it, is never sold, shared, licensed, or transferred for marketing or any other purpose — regardless of your marketing settings — and is used only to provide the Service, as described in Section 1A.</p>
   <p><strong>Your choices:</strong></p>
   <ul>
     <li><strong>Do Not Sell or Share My Personal Information:</strong> California, and residents of other states with similar rights, may direct us to stop selling or sharing their personal information by emailing <a href="mailto:optout@firstinternships.com">optout@firstinternships.com</a> with the subject "Do Not Sell or Share," or toggling marketing off in account settings.</li>
@@ -73,7 +78,7 @@
   <p>We do not knowingly sell or share the personal information of anyone under 18.</p>
 
   <h2>4. How We Store Your Data</h2>
-  <p>Account and profile data is stored in our database (Supabase). Your email send-permission token is stored only in your browser's session storage and is cleared when you close your browser — it is never written to persistent storage outside the OAuth flow. Payments are handled by Stripe; we never see your full card number.</p>
+  <p>Account and profile data is stored in our database (Supabase). When you connect Gmail, Google issues us a <strong>send-only</strong> authorization token (a refresh token scoped to <code>gmail.send</code>). We store this token securely on our servers, encrypted at rest, with access restricted to the service that sends your emails. We use it solely to send messages at your explicit instruction, and never to read, store, or access your inbox. You can disconnect Gmail at any time, which revokes and deletes the token. We never receive or store your Google password. Payments are handled by Stripe; we never see your full card number.</p>
 
   <h2>5. Third-Party Services</h2>
   <table>
@@ -90,13 +95,13 @@
   <ul>
     <li><strong>Account/profile:</strong> until you delete your account</li>
     <li><strong>Payment records:</strong> up to 7 years (tax/legal)</li>
-    <li><strong>Send permission token:</strong> session-only; cleared when you close your browser</li>
+    <li><strong>Gmail send authorization token:</strong> stored encrypted until you disconnect Gmail or delete your account, then revoked and deleted</li>
     <li><strong>Logs:</strong> up to 12 months</li>
   </ul>
   <p>To delete your account and associated data, email <a href="mailto:hello@firstinternships.com">hello@firstinternships.com</a>. We process deletion requests within 30 days.</p>
 
   <h2>7. Security</h2>
-  <p>We use HTTPS for data in transit, store send-permission tokens in session storage only, and apply reasonable safeguards. No system is perfectly secure. If a breach affects your personal data, we will notify you as required by law.</p>
+  <p>We use HTTPS for data in transit, store your Gmail send authorization token encrypted at rest with access restricted to our sending service, and apply reasonable safeguards. No system is perfectly secure. If a breach affects your personal data, we will notify you as required by law.</p>
 
   <h2>8. Your Rights</h2>
   <h3>Everyone</h3>

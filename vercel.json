@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "functions": {
     "api/process-queue.js": { "maxDuration": 60 }
   }

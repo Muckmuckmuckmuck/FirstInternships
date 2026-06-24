@@ -22,7 +22,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const MODEL = "gemini-2.5-flash-lite";   // cheapest tier; ample for short cold emails
+const MODEL = "gemini-3.1-flash-lite";   // cheap tier; proven working in this env (same as discovery)
 
 const LEVEL_GUIDE = {
   1: "Generic: mention only the student's school and background. No company specifics.",
@@ -68,7 +68,7 @@ Write the email body now.`;
     const response = await ai.models.generateContent({
       model: MODEL,
       contents: user,
-      config: { systemInstruction: system, temperature: 0.8, maxOutputTokens: 400 },
+      config: { systemInstruction: system, temperature: 0.8, maxOutputTokens: 1200 },
     });
     const email = (response.text || "").trim();
     if (!email) return res.status(502).json({ error: "Empty draft" });

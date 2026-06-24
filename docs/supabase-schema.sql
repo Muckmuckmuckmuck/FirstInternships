@@ -182,10 +182,13 @@ create policy "own events r" on events        for select using (auth.uid() = use
 -- (Refresh tokens and queued sends must never be reachable from the browser.)
 
 -- ── Auto-create a profile row on signup ─────────────────────────────────────
+-- NOTE: `set search_path = public` is REQUIRED. Without it, the auth role that
+-- runs this trigger can't resolve the unqualified `profiles` table and every
+-- signup fails with "Database error saving new user" (HTTP 500).
 create or replace function handle_new_user()
-returns trigger language plpgsql security definer as $$
+returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  insert into profiles (id, email, plan, credits, daily_date)
+  insert into public.profiles (id, email, plan, credits, daily_date)
   values (new.id, new.email, 'free', 5, current_date)
   on conflict (id) do nothing;
   return new;

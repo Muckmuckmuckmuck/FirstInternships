@@ -45,14 +45,36 @@ const supabase = createClient(
 // rate ($14 / 1K queries vs $35 / 1K on the 2.x family) at the lowest token cost.
 const MODEL = "gemini-3.1-flash-lite";
 
+// Pro-only feature with a hard monthly cap (each grounded search costs real money,
+// so this protects margin and prevents the endpoint from being called to burn budget).
+const DISCOVERY_CAP = 200;
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  // TODO: verify the user's Supabase session JWT and rate-limit per user so this
-  // can't be abused to burn your Gemini grounded-search budget.
+  // ── Auth: require a valid Supabase session ──────────────────────────────────
+  const token = (req.headers.authorization || "").replace("Bearer ", "");
+  const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
+  if (authErr || !user) return res.status(401).json({ error: "unauthorized" });
 
   const { query } = req.body || {};
   if (!query || query.trim().length < 3) return res.status(400).json({ error: "Query too short" });
+
+  // ── Pro-gating + monthly discovery cap (server-enforced; the client can't skip it) ──
+  const { data: profile } = await supabase
+    .from("profiles").select("plan, discovery_used, discovery_cycle").eq("id", user.id).single();
+  if (!profile) return res.status(400).json({ error: "no_profile" });
+  if (profile.plan !== "pro") return res.status(403).json({ error: "pro_required" });
+
+  const cycle = new Date().toISOString().slice(0, 7);   // 'YYYY-MM' — resets monthly
+  const used = profile.discovery_cycle === cycle ? (profile.discovery_used || 0) : 0;
+  if (used >= DISCOVERY_CAP)
+    return res.status(429).json({ error: "discovery_cap_reached", cap: DISCOVERY_CAP });
+
+  // Reserve the search now — a grounded search bills per query whether or not it
+  // returns results, so count it before calling Gemini.
+  await supabase.from("profiles")
+    .update({ discovery_used: used + 1, discovery_cycle: cycle }).eq("id", user.id);
 
   try {
     const firms = await discover(query.trim());

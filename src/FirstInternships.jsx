@@ -216,9 +216,6 @@ function normalizeFirm(f) {
   };
 }
 
-// ─── STORAGE ──────────────────────────────────────────────────────────────────
-const SK = { user:"fi_u", sent:"fi_s", credits:"fi_cr", plan:"fi_pl", profile:"fi_pr", cycle:"fi_cy", search:"fi_sc", daily:"fi_dy", resume:"fi_rz", lists:"fi_ls", listOf:"fi_lo", track:"fi_tk" };
-
 // Default target lists seeded on first use (job searches organize around these).
 const DEFAULT_LISTS = [
   { id:"dream",     name:"Dream",     color:"#7c3aed" },
@@ -246,8 +243,6 @@ const WARMUP = {
   gmail:     [{ d:0, n:10 }, { d:7, n:20 }, { d:14, n:35 }, { d:21, n:50 }],   // personal @gmail.com
   workspace: [{ d:0, n:25 }, { d:7, n:50 }, { d:14, n:75 }, { d:21, n:120 }],  // Google Workspace
 };
-const BOUNCE_PAUSE = 0.08;     // auto-pause sending if bounce rate exceeds 8%
-const BOUNCE_MIN_SAMPLE = 20;  // ...but only once there's enough sent volume to judge
 
 // Today's safe send cap for an account, given its type and first-send date.
 function dailySendLimit(accountType, firstSendAt) {
@@ -272,9 +267,8 @@ function deliverabilityCheck(subject, body) {
   return w;
 }
 
-// Lightweight analytics. PRODUCTION: forward each event to PostHog / GA / Segment
-// (e.g. window.posthog?.capture(event, props)). Here we keep a rolling local log
-// so the funnel is inspectable in dev and the call sites are already in place.
+// Lightweight analytics — writes to the Supabase `events` table via the data layer.
+// Swap api.track to forward to PostHog / GA / Segment if you prefer.
 function track(event, props = {}) {
   api.track(event, props).catch(() => {});
 }
@@ -288,51 +282,16 @@ function fmtAgo(ts){
   if(d<7) return d+" days ago";
   return Math.floor(d/7)+"w ago";
 }
-const db = {
-  get: (k, fb) => { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : fb; } catch { return fb; } },
-  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
-  del: (k)    => { try { localStorage.removeItem(k); } catch {} },
-};
 
-// Session storage — for sensitive tokens that must NOT persist across browser sessions.
-// TODO (production): replace this with an httpOnly cookie set server-side after OAuth.
-// httpOnly cookies cannot be set from client JS. Wire a /auth/callback route that does:
-//   res.cookie("fi_gt", token, { httpOnly:true, secure:true, sameSite:"Strict" });
-const ss = {
-  get: (k)    => { try { return sessionStorage.getItem(k); }  catch { return null; } },
-  set: (k, v) => { try { sessionStorage.setItem(k, v); }     catch {} },
-  del: (k)    => { try { sessionStorage.removeItem(k); }      catch {} },
-};
-const GT_KEY = "fi_gt"; // gmail token — session only, never localStorage
-
-// Strip gmailToken before writing profile/user objects to localStorage
+// Strip the transient gmailToken flag before persisting profile/user objects.
 function stripToken(obj) {
   if (!obj) return obj;
   const { gmailToken: _drop, ...rest } = obj;
   return rest;
 }
 
-// Free plan refills to a small daily allowance (non-accumulating); Pro refills
-// monthly and accumulates top-ups.
-function initCredits(planId) {
-  const plan = PLANS[planId] || PLANS.free;
-  if (planId !== "pro") {
-    const today = new Date().toISOString().slice(0, 10);
-    if (db.get(SK.daily, "") !== today) {
-      db.set(SK.daily, today); db.set(SK.credits, plan.dailyUnlocks);
-      return plan.dailyUnlocks;
-    }
-    const s = db.get(SK.credits, null);
-    return s !== null ? s : plan.dailyUnlocks;
-  }
-  const cycle = new Date().toISOString().slice(0, 7);
-  if (db.get(SK.cycle, "") !== cycle) {
-    db.set(SK.credits, plan.creditsPerMonth); db.set(SK.cycle, cycle);
-    return plan.creditsPerMonth;
-  }
-  const stored = db.get(SK.credits, null);
-  return stored !== null ? stored : plan.creditsPerMonth;
-}
+// Credit balances live in Supabase (profiles.credits) and reset server-side:
+// free = 5/day, Pro = 1,000/month. The client only reads the value via api.getProfile().
 
 // ─── FIT SCORE ────────────────────────────────────────────────────────────────
 // Honest interest match. Scores ONLY on real data: how well the company's
@@ -1289,7 +1248,7 @@ function Onboarding({ user, onDone }) {
 }
 
 // ─── CHECKOUT PAGE (Stripe Checkout — server redirect) ────────────────────────
-function CheckoutPage({ onBack, onSuccess }) {
+function CheckoutPage({ onBack }) {
   const [loading, setLoad] = useState(false);
   const [err, setErr] = useState("");
 
@@ -1361,8 +1320,8 @@ function Paywall({ credits, onClose, onUpgrade }) {
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14 }}>
             <div style={{ border:`1px solid ${K.b}`, borderRadius:10, padding:18 }}>
               <div style={{ fontSize:11, fontWeight:700, color:K.ink3, textTransform:"uppercase", letterSpacing:.04, marginBottom:8 }}>Free</div>
-              <div style={{ fontSize:32, fontWeight:800, letterSpacing:-1.5, lineHeight:1 }}>20</div>
-              <div style={{ fontSize:11, color:K.ink4, marginBottom:14, marginTop:2 }}>credits total</div>
+              <div style={{ fontSize:32, fontWeight:800, letterSpacing:-1.5, lineHeight:1 }}>5</div>
+              <div style={{ fontSize:11, color:K.ink4, marginBottom:14, marginTop:2 }}>unlocks / day</div>
               {PLANS.free.features.map(f=><div key={f} style={{display:"flex",gap:7,fontSize:12,color:K.ink2,marginBottom:6,alignItems:"flex-start"}}><span style={{color:K.grn,flexShrink:0}}>✓</span>{f}</div>)}
               {PLANS.free.missing.map(f=><div key={f} style={{display:"flex",gap:7,fontSize:12,color:K.ink4,marginBottom:6,alignItems:"flex-start"}}><span style={{flexShrink:0}}>–</span>{f}</div>)}
               <div style={{ marginTop:12, padding:"7px 0", textAlign:"center", borderRadius:6, border:`1px solid ${K.b}`, fontSize:12, color:K.ink3, fontWeight:500 }}>Current plan</div>
@@ -1376,7 +1335,7 @@ function Paywall({ credits, onClose, onUpgrade }) {
               <button style={G("dark",{width:"100%",padding:"9px 0",fontSize:13,marginTop:12})} onClick={()=>{onClose();onUpgrade();}}>Upgrade · $20/mo →</button>
             </div>
           </div>
-          <InfoBox color="neutral">Credits reset monthly on Pro. Need more mid-month? Buy 10 credits for $0.99 in Settings.</InfoBox>
+          <InfoBox color="neutral">Credits reset monthly on Pro. Need more mid-month? Top up 100 credits for $5 in Settings.</InfoBox>
         </div>
       </div>
     </div>
@@ -1570,20 +1529,20 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
 }
 
 // ─── BULK MODAL ───────────────────────────────────────────────────────────────
-function BulkModal({ companies, profile, resume, sentList, credits, remainingSends, sendLimit, bouncePaused, sendBlockReason, onClose, onDone }) {
+function BulkModal({ companies, profile, resume, sentList, credits, remainingSends, sendLimit, onClose, onDone }) {
   const [stage, setStage] = useState("confirm");
   const [log,   setLog]   = useState([]);
   const [pct,   setPct]   = useState(0);
   const [level, setLevel] = useState(2);
   const eligibleAll = useMemo(()=>companies.filter(c=>!sentList.includes(c.id)),[companies,sentList]);
   const skipped   = companies.length-eligibleAll.length;
-  const cap       = bouncePaused ? 0 : remainingSends;
+  const cap       = remainingSends;
   const eligible  = eligibleAll.slice(0, cap);   // safe to send today (warm-up cap)
   const queued    = eligibleAll.slice(cap);      // held — send over following days
   const totalCost = eligible.reduce((s,c)=>s+contactCost(c),0);   // discovered contacts cost more
   const discCount = eligible.filter(c=>c.discovered).length;
   const canAfford = credits>=totalCost;
-  const canRun    = eligible.length>0 && canAfford && !bouncePaused;
+  const canRun    = eligible.length>0 && canAfford;
 
   async function run(){
     setStage("running");
@@ -1625,9 +1584,7 @@ function BulkModal({ companies, profile, resume, sentList, credits, remainingSen
             <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
               <p style={{ fontSize:13, color:K.ink3, lineHeight:1.65 }}>AI will draft a personalized email for each selected company and send from your Gmail. Each is a new contact, so this unlocks them — every future email to them is free.</p>
               {skipped>0&&<InfoBox color="amber" icon="⚠">{skipped} company{skipped!==1?"s":""} skipped — already unlocked (you can email them free anytime).</InfoBox>}
-              {bouncePaused
-                ? <InfoBox color="red" icon="🛡">{sendBlockReason}</InfoBox>
-                : queued.length>0&&<InfoBox color="amber" icon="🛡">To protect your Gmail from spam flags, <strong>{eligible.length} will send today</strong> (your warm-up limit is {sendLimit}/day). The other <strong>{queued.length}</strong> are held — send them over the next few days.</InfoBox>}
+              {queued.length>0&&<InfoBox color="amber" icon="🛡">To protect your Gmail from spam flags, <strong>{eligible.length} will send today</strong> (your warm-up limit is {sendLimit}/day). The other <strong>{queued.length}</strong> are held — send them over the next few days.</InfoBox>}
               <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"14px 14px 12px" }}>
                 <PersonalizationSlider value={level} onChange={setLevel} />
               </div>
@@ -1722,9 +1679,10 @@ function CompanyDetail({ company, score, isSent, lists, currentList, onSaveList,
 }
 
 // ─── PROFILE EDIT MODAL ───────────────────────────────────────────────────────
-function ProfileEditModal({ profile, onSave, onClose }) {
+function ProfileEditModal({ profile, user, onSave, onClose }) {
   const [p, setP] = useState({ ...profile });
   const set = (k,v) => setP(prev=>({...prev,[k]:v}));
+  const uid = user?.id || p.id;
   return (
     <div className="ov" role="dialog" aria-modal="true" aria-labelledby="pe-title">
       <div className="mo" style={{ maxWidth:440 }}>
@@ -1746,10 +1704,10 @@ function ProfileEditModal({ profile, onSave, onClose }) {
             {localStorage.getItem("fi_gmail_ok") === "1" ? (
               <div style={{ border:`1px solid ${K.grnB}`, borderRadius:7, padding:"11px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", background:K.grnT }}>
                 <span style={{ fontSize:13, color:K.grn, fontWeight:500 }}>✓ Gmail connected</span>
-                <GmailConnectButton userId={p.id} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} />
+                <GmailConnectButton userId={uid} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} />
               </div>
             ) : (
-              <GmailConnectButton userId={p.id} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} />
+              <GmailConnectButton userId={uid} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} />
             )}
           </div>
           <button style={G("dark",{padding:"10px 0",width:"100%",fontSize:14})} onClick={async ()=>{
@@ -1761,70 +1719,6 @@ function ProfileEditModal({ profile, onSave, onClose }) {
       </div>
     </div>
   );
-}
-
-// ─── DEV: firm discovery simulator ────────────────────────────────────────────
-// Stand-in for the /api/discover-firms endpoint during development. Generates
-// plausible firm records — including a role-based email AND a senior named
-// contact with a confidence score — so the UI is fully testable offline.
-// DELETE once the real Gemini-grounding + Supabase endpoint is wired up.
-function simulateDiscovery(query) {
-  const q = query.toLowerCase();
-  const pick = (arr) => arr[Math.floor(Math.random()*arr.length)];
-  const cities = [["New York","NY"],["San Francisco","CA"],["Austin","TX"],["Boston","MA"],["Chicago","IL"],["Seattle","WA"],["Los Angeles","CA"],["Denver","CO"]];
-  let industry = "Tech / Software";
-  if (/financ|fintech|bank|invest|capital|vc|venture|equity/.test(q)) industry = "Finance / Fintech";
-  else if (/health|bio|med|pharma/.test(q))                          industry = "Healthcare / Biotech";
-  else if (/market|advertis|brand|agency/.test(q))                   industry = "Marketing / Advertising";
-  else if (/media|news|editor|content|publish/.test(q))              industry = "Media / Editorial";
-  else if (/design|creativ|product/.test(q))                         industry = "Design / Creative";
-  else if (/nonprofit|ngo|charity|social/.test(q))                   industry = "Nonprofit / Social Impact";
-  else if (/law|legal|attorney/.test(q))                             industry = "Law / Legal";
-  else if (/ai|ml|machine learning|research/.test(q))                industry = "AI / Research";
-
-  const stems = ["Northwind","Lattice","Beacon","Vantage","Cobalt","Meridian","Halcyon","Aperture","Kestrel","Summit","Onyx","Verda","Polaris","Marlin","Cedar"];
-  const tails = ["Labs","Partners","Group","Capital","Studio","Works","Collective","Technologies","Ventures","Co"];
-  const firstNames = ["Sarah","Michael","Priya","David","Elena","James","Aisha","Daniel","Maya","Chris","Nina","Omar","Rachel","Tom","Lena"];
-  const lastNames  = ["Chen","Patel","Rodriguez","Kim","Okafor","Nguyen","Walsh","Garcia","Cohen","Singh","Brooks","Hassan","Mueller","Park","Reyes"];
-  const seniorRoles = ["Head of Talent","Director of University Recruiting","VP of People","Recruiting Lead","Head of People","Talent Partner","Chief of Staff","Founder"];
-  const roleMailbox = ["careers","recruiting","talent","jobs","internships"];
-  const n = 3 + Math.floor(Math.random()*3); // 3–5 firms
-  const out = [];
-  const baseId = 100000 + Math.floor(Math.random()*800000);
-  for (let i=0;i<n;i++){
-    const [city,state] = pick(cities);
-    const dba = `${pick(stems)} ${pick(tails)}`;
-    const domain = dba.toLowerCase().replace(/[^a-z]/g,"") + ".com";
-    const size = pick([12,28,45,80,120,260,500,900]);
-    const remote = Math.random() > 0.4;
-    const paid = Math.random() > 0.25;
-    // Senior named contact (what web-search extraction surfaces for individuals)
-    const fn = pick(firstNames), ln = pick(lastNames);
-    const cname = `${fn} ${ln}`;
-    const ctitle = pick(seniorRoles);
-    const personalEmail = `${fn.toLowerCase()}.${ln.toLowerCase()}@${domain}`;
-    out.push({
-      id: baseId + i,
-      dba,
-      name: `${dba} Inc.`,
-      city, state, industry,
-      size,
-      type: size < 100 ? "Startup" : size < 600 ? "Established" : "Public",
-      remote,
-      email: `${pick(roleMailbox)}@${domain}`,   // role-based (not personal data — safe default)
-      cname, ctitle,
-      email2: personalEmail,                      // senior individual (personal data — see notes)
-      emailConfidence: null,   // we don't fabricate a confidence number
-      source: "discovered",
-      intern: Math.random() > 0.3,
-      ugrad: true,
-      compPaid: paid,
-      knownFor: `${dba} works in ${industry.split("/")[0].trim().toLowerCase()}. Found via search for "${query}".`,
-      quote: "",
-      discovered: true,   // flag so the UI can mark AI-found firms
-    });
-  }
-  return out;
 }
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
@@ -2169,11 +2063,6 @@ export default function App() {
     }
     setAppView("app");
   }
-  async function handleCheckoutSuccess(){
-    const p = await api.getProfile().catch(() => null);
-    setPlanId(p?.plan || "pro"); setCredits(p?.credits || 1000);
-    track("upgrade"); msg("✓ Pro activated — 1,000 monthly contacts unlocked"); setAppView("app");
-  }
   async function signOut(){
     await api.signOut().catch(() => {});
     localStorage.removeItem("fi_gmail_ok");
@@ -2195,7 +2084,7 @@ export default function App() {
     }}
   /></div></>;
   if(appView==="onboarding") return <><style>{CSS}</style><div className="page-in"><Onboarding user={user} onDone={handleOnboardingDone}/></div></>;
-  if(appView==="checkout") return <><style>{CSS}</style><div className="page-in"><CheckoutPage onBack={()=>setAppView("app")} onSuccess={handleCheckoutSuccess}/></div></>;
+  if(appView==="checkout") return <><style>{CSS}</style><div className="page-in"><CheckoutPage onBack={()=>setAppView("app")}/></div></>;
 
   // ── APP TABS ───────────────────────────────────────────────────────────────
   const contactedList = allFirms.filter(c=>sentList.includes(c.id));
@@ -2218,22 +2107,17 @@ export default function App() {
   const followUpsDue = stats.dueIds.map(id=>allFirms.find(c=>c.id===id)).filter(Boolean);
 
   // ── DELIVERABILITY GATING ──────────────────────────────────────────────────
-  // Protects the user's own inbox reputation: a warm-up daily cap, plus an
-  // auto-pause if their bounce rate climbs. (Plain consts — after early returns.)
+  // Protects the user's own inbox reputation with a warm-up daily send cap that
+  // rises as the account ages. (Plain consts — after early returns.)
   const todayStart = (() => { const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
   const firstSendAt = (() => { const ts=Object.values(tracking).map(t=>t.sentAt).filter(Boolean); return ts.length?Math.min(...ts):null; })();
   const sentToday    = Object.values(tracking).filter(t=>t.sentAt && t.sentAt>=todayStart).length;
-  const bouncedCount = Object.values(tracking).filter(t=>t.bounced).length;
-  const bounceRate   = stats.contacted ? bouncedCount/stats.contacted : 0;
   const sendLimit    = dailySendLimit(accountType, firstSendAt);
-  const bouncePaused = bounceRate > BOUNCE_PAUSE && stats.contacted >= BOUNCE_MIN_SAMPLE;
   const remainingSends = Math.max(0, sendLimit - sentToday);
-  const canSendNow   = remainingSends > 0 && !bouncePaused;
-  const sendBlockReason = bouncePaused
-    ? `Sending paused — your bounce rate (${Math.round(bounceRate*100)}%) is too high. Stop and clean your list, or you'll get your Gmail flagged.`
-    : remainingSends<=0
-      ? `You've hit today's safe limit of ${sendLimit} new emails. This keeps your Gmail from being flagged as spam. Resets tomorrow.`
-      : "";
+  const canSendNow   = remainingSends > 0;
+  const sendBlockReason = remainingSends<=0
+    ? `You've hit today's safe limit of ${sendLimit} new emails. This keeps your Gmail from being flagged as spam. Resets tomorrow.`
+    : "";
 
   // ── DASHBOARD (home) ───────────────────────────────────────────────────────
   const DashTab = (() => {
@@ -2274,17 +2158,18 @@ export default function App() {
           ))}
       </div>
 
-      {/* Inbox health — deliverability guardrails surfaced for the user */}
+      {/* Inbox health — warm-up send cap surfaced for the user */}
       {(() => {
         const pct = sendLimit>0 ? Math.min((sentToday/sendLimit)*100,100) : 0;
         const warmDays = firstSendAt ? Math.floor((Date.now()-firstSendAt)/864e5) : 0;
         const warming = warmDays < 21 && firstSendAt;
-        const barColor = bouncePaused ? K.red : sentToday>=sendLimit ? K.amb : K.grn;
+        const atLimit = sentToday>=sendLimit;
+        const barColor = atLimit ? K.amb : K.grn;
         return (
-        <div style={{ border:`1px solid ${bouncePaused?K.redB:K.b}`, borderRadius:12, padding:"14px 16px", marginBottom:18, background: bouncePaused?K.redT:"#fff" }}>
+        <div style={{ border:`1px solid ${K.b}`, borderRadius:12, padding:"14px 16px", marginBottom:18, background:"#fff" }}>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
             <h3 style={{ fontWeight:700, fontSize:14 }}>🛡 Inbox health</h3>
-            <span style={{ fontSize:11, fontWeight:600, color: bouncePaused?K.red:K.grn }}>{bouncePaused?"Sending paused":sentToday>=sendLimit?"Daily limit reached":"Healthy"}</span>
+            <span style={{ fontSize:11, fontWeight:600, color: atLimit?K.amb:K.grn }}>{atLimit?"Daily limit reached":"Healthy"}</span>
           </div>
           <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:K.ink3, marginBottom:6 }}>
             <span>Sent today (protects your Gmail reputation)</span>
@@ -2292,11 +2177,9 @@ export default function App() {
           </div>
           <div className="pb"><div className="pf" style={{ width:pct+"%", background:barColor }} /></div>
           <p style={{ fontSize:11, color:K.ink4, marginTop:10, lineHeight:1.6 }}>
-            {bouncePaused
-              ? <>Your bounce rate is {Math.round(bounceRate*100)}% — too high. Stop sending and remove bad addresses, or Gmail may flag your account.</>
-              : warming
-                ? <>Account warming up (day {warmDays} of 21): your safe limit rises as your inbox builds reputation. Sending too fast as a new sender gets you marked as spam.</>
-                : <>Your daily send cap protects your inbox from being flagged. {stats.contacted>0&&<>Bounce rate: {Math.round(bounceRate*100)}%.</>} Spread big outreach across days.</>}
+            {warming
+              ? <>Account warming up (day {warmDays} of 21): your safe limit rises as your inbox builds reputation. Sending too fast as a new sender gets you marked as spam.</>
+              : <>Your daily send cap protects your inbox from being flagged. Spread big outreach across days for the best reply rates.</>}
           </p>
         </div>
       );})()}
@@ -2635,12 +2518,12 @@ export default function App() {
         </div>
       </main>
 
-      {modal==="profileEdit" && <ProfileEditModal profile={profile} onSave={p=>{setProfile(p);msg("✓ Profile saved");}} onClose={()=>{setModal(null);setGmailConnected(!!ss.get(GT_KEY));}}/>}
+      {modal==="profileEdit" && <ProfileEditModal profile={profile} user={user} onSave={p=>{setProfile(p);msg("✓ Profile saved");}} onClose={()=>{setModal(null);setGmailConnected(localStorage.getItem("fi_gmail_ok")==="1");}}/>}
       {modal==="paywall"     && <Paywall credits={credits} onClose={()=>setModal(null)} onUpgrade={()=>setAppView("checkout")}/>}
       {modal==="topup"       && <TopupModal onClose={()=>setModal(null)} onTopup={n=>{setCredits(c=>c+n);msg(`✓ ${n} credits added`);}}/>}
       {modal==="draft"       && focus && <DraftModal company={focus} profile={profile} isSent={sentList.includes(focus.id)} credits={credits} resume={resume} canSendNow={canSendNow} sendBlockReason={sendBlockReason} onClose={()=>{setModal(null);setFocus(null);}} onSend={recordSend}/>}
       {modal==="resume"      && <ResumeModal resume={resume} onSave={(r)=>{setResume(r); track("resume_upload"); msg("✓ Resume saved");}} onClose={()=>setModal(null)}/>}
-      {modal==="bulk"        && <BulkModal companies={allFirms.filter(c=>selected.includes(c.id))} profile={profile} resume={resume} sentList={sentList} credits={credits} remainingSends={remainingSends} sendLimit={sendLimit} bouncePaused={bouncePaused} sendBlockReason={sendBlockReason} onClose={()=>setModal(null)} onDone={recordBulkSend}/>}
+      {modal==="bulk"        && <BulkModal companies={allFirms.filter(c=>selected.includes(c.id))} profile={profile} resume={resume} sentList={sentList} credits={credits} remainingSends={remainingSends} sendLimit={sendLimit} onClose={()=>setModal(null)} onDone={recordBulkSend}/>}
       {modal==="detail"      && focus && <CompanyDetail company={focus} score={scores[focus.id]} isSent={sentList.includes(focus.id)} lists={lists} currentList={listOf[focus.id]} onSaveList={(lid)=>saveToList(focus.id,lid)} onClose={()=>{setModal(null);setFocus(null);}} onDraft={()=>{const f=focus;setTimeout(()=>{setFocus(f);setModal("draft");},50);}}/>}
 
       {toast && <Toast msg={toast} onDone={()=>setToast(null)}/>}

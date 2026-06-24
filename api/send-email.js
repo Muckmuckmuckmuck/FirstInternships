@@ -13,8 +13,6 @@ const WARMUP = {
   gmail:     [{ d: 0, n: 10 }, { d: 7, n: 20 }, { d: 14, n: 35 }, { d: 21, n: 50 }],
   workspace: [{ d: 0, n: 25 }, { d: 7, n: 50 }, { d: 14, n: 75 }, { d: 21, n: 120 }],
 };
-const BOUNCE_PAUSE = 0.08;
-const BOUNCE_MIN_SAMPLE = 20;
 const SPACING_MS = 4 * 60 * 1000; // ~4 min between sends so a batch never looks like a blast
 
 function dailyLimit(accountType, firstSendAt) {
@@ -37,19 +35,10 @@ export default async function handler(req, res) {
   if (!Array.isArray(items) || items.length === 0)
     return res.status(400).json({ error: "no_items" });
 
-  // Load profile (plan/credits/account_type/first_send_at) + bounce stats.
+  // Load profile (plan/credits/account_type/first_send_at).
   const { data: profile } = await admin.from("profiles").select("*").eq("id", user.id).single();
   if (!profile) return res.status(400).json({ error: "no_profile" });
   if (!profile.plan) return res.status(400).json({ error: "no_plan" });
-
-  // Bounce-pause guardrail.
-  const { count: contacted } = await admin.from("contacts")
-    .select("id", { count: "exact", head: true }).eq("user_id", user.id);
-  const { count: bounced } = await admin.from("contacts")
-    .select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("bounced", true);
-  const bounceRate = contacted ? bounced / contacted : 0;
-  if (bounceRate > BOUNCE_PAUSE && contacted >= BOUNCE_MIN_SAMPLE)
-    return res.status(409).json({ error: "sending_paused_bounce_rate", bounceRate });
 
   // How many can still go out today? (warm-up cap minus today's queued+sent)
   const since = new Date(); since.setHours(0, 0, 0, 0);

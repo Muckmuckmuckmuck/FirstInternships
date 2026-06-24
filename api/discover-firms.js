@@ -61,7 +61,7 @@ export default async function handler(req, res) {
     const rows = firms.map(toFirmRow);
     const { data, error } = await supabase
       .from("firms")
-      .upsert(rows, { onConflict: "domain", ignoreDuplicates: false })
+      .upsert(rows, { onConflict: "id", ignoreDuplicates: false })
       .select();
 
     if (error) { console.error("Supabase upsert error:", error); return res.status(500).json({ error: "Database write failed" }); }
@@ -133,16 +133,19 @@ Only include real companies you actually found via search, each with a valid dom
 }
 
 // ─── Shape a discovered firm into a Supabase `firms` row ──────────────────────
+// Column set must match the live `firms` table exactly. `id` is the primary key
+// (we use the domain as the id, same convention as the seed import) so the
+// upsert dedupes on it. `source: "discovered"` is what the frontend keys off to
+// mark the firm NEW and price its unlock at 2 credits.
 function toFirmRow(f) {
   return {
+    id: f.domain,
     domain: f.domain, dba: f.dba, name: f.dba,
     city: f.city || "", state: f.state || f.country || "", industry: f.industry || "Other",
-    size: null, type: f.type || "Company", remote: false,
+    type: f.type || "Company", remote: false,
     email: f.email, cname: f.cname || "", ctitle: f.ctitle || "", email2: f.email2 || "",
-    email_confidence: null,
-    intern: f.intern !== false, ugrad: true, comp_paid: f.compPaid !== false,
-    known_for: f.knownFor || "", verified: false,
-    source: "ai_discovery", discovered: true,
+    intern: f.intern !== false, comp_paid: f.compPaid !== false,
+    source: "discovered",
     created_at: new Date().toISOString(),
   };
 }

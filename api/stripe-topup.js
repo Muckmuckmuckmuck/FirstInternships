@@ -17,8 +17,8 @@ export default async function handler(req, res) {
     mode: "payment",
     line_items: [{ price: process.env.STRIPE_TOPUP_PRICE_ID, quantity: qty }],
     customer_email: user.email,
-    success_url: `${process.env.APP_URL}/app?topup=1`,
-    cancel_url:  `${process.env.APP_URL}/app`,
+    success_url: `${process.env.APP_URL}?topup=1`,
+    cancel_url:  `${process.env.APP_URL}`,
     metadata: { user_id: user.id, credits: String(qty * 100), kind: "topup" },
   });
   return res.status(200).json({ url: session.url });

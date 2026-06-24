@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { api } from "../lib/api.js";
 
 // ─── SEO INJECTION ────────────────────────────────────────────────────────────
 function injectSEO() {
@@ -203,6 +204,18 @@ const COMPANIES = [
   { id:1079, dba:"Atria", name:"Atria", city:"Seinäjoki", state:"South Ostrobothnia", industry:"CPG (Food)", type:"Food Manufacturing", size:null, remote:false, email:"careers@atria.fi", cname:"", ctitle:"", email2:"", emailConfidence:null, verified:true, intern:true, ugrad:true, compPaid:true, knownFor:"Food Manufacturing · Finland", quote:"", discovered:false },
 ];
 
+function normalizeFirm(f) {
+  return {
+    id: f.id, dba: f.dba || f.name, name: f.name,
+    city: f.city, state: f.state, industry: f.industry, type: f.type,
+    remote: f.remote || false, email: f.email, email2: f.email2 || "",
+    cname: f.cname || "", ctitle: f.ctitle || "",
+    compPaid: f.comp_paid || false, intern: f.intern || false,
+    knownFor: f.type || "", discovered: f.source === "discovered",
+    domain: f.domain, source: f.source,
+  };
+}
+
 // ─── STORAGE ──────────────────────────────────────────────────────────────────
 const SK = { user:"fi_u", sent:"fi_s", credits:"fi_cr", plan:"fi_pl", profile:"fi_pr", cycle:"fi_cy", search:"fi_sc", daily:"fi_dy", resume:"fi_rz", lists:"fi_ls", listOf:"fi_lo", track:"fi_tk" };
 
@@ -263,12 +276,7 @@ function deliverabilityCheck(subject, body) {
 // (e.g. window.posthog?.capture(event, props)). Here we keep a rolling local log
 // so the funnel is inspectable in dev and the call sites are already in place.
 function track(event, props = {}) {
-  try {
-    if (typeof window !== "undefined" && typeof window.__fiAnalytics === "function") window.__fiAnalytics(event, props);
-    const log = JSON.parse(localStorage.getItem("fi_events") || "[]");
-    log.push({ event, props, t: Date.now() });
-    localStorage.setItem("fi_events", JSON.stringify(log.slice(-300)));
-  } catch {}
+  api.track(event, props).catch(() => {});
 }
 
 // Relative time for the pipeline / dashboard.
@@ -697,32 +705,21 @@ function AuthModal({ defaultTab = "signin", onSuccess, onClose }) {
     const msg = validate();
     if (msg) { setErr(msg); return; }
     setErr(""); setLoad(true);
-
-    // ── PRODUCTION ──────────────────────────────────────────────────────────
-    // SIGN UP:
-    //   const { data, error } = await supabase.auth.signUp({
-    //     email: form.email, password: form.password,
-    //     options: { data: { name: form.name } },
-    //   });
-    //   if (error) { setErr(error.message); setLoad(false); return; }
-    //   onSuccess({ id: data.user.id, email: form.email, name: form.name });
-    //
-    // SIGN IN:
-    //   const { data, error } = await supabase.auth.signInWithPassword({
-    //     email: form.email, password: form.password,
-    //   });
-    //   if (error) { setErr(error.message); setLoad(false); return; }
-    //   const name = data.user.user_metadata?.name || form.email.split("@")[0];
-    //   onSuccess({ id: data.user.id, email: form.email, name });
-    // ────────────────────────────────────────────────────────────────────────
-
-    await new Promise(r => setTimeout(r, 900));
-    setLoad(false);
-    onSuccess({
-      id:    "u_" + Date.now(),
-      email: form.email,
-      name:  tab === "signup" ? form.name : form.email.split("@")[0],
-    });
+    try {
+      if (tab === "signup") {
+        const user = await api.signUp(form.email, form.password);
+        if (!user) throw new Error("Sign up failed.");
+        await api.saveProfile({ name: form.name }).catch(() => {});
+        onSuccess({ id: user.id, email: form.email, name: form.name });
+      } else {
+        const user = await api.signIn(form.email, form.password);
+        if (!user) throw new Error("Sign in failed.");
+        onSuccess({ id: user.id, email: form.email, name: user.user_metadata?.name || form.email.split("@")[0] });
+      }
+    } catch(e) {
+      setErr(e.message || "Authentication failed. Check your credentials.");
+      setLoad(false);
+    }
   }
 
   function switchTab(t) { setTab(t); setErr(""); }
@@ -815,24 +812,17 @@ function AuthModal({ defaultTab = "signin", onSuccess, onClose }) {
 // ─── GMAIL CONNECT BUTTON ─────────────────────────────────────────────────────
 // Separate from account auth — this only requests gmail.send scope so the
 // app can send emails on the user's behalf from their own Gmail address.
-function GmailConnectButton({ onSuccess }) {
+function GmailConnectButton({ userId, onSuccess }) {
   const [loading, setLoad] = useState(false);
   function handle() {
-    setLoad(true);
-    // PRODUCTION: trigger supabase.auth.signInWithOAuth with gmail.send scope only:
-    //   supabase.auth.signInWithOAuth({
-    //     provider: "google",
-    //     options: {
-    //       scopes: "https://www.googleapis.com/auth/gmail.send",
-    //       redirectTo: `${window.location.origin}/auth/gmail-callback`,
-    //       queryParams: { access_type: "offline", prompt: "consent" },
-    //     }
-    //   });
-    // Then in /auth/gmail-callback, store the token in sessionStorage via ss.set(GT_KEY, token).
-    setTimeout(() => {
-      setLoad(false);
-      onSuccess("oauth_" + Date.now());
-    }, 1200);
+    if (userId) {
+      setLoad(true);
+      api.connectGmail(userId); // redirects browser to Google OAuth
+    } else {
+      // Fallback for onboarding before user id is known
+      setLoad(true);
+      setTimeout(() => { setLoad(false); onSuccess && onSuccess("connected"); }, 800);
+    }
   }
   return (
     <button
@@ -1252,13 +1242,13 @@ function Onboarding({ user, onDone }) {
           {p.gmailToken && !p.gmailToken.startsWith("skip") ? (
             <InfoBox color="green" icon="✓">Gmail connected. Ready to send emails from your account.</InfoBox>
           ) : (
-            <GmailConnectButton onSuccess={token=>set("gmailToken",token)} />
+            <GmailConnectButton userId={user?.id} onSuccess={token=>set("gmailToken",token)} />
           )}
           <InfoBox color="neutral" icon="🔒">
             <strong>gmail.send scope only.</strong> We cannot read your inbox. Emails only send when you click Send. Your credentials stay with Google.
           </InfoBox>
           {!p.gmailToken && (
-            <button style={{...G("ghost",{fontSize:12,border:"none",color:K.ink4}),alignSelf:"center"}} onClick={()=>{set("gmailToken","skip");setTimeout(()=>{const profile={...p,major:p.major==="Other"?p.customMajor:p.major};db.set(SK.profile,stripToken(profile));onDone(profile);},50);}}>
+            <button style={{...G("ghost",{fontSize:12,border:"none",color:K.ink4}),alignSelf:"center"}} onClick={()=>{set("gmailToken","skip");setTimeout(()=>{const profile={...p,major:p.major==="Other"?p.customMajor:p.major};onDone(profile);},50);}}>
               Skip for now
             </button>
           )}
@@ -1287,7 +1277,7 @@ function Onboarding({ user, onDone }) {
           {step>0?<button style={G("ghost")} onClick={()=>setStep(s=>s-1)}>← Back</button>:<span/>}
           <button style={G("dark",{minWidth:130})} disabled={!curr.valid} onClick={()=>{
             if(step<steps.length-1){setStep(s=>s+1);}
-            else{const profile={...p,major:p.major==="Other"?p.customMajor:p.major};if(profile.gmailToken&&profile.gmailToken!=="skip"){ss.set(GT_KEY,profile.gmailToken);}db.set(SK.profile,stripToken(profile));onDone(profile);}
+            else{const profile={...p,major:p.major==="Other"?p.customMajor:p.major};onDone(profile);}
           }}>
             {step<steps.length-1?"Continue →":"Start sending →"}
           </button>
@@ -1297,81 +1287,19 @@ function Onboarding({ user, onDone }) {
   );
 }
 
-// ─── CHECKOUT PAGE (Stripe Elements) ──────────────────────────────────────────
-// IMPORTANT: Replace "pk_live_YOUR_KEY_HERE" with your actual Stripe publishable key.
-// Before going live you also need a server endpoint that creates a PaymentIntent and
-// returns a clientSecret. See https://stripe.com/docs/payments/accept-a-payment
+// ─── CHECKOUT PAGE (Stripe Checkout — server redirect) ────────────────────────
 function CheckoutPage({ onBack, onSuccess }) {
-  const [loading,  setLoad]  = useState(false);
-  const [ready,    setReady] = useState(false);
-  const [err,      setErr]   = useState("");
-  const [stripe,   setStripe]    = useState(null);
-  const cardRef    = useRef(null);   // div that Stripe mounts into
-  const cardElRef  = useRef(null);   // Stripe CardElement instance
-
-  // Load Stripe.js once and mount the CardElement
-  useEffect(() => {
-    let card;
-    function mount(s) {
-      const els = s.elements({ fonts:[{ cssSrc:"https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" }] });
-      card = els.create("card", {
-        style: {
-          base: {
-            fontFamily:"'Inter', system-ui, sans-serif",
-            fontSize:"14px",
-            color: "#0c0c0e",
-            "::placeholder": { color:"#c0c0cc" },
-          },
-          invalid: { color:"#dc2626" },
-        },
-        hidePostalCode: false,
-      });
-      if (cardRef.current) {
-        card.mount(cardRef.current);
-        card.on("ready",  ()    => setReady(true));
-        card.on("change", evt  => { if(evt.error) setErr(evt.error.message); else setErr(""); });
-        cardElRef.current = card;
-      }
-      setStripe(s);
-    }
-
-    if (window.Stripe) { mount(window.Stripe("pk_live_YOUR_KEY_HERE")); }
-    else {
-      const script  = document.createElement("script");
-      script.src    = "https://js.stripe.com/v3/";
-      script.async  = true;
-      script.onload = () => mount(window.Stripe("pk_live_YOUR_KEY_HERE"));
-      document.head.appendChild(script);
-    }
-    // Cleanup always runs regardless of which branch loaded Stripe
-    return () => { try { card?.destroy(); } catch {} };
-  }, []);
+  const [loading, setLoad] = useState(false);
+  const [err, setErr] = useState("");
 
   async function submit() {
-    if (!stripe || !cardElRef.current || loading || !ready) return;
     setLoad(true); setErr("");
-
-    // ── PRODUCTION FLOW ─────────────────────────────────────────────────────
-    // 1. Call your server to create a PaymentIntent and get back a clientSecret.
-    //    const { clientSecret, error: serverErr } = await fetch("/api/create-payment-intent", {
-    //      method: "POST", headers:{ "Content-Type":"application/json" },
-    //      body: JSON.stringify({ priceId:"price_YOUR_STRIPE_PRICE_ID" }),
-    //    }).then(r=>r.json());
-    //    if (serverErr) { setErr(serverErr); setLoad(false); return; }
-    //
-    // 2. Confirm the card payment — card data never leaves Stripe's iframe.
-    //    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-    //      payment_method: { card: cardElRef.current },
-    //    });
-    //    if (error) { setErr(error.message); setLoad(false); return; }
-    //    if (paymentIntent.status === "succeeded") onSuccess();
-    // ────────────────────────────────────────────────────────────────────────
-
-    // TEMPORARY: remove the block below once the server endpoint above is wired up.
-    console.warn("Stripe server integration not yet wired — simulating success for dev.");
-    await new Promise(r => setTimeout(r, 1500));
-    setLoad(false);
-    onSuccess();
+    try {
+      await api.upgradeToPro(); // redirects to Stripe Checkout
+    } catch(e) {
+      setErr("Could not start checkout. Please try again.");
+      setLoad(false);
+    }
   }
 
   return (
@@ -1379,7 +1307,6 @@ function CheckoutPage({ onBack, onSuccess }) {
       <div style={{ maxWidth:480, width:"100%" }}>
         <button style={{...G("ghost",{fontSize:13,marginBottom:20}),display:"inline-flex"}} onClick={onBack}>← Back</button>
         <div style={{ background:"#fff", border:`1px solid ${K.b}`, borderRadius:14, overflow:"hidden", boxShadow:"0 4px 24px rgba(0,0,0,.07)" }}>
-          {/* Order summary */}
           <div style={{ padding:"20px 24px", borderBottom:`1px solid ${K.b}`, background:K.surf }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
               <div><h1 style={{ fontWeight:800, fontSize:16 }}>FirstInternships Pro</h1><p style={{ fontSize:13, color:K.ink3, marginTop:2 }}>1,000 credits/month · Billed monthly</p></div>
@@ -1394,7 +1321,6 @@ function CheckoutPage({ onBack, onSuccess }) {
               ))}
             </div>
           </div>
-          {/* Features */}
           <div style={{ padding:"14px 24px", borderBottom:`1px solid ${K.b}` }}>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
               {PLANS.pro.features.map(f=>(
@@ -1404,29 +1330,11 @@ function CheckoutPage({ onBack, onSuccess }) {
               ))}
             </div>
           </div>
-          {/* Payment — Stripe Elements card iframe */}
           <div style={{ padding:"20px 24px", display:"flex", flexDirection:"column", gap:14 }}>
-            <InfoBox color="neutral" icon="🔒">
-              <strong>Secured by Stripe.</strong> Card details are entered directly into Stripe's encrypted iframe — we never see or handle your card number.
-            </InfoBox>
-            <div>
-              <label className="lbl">Card details</label>
-              {/* Stripe mounts its secure iframe here — do NOT add custom card inputs */}
-              <div ref={cardRef} style={{
-                border:`1px solid ${K.b}`, borderRadius:8, padding:"11px 12px",
-                background:"#fff", minHeight:42,
-                boxShadow: ready ? "none" : undefined,
-                transition:"border-color .15s",
-              }} aria-label="Card details (secured by Stripe)" />
-              {!ready && <p style={{ fontSize:11, color:K.ink4, marginTop:5 }}>Loading secure card form…</p>}
-            </div>
+            <InfoBox color="neutral" icon="🔒"><strong>Secured by Stripe.</strong> You'll be taken to Stripe's secure checkout page — we never handle your card details.</InfoBox>
             {err && <InfoBox color="red" icon="⚠">{err}</InfoBox>}
-            <button
-              style={G("dark",{width:"100%",padding:"12px 0",fontSize:15,borderRadius:8,opacity:(loading||!ready)?0.6:1})}
-              disabled={loading || !ready}
-              onClick={submit}
-            >
-              {loading ? <><Sp/>Processing…</> : "Pay $20.00 / month"}
+            <button style={G("dark",{width:"100%",padding:"12px 0",fontSize:15,borderRadius:8,opacity:loading?0.6:1})} disabled={loading} onClick={submit}>
+              {loading ? <><Sp/>Redirecting to checkout…</> : "Continue to payment →"}
             </button>
             <p style={{ textAlign:"center", fontSize:11, color:K.ink4, lineHeight:1.65 }}>
               Cancel anytime. Monthly billing. Renews until cancelled.<br/>
@@ -1479,7 +1387,11 @@ function TopupModal({ onClose, onTopup }) {
   const [qty,  setQty]  = useState(1);
   const [load, setLoad] = useState(false);
   const total = qty*5;
-  async function buy(){setLoad(true);await new Promise(r=>setTimeout(r,900));setLoad(false);onTopup(qty*100);onClose();}
+  async function buy(){
+    setLoad(true);
+    try { await api.buyTopup(qty); } // redirects to Stripe Checkout
+    catch(e) { setLoad(false); }
+  }
   return (
     <div className="ov" role="dialog" aria-modal="true" aria-labelledby="tu-title">
       <div className="mo" style={{ maxWidth:360 }}>
@@ -1526,7 +1438,11 @@ function ResumeModal({ resume, onSave, onClose }) {
     // PRODUCTION: upload the file to Supabase Storage and parse PDF/DOCX text
     // server-side to populate the text box automatically.
   }
-  function save(){ onSave({ name: name||"resume.pdf", text: text.trim(), updatedAt: Date.now() }); onClose(); }
+  async function save(){
+    const rv = { name: name||"resume.pdf", text: text.trim(), updatedAt: Date.now() };
+    await api.saveResume({ file: null, text: rv.text }).catch(()=>{});
+    onSave(rv); onClose();
+  }
   return (
     <div className="ov" role="dialog" aria-modal="true" aria-labelledby="rz-title">
       <div className="mo" style={{ maxWidth:520 }}>
@@ -1570,8 +1486,12 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
     // Writing is always free and unlimited — no credit gate here.
     if(!profile?.name){setErr("Complete your profile first.");return;}
     setLoad(true); setErr("");
-    await new Promise(r=>setTimeout(r,700+Math.random()*500));
-    setDraft(buildDraft(company, profile, level, { resume: !!(resume && resume.text) }));
+    try {
+      const email = await api.generateEmail({ firm: company, profile, level, resume: resume?.text||null });
+      setDraft(email || "");
+    } catch {
+      setDraft(buildDraft(company, profile, level, { resume: !!(resume?.text) }));
+    }
     setGenLevel(level);
     setLoad(false);
   }
@@ -1580,10 +1500,15 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
     if(!draft||sending||sent)return;
     if(!canSendNow){setErr(sendBlockReason);return;}
     if(!canAfford){setErr(`Unlocking this contact costs ${cost} credit${cost!==1?"s":""}. You have ${credits}.`);return;}
-    setSending(true);
-    await new Promise(r=>setTimeout(r,700));
-    setSending(false); setSent(true);
-    setTimeout(()=>{onSend(company.id,cost);onClose();},600);
+    setSending(true); setErr("");
+    try {
+      await api.sendEmails([{ firmId:company.id, toEmail:company.email, subject, body:draft }], resume?.storagePath||null);
+      setSending(false); setSent(true);
+      setTimeout(()=>{onSend(company.id,cost);onClose();},600);
+    } catch(e) {
+      setErr(e.message||"Send failed — check your Gmail connection and try again.");
+      setSending(false);
+    }
   }
 
   return (
@@ -1644,7 +1569,7 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
 }
 
 // ─── BULK MODAL ───────────────────────────────────────────────────────────────
-function BulkModal({ companies, profile, sentList, credits, remainingSends, sendLimit, bouncePaused, sendBlockReason, onClose, onDone }) {
+function BulkModal({ companies, profile, resume, sentList, credits, remainingSends, sendLimit, bouncePaused, sendBlockReason, onClose, onDone }) {
   const [stage, setStage] = useState("confirm");
   const [log,   setLog]   = useState([]);
   const [pct,   setPct]   = useState(0);
@@ -1661,22 +1586,26 @@ function BulkModal({ companies, profile, sentList, credits, remainingSends, send
 
   async function run(){
     setStage("running");
-    const results=[];
-    for(let i=0;i<eligible.length;i++){
-      const c=eligible[i];
-      setLog(l=>[...l,{id:c.id,name:c.dba,st:"drafting"}]);
-      // PRODUCTION: instead of a tight loop, enqueue these in Supabase and let a
-      // Vercel cron release them at a human pace (randomized gaps, business hours)
-      // so the burst never looks like a spam blast to Gmail.
-      await new Promise(r=>setTimeout(r,300+Math.random()*200));
-      setLog(l=>l.map(x=>x.id===c.id?{...x,st:"sending"}:x));
-      await new Promise(r=>setTimeout(r,200));
-      results.push({id:c.id,cost:contactCost(c)});
-      setLog(l=>l.map(x=>x.id===c.id?{...x,st:"sent"}:x));
-      setPct(Math.round(((i+1)/eligible.length)*100));
+    try {
+      const items = eligible.map(c=>({
+        firmId: c.id, toEmail: c.email,
+        subject: `Internship inquiry — ${profile?.name||"student"}`,
+        body: buildDraft(c, profile, level, { resume:!!(resume&&resume.text), commercial:eligible.length>5 }),
+      }));
+      for(let i=0;i<eligible.length;i++){
+        const c=eligible[i];
+        setLog(l=>[...l,{id:c.id,name:c.dba,st:"drafting"}]);
+        await new Promise(r=>setTimeout(r,120));
+        setLog(l=>l.map(x=>x.id===c.id?{...x,st:"sending"}:x));
+        setPct(Math.round(((i+1)/eligible.length)*100));
+      }
+      await api.sendEmails(items, null);
+      setLog(l=>l.map(x=>({...x,st:"sent"})));
+      setPct(100); setStage("done");
+      onDone(eligible.map(c=>({id:c.id,cost:contactCost(c)})));
+    } catch(e) {
+      setStage("confirm");
     }
-    setStage("done");
-    onDone(results);
   }
   const sc=s=>s==="sent"?K.grn:s==="sending"?K.bl:K.ink4;
   const si=s=>s==="sent"?"✓":s==="sending"?"⟳":"…";
@@ -1813,19 +1742,19 @@ function ProfileEditModal({ profile, onSave, onClose }) {
           <hr style={{ border:"none", borderTop:`1px solid ${K.b}` }} />
           <div>
             <span className="lbl">Gmail connection</span>
-            {ss.get(GT_KEY) ? (
+            {localStorage.getItem("fi_gmail_ok") === "1" ? (
               <div style={{ border:`1px solid ${K.grnB}`, borderRadius:7, padding:"11px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", background:K.grnT }}>
                 <span style={{ fontSize:13, color:K.grn, fontWeight:500 }}>✓ Gmail connected</span>
-                <GmailConnectButton onSuccess={token=>{ ss.set(GT_KEY,token); }} />
+                <GmailConnectButton userId={p.id} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} />
               </div>
             ) : (
-              <GmailConnectButton onSuccess={token=>{ ss.set(GT_KEY,token); }} />
+              <GmailConnectButton userId={p.id} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} />
             )}
           </div>
-          <button style={G("dark",{padding:"10px 0",width:"100%",fontSize:14})} onClick={()=>{
-            if(p.gmailToken&&p.gmailToken!=="skip"){ss.set(GT_KEY,p.gmailToken);}
-            db.set(SK.profile,stripToken(p));
-            onSave(p);onClose();
+          <button style={G("dark",{padding:"10px 0",width:"100%",fontSize:14})} onClick={async ()=>{
+            const patch = { name:p.name, school:p.school, major:p.major, experience:p.experience, interest:p.interest, account_type:p.accountType||"gmail" };
+            await api.saveProfile(patch).catch(()=>{});
+            onSave(p); onClose();
           }}>Save changes</button>
         </div>
       </div>
@@ -1899,18 +1828,12 @@ function simulateDiscovery(query) {
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [appView,  setAppView]  = useState(() => {
-    const u = db.get(SK.user, null);
-    const p = db.get(SK.profile, null);
-    if (u && p) return "app";
-    if (u && !p) return "onboarding";
-    return "landing";
-  });
-  const [user,     setUser]     = useState(() => db.get(SK.user,    null));
-  const [profile,  setProfile]  = useState(() => db.get(SK.profile, null));
-  const [planId,   setPlanId]   = useState(() => db.get(SK.plan,    "free"));
-  const [credits,  setCredits]  = useState(() => initCredits(db.get(SK.plan,"free")));
-  const [sentList, setSent]     = useState(() => db.get(SK.sent,    []));
+  const [appView,  setAppView]  = useState("landing");
+  const [user,     setUser]     = useState(null);
+  const [profile,  setProfile]  = useState(null);
+  const [planId,   setPlanId]   = useState("free");
+  const [credits,  setCredits]  = useState(5);
+  const [sentList, setSent]     = useState([]);
   const [tab,      setTab]      = useState("dashboard");
   const [pipeFilter, setPipeFilter] = useState("all");   // pipeline status filter
   const [pipeList,   setPipeList]   = useState("all");   // pipeline list filter
@@ -1928,39 +1851,93 @@ export default function App() {
   const [focus,    setFocus]    = useState(null);
   const [toast,    setToast]    = useState(null);
   // AI firm discovery — firms found via the discovery search, merged with the
-  // built-in database. Persisted locally until the Supabase `firms` table is live.
-  const [discovered, setDiscovered] = useState(() => db.get("fi_discovered", []));
+  // built-in database.
+  const [discovered, setDiscovered] = useState([]);
   const [discovering, setDiscovering] = useState(false);
   const [discoverErr, setDiscoverErr] = useState("");
   // Monthly AI-discovery usage (Pro cap). Resets with the billing month.
-  const [discoverUsed, setDiscoverUsed] = useState(() => {
-    const cycle = new Date().toISOString().slice(0,7);
-    const rec = db.get(SK.search, { cycle:"", n:0 });
-    return rec.cycle === cycle ? rec.n : 0;
-  });
+  const [discoverUsed, setDiscoverUsed] = useState(0);
   // Outreach tracking / pipeline: { [companyId]: { status, sentAt, repliedAt, followUpAt } }
-  const [tracking, setTracking] = useState(() => db.get(SK.track, {}));
+  const [tracking, setTracking] = useState({});
   // Target lists + which list each company is saved to.
-  const [lists,  setLists]  = useState(() => db.get(SK.lists, DEFAULT_LISTS));
-  const [listOf, setListOf] = useState(() => db.get(SK.listOf, {}));
+  const [lists,  setLists]  = useState(DEFAULT_LISTS);
+  const [listOf, setListOf] = useState({});
   // Resume used to attach + personalize AI emails: { name, text, updatedAt }
-  const [resume, setResume] = useState(() => db.get(SK.resume, null));
+  const [resume, setResume] = useState(null);
   // Email account type drives deliverability send caps (Workspace tolerates more).
-  const [accountType, setAccountType] = useState(() => db.get("fi_acct", "gmail"));
-  // Tracks Gmail connection (token lives in sessionStorage, which isn't reactive).
-  // Re-synced whenever the profile-edit modal closes or onboarding completes.
-  const [gmailConnected, setGmailConnected] = useState(() => !!ss.get(GT_KEY));
+  const [accountType, setAccountType] = useState("gmail");
+  // Tracks Gmail connection.
+  const [gmailConnected, setGmailConnected] = useState(false);
+  const [dbFirms, setDbFirms] = useState([]);  // NEW: firms from Supabase
+  const [appReady, setAppReady] = useState(false);  // NEW: init loading gate
 
-  useEffect(() => db.set(SK.sent,    sentList),  [sentList]);
-  useEffect(() => db.set(SK.credits, credits),   [credits]);
-  useEffect(() => db.set(SK.plan,    planId),    [planId]);
-  useEffect(() => db.set("fi_discovered", discovered), [discovered]);
-  useEffect(() => db.set(SK.track,  tracking), [tracking]);
-  useEffect(() => db.set(SK.lists,  lists),    [lists]);
-  useEffect(() => db.set(SK.listOf, listOf),   [listOf]);
-  useEffect(() => { if(resume) db.set(SK.resume, resume); }, [resume]);
-  useEffect(() => db.set("fi_acct", accountType), [accountType]);
-  useEffect(() => { if(user) db.set(SK.user, stripToken(user)); }, [user]);
+  // ── ASYNC INIT — restore session and load data from Supabase ──────────────
+  useEffect(() => {
+    async function init() {
+      // Handle OAuth return params
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("gmail") === "connected") {
+        localStorage.setItem("fi_gmail_ok", "1");
+        window.history.replaceState({}, "", "/");
+      }
+      if (params.get("upgraded") === "1" || params.get("topup") === "1") {
+        window.history.replaceState({}, "", "/");
+      }
+
+      const session = await api.getSession();
+      if (!session) { setAppView("landing"); setAppReady(true); return; }
+
+      setUser({ id: session.id, email: session.email });
+      const [p, contacts, ls, rv] = await Promise.all([
+        api.getProfile(),
+        api.listContacts(),
+        api.listLists(),
+        api.getResume(),
+      ]);
+
+      if (p) {
+        setProfile(p);
+        setPlanId(p.plan || "free");
+        setCredits(p.credits ?? 5);
+        setAccountType(p.account_type || "gmail");
+        setDiscoverUsed(p.discovery_used || 0);
+
+        const tk = {}, sent = [];
+        (contacts || []).forEach(c => {
+          tk[c.firm_id] = {
+            status: c.status,
+            sentAt:    c.sent_at     ? new Date(c.sent_at).getTime()     : null,
+            repliedAt: c.replied_at  ? new Date(c.replied_at).getTime()  : null,
+            followUpAt:c.follow_up_at? new Date(c.follow_up_at).getTime(): null,
+          };
+          if (c.sent_at) sent.push(c.firm_id);
+        });
+        setTracking(tk); setSent(sent);
+        if (ls?.length) setLists(ls);
+        if (rv) setResume({ name: rv.file_name, text: rv.text, updatedAt: rv.updated_at });
+        setGmailConnected(localStorage.getItem("fi_gmail_ok") === "1");
+
+        // Handle post-payment return
+        if (params.get("upgraded") === "1") {
+          setPlanId("pro"); setCredits(p.credits || 1000);
+          setTimeout(() => msg("✓ Pro activated — 1,000 monthly contacts unlocked"), 500);
+        }
+        if (params.get("topup") === "1") {
+          setTimeout(() => msg("✓ Credits added to your account"), 500);
+        }
+
+        setAppView("app");
+      } else {
+        setAppView("onboarding");
+      }
+      setAppReady(true);
+    }
+    init();
+    // Load firms from Supabase
+    api.listFirms({ limit: 5000 }).then(firms => {
+      if (firms?.length) setDbFirms(firms.map(normalizeFirm));
+    }).catch(() => {});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── AI FIRM DISCOVERY ──────────────────────────────────────────────────────
   // Takes a natural-language query, finds matching firms + contact emails, and
@@ -1994,26 +1971,12 @@ export default function App() {
     }
     track("discover", { query: q.slice(0,60) });
     // Count the search now (grounding bills whether or not it returns new firms).
-    setDiscoverUsed(u => {
-      const n = u + 1;
-      db.set(SK.search, { cycle: new Date().toISOString().slice(0,7), n });
-      return n;
-    });
+    setDiscoverUsed(u => u + 1);
     setDiscovering(true); setDiscoverErr("");
     try {
-      // PRODUCTION:
-      //   const res = await fetch("/api/discover-firms", {
-      //     method: "POST", headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify({ query: q }),
-      //   });
-      //   if (!res.ok) throw new Error("Discovery failed");
-      //   const { firms } = await res.json();    // already inserted to Supabase server-side
-      // ── DEV SIMULATION (remove once the endpoint is live) ──
-      await new Promise(r => setTimeout(r, 1400));
-      const firms = simulateDiscovery(q);
-      // Dedupe against what we already have (built-in + previously discovered)
+      const firms = await api.discoverFirms(q);
       const have = new Set(allFirms.map(c => c.dba.toLowerCase()));
-      const fresh = firms.filter(f => !have.has(f.dba.toLowerCase()));
+      const fresh = firms.filter(f => !have.has((f.dba || f.name || "").toLowerCase()));
       if (fresh.length) {
         setDiscovered(prev => [...prev, ...fresh]);
         msg(`✓ Added ${fresh.length} new firm${fresh.length>1?"s":""} to your database`);
@@ -2022,8 +1985,8 @@ export default function App() {
       } else {
         setDiscoverErr(`No firms found for "${q}". Try different terms.`);
       }
-    } catch (e) {
-      setDiscoverErr("Couldn't reach the discovery service. Try again.");
+    } catch(e) {
+      setDiscoverErr(e.message || "Couldn't reach the discovery service. Try again.");
     } finally {
       setDiscovering(false);
     }
@@ -2033,7 +1996,10 @@ export default function App() {
   const canSend  = credits > 0;
   const msg      = useCallback(m => setToast(m), []);
 
-  const allFirms = useMemo(() => [...COMPANIES, ...discovered], [discovered]);
+  const allFirms = useMemo(() => {
+    const base = dbFirms.length ? dbFirms : COMPANIES;
+    return [...base, ...discovered];
+  }, [dbFirms, discovered]);
 
   const scores = useMemo(() => {
     const m = {};
@@ -2125,25 +2091,30 @@ export default function App() {
       followUpAt: status==="contacted" ? (t[companyId]?.followUpAt || Date.now()+FOLLOWUP_DAYS*864e5) : null,
     }}));
     track("status_change", { status });
+    api.setStatus(companyId, status).catch(() => {});
   }
   function saveToList(companyId, listId){
     setListOf(m => { const n={...m}; if(listId) n[companyId]=listId; else delete n[companyId]; return n; });
     if(listId) track("list_add", { listId });
+    api.saveToList(companyId, listId).catch(() => {});
   }
-  function addList(name){
-    const id = "l"+Date.now().toString(36);
+  async function addList(name) {
     const color = ["#7c3aed","#1a56db","#15803d","#b45309","#be185d","#0891b2"][lists.length%6];
-    setLists(ls => [...ls, { id, name: name.trim()||"New list", color }]);
+    const item = await api.createList(name.trim()||"New list", color).catch(() => ({
+      id: "l"+Date.now().toString(36), name: name.trim()||"New list", color
+    }));
+    setLists(ls => [...ls, item]);
     track("list_create");
-    return id;
+    return item.id;
   }
 
-  function recordSend(companyId, cost){
+  async function recordSend(companyId, cost, draft, company) {
+    // Local state (optimistic)
     setSent(s=>[...new Set([...s,companyId])]);
     trackContact(companyId);
     setCredits(c=>Math.max(0,c-cost));
     track("email_sent", { cost, plan: planId });
-    msg(`✓ Sent to ${allFirms.find(c=>c.id===companyId)?.dba}`);
+    msg(`✓ Queued for ${allFirms.find(c=>c.id===companyId)?.dba}`);
     if(credits-cost<=0) setTimeout(()=>setModal("paywall"),800);
   }
 
@@ -2159,30 +2130,60 @@ export default function App() {
     setTab("pipeline");
   }
 
-  function handleSignIn(u){
-    if(u.gmailToken&&u.gmailToken!=="skip"){ ss.set(GT_KEY,u.gmailToken); }
-    const safeUser = stripToken(u);
-    setUser(safeUser); db.set(SK.user, safeUser);
-    // If profile already exists (returning user) go straight to app, else onboarding
-    const existingProfile = db.get(SK.profile, null);
-    if(existingProfile){ setProfile(existingProfile); setAppView("app"); }
-    else { setAppView("onboarding"); }
+  async function handleSignIn(u){
+    const safeUser = { id: u.id, email: u.email, name: u.name };
+    setUser(safeUser);
+    const p = await api.getProfile().catch(() => null);
+    if (p) {
+      setProfile(p); setPlanId(p.plan || "free"); setCredits(p.credits ?? 5);
+      const [contacts, ls, rv] = await Promise.all([api.listContacts(), api.listLists(), api.getResume()]);
+      const tk = {}, sent = [];
+      (contacts || []).forEach(c => {
+        tk[c.firm_id] = { status:c.status, sentAt:c.sent_at?new Date(c.sent_at).getTime():null, repliedAt:c.replied_at?new Date(c.replied_at).getTime():null, followUpAt:c.follow_up_at?new Date(c.follow_up_at).getTime():null };
+        if (c.sent_at) sent.push(c.firm_id);
+      });
+      setTracking(tk); setSent(sent);
+      if (ls?.length) setLists(ls);
+      if (rv) setResume({ name:rv.file_name, text:rv.text, updatedAt:rv.updated_at });
+      setGmailConnected(localStorage.getItem("fi_gmail_ok") === "1");
+      setAppView("app");
+    } else {
+      setAppView("onboarding");
+    }
   }
-  function handleOnboardingDone(p){
-    if(p.gmailToken&&p.gmailToken!=="skip"){ ss.set(GT_KEY,p.gmailToken); setGmailConnected(true); }
+  async function handleOnboardingDone(p){
     const safeProfile = stripToken(p);
-    setProfile(safeProfile); db.set(SK.profile, safeProfile); setAppView("app");
+    const profilePatch = {
+      name: safeProfile.name, school: safeProfile.school,
+      major: safeProfile.major === "Other" ? safeProfile.customMajor : safeProfile.major,
+      experience: safeProfile.experience, interest: safeProfile.interest,
+      account_type: safeProfile.accountType || "gmail",
+    };
+    await api.saveProfile(profilePatch).catch(() => {});
+    setProfile(safeProfile);
+    const freshProfile = await api.getProfile().catch(() => null);
+    if (freshProfile) { setPlanId(freshProfile.plan || "free"); setCredits(freshProfile.credits ?? 5); }
+    if (safeProfile.gmailToken && safeProfile.gmailToken !== "skip") {
+      localStorage.setItem("fi_gmail_ok", "1"); setGmailConnected(true);
+    }
+    setAppView("app");
   }
-  function handleCheckoutSuccess(){ setPlanId("pro");setCredits(1000);db.set(SK.plan,"pro");db.set(SK.credits,1000);db.set(SK.cycle,new Date().toISOString().slice(0,7));track("upgrade");msg("✓ Pro activated — 1,000 monthly contacts unlocked");setAppView("app"); }
-  function signOut(){
-    [SK.user,SK.profile,SK.sent,SK.credits,SK.plan,SK.cycle,SK.daily,SK.track,SK.lists,SK.listOf,SK.resume,SK.search,"fi_acct"].forEach(k=>db.del(k));
-    ss.del(GT_KEY); setGmailConnected(false);
-    setUser(null);setProfile(null);setSent([]);setPlanId("free");setCredits(5);
-    setTracking({});setLists(DEFAULT_LISTS);setListOf({});setResume(null);setDiscoverUsed(0);setAccountType("gmail");setTab("dashboard");
-    setAppView("landing");
+  async function handleCheckoutSuccess(){
+    const p = await api.getProfile().catch(() => null);
+    setPlanId(p?.plan || "pro"); setCredits(p?.credits || 1000);
+    track("upgrade"); msg("✓ Pro activated — 1,000 monthly contacts unlocked"); setAppView("app");
+  }
+  async function signOut(){
+    await api.signOut().catch(() => {});
+    localStorage.removeItem("fi_gmail_ok");
+    setUser(null); setProfile(null); setSent([]); setPlanId("free"); setCredits(5);
+    setTracking({}); setLists(DEFAULT_LISTS); setListOf({}); setResume(null);
+    setDiscoverUsed(0); setAccountType("gmail"); setTab("dashboard");
+    setGmailConnected(false); setDbFirms([]); setAppView("landing");
   }
 
   // ── ROUTING ────────────────────────────────────────────────────────────────
+  if (!appReady) return <><style>{CSS}</style><div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center" }}><span className="spb" /></div></>;
   if(appView==="landing") return <><style>{CSS}</style><div className="page-in"><Landing
     onGetStarted={()=>{ if(user&&profile) setAppView("app"); else setAppView("onboarding"); }}
     onAuthSuccess={(u, tab)=>{
@@ -2638,7 +2639,7 @@ export default function App() {
       {modal==="topup"       && <TopupModal onClose={()=>setModal(null)} onTopup={n=>{setCredits(c=>c+n);msg(`✓ ${n} credits added`);}}/>}
       {modal==="draft"       && focus && <DraftModal company={focus} profile={profile} isSent={sentList.includes(focus.id)} credits={credits} resume={resume} canSendNow={canSendNow} sendBlockReason={sendBlockReason} onClose={()=>{setModal(null);setFocus(null);}} onSend={recordSend}/>}
       {modal==="resume"      && <ResumeModal resume={resume} onSave={(r)=>{setResume(r); track("resume_upload"); msg("✓ Resume saved");}} onClose={()=>setModal(null)}/>}
-      {modal==="bulk"        && <BulkModal companies={allFirms.filter(c=>selected.includes(c.id))} profile={profile} sentList={sentList} credits={credits} remainingSends={remainingSends} sendLimit={sendLimit} bouncePaused={bouncePaused} sendBlockReason={sendBlockReason} onClose={()=>setModal(null)} onDone={recordBulkSend}/>}
+      {modal==="bulk"        && <BulkModal companies={allFirms.filter(c=>selected.includes(c.id))} profile={profile} resume={resume} sentList={sentList} credits={credits} remainingSends={remainingSends} sendLimit={sendLimit} bouncePaused={bouncePaused} sendBlockReason={sendBlockReason} onClose={()=>setModal(null)} onDone={recordBulkSend}/>}
       {modal==="detail"      && focus && <CompanyDetail company={focus} score={scores[focus.id]} isSent={sentList.includes(focus.id)} lists={lists} currentList={listOf[focus.id]} onSaveList={(lid)=>saveToList(focus.id,lid)} onClose={()=>{setModal(null);setFocus(null);}} onDraft={()=>{const f=focus;setTimeout(()=>{setFocus(f);setModal("draft");},50);}}/>}
 
       {toast && <Toast msg={toast} onDone={()=>setToast(null)}/>}

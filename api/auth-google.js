@@ -48,5 +48,5 @@ export default async function handler(req, res) {
   });
 
   // Back to the app.
-  res.redirect(`${process.env.APP_URL}/app?gmail=connected`);
+  res.redirect(`${process.env.APP_URL}?gmail=connected`);
 }

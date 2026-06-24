@@ -17,8 +17,8 @@ export default async function handler(req, res) {
     line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID, quantity: 1 }],
     customer_email: user.email,
     client_reference_id: user.id,
-    success_url: `${process.env.APP_URL}/app?upgraded=1`,
-    cancel_url:  `${process.env.APP_URL}/app`,
+    success_url: `${process.env.APP_URL}?upgraded=1`,
+    cancel_url:  `${process.env.APP_URL}`,
     metadata: { user_id: user.id },
   });
   return res.status(200).json({ url: session.url });

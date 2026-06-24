@@ -2552,7 +2552,7 @@ export default function App() {
       <div style={{ border:`1px solid ${K.b}`, borderRadius:10, overflow:"hidden", marginBottom:14 }}>
         <div style={{ padding:"13px 16px", borderBottom:`1px solid ${K.b}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div><div style={{ fontWeight:600, fontSize:14 }}>Plan</div><div style={{ fontSize:12, marginTop:2, color:planId==="pro"?K.grn:K.ink3 }}>{planId==="pro"?"Pro — 1,000 contacts / month + AI discovery":"Free — 5 contacts / day"}</div></div>
-          {planId!=="pro"?<button style={G("dark",{fontSize:12,padding:"5px 14px"})} onClick={()=>setAppView("checkout")}>Upgrade · $20/mo</button>:<button style={G("ghost",{fontSize:12,color:K.red,borderColor:K.redB})} onClick={()=>{if(window.confirm("Cancel Pro?"))setPlanId("free");}}>Cancel</button>}
+          {planId!=="pro"?<button style={G("dark",{fontSize:12,padding:"5px 14px"})} onClick={()=>setAppView("checkout")}>Upgrade · $20/mo</button>:<button style={G("ghost",{fontSize:12,color:K.red,borderColor:K.redB})} onClick={()=>api.manageSubscription().catch(()=>msg("Visit billing.stripe.com to manage your subscription."))}>Manage subscription</button>}
         </div>
         <div style={{ padding:"13px 16px" }}>
           <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:K.ink3, marginBottom:7 }}>

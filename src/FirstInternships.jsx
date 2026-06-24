@@ -355,7 +355,7 @@ function buildComplianceFooter(profile) {
 // opts.commercial appends the CAN-SPAM footer (used for bulk sends). A single
 // 1:1 job email omits it, preserving a genuine personal tone.
 function buildDraft(company, profile, level, opts = {}) {
-  const name = (profile.name || "Jay").trim();
+  const name = (profile.name || "[Your name]").trim();
   const rawEdu = profile.eduLevel || profile.year || "student";
   const yr = rawEdu.toLowerCase()
     .replace("bachelor's student — ", "")

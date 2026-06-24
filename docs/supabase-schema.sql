@@ -204,3 +204,28 @@ create or replace function increment_credits(uid uuid, delta integer)
 returns void language sql security definer as $$
   update profiles set credits = credits + delta where id = uid;
 $$;
+
+-- ── Send-queue worker scheduler (pg_cron + pg_net) ──────────────────────────
+-- The /api/process-queue endpoint delivers queued emails via Gmail. It must be
+-- pinged on a schedule. We use Supabase's in-database cron instead of GitHub
+-- Actions (whose free scheduled runs are throttled/unreliable). This runs every
+-- 2 minutes, entirely inside Supabase.
+--
+-- Replace <CRON_SECRET> and the URL before running. (Don't commit the real secret.)
+--
+--   create extension if not exists pg_cron;
+--   create extension if not exists pg_net;
+--
+--   select cron.schedule('process-send-queue', '*/2 * * * *', $$
+--     select net.http_post(
+--       url := 'https://firstinternships.com/api/process-queue',
+--       headers := jsonb_build_object(
+--         'Authorization', 'Bearer <CRON_SECRET>',
+--         'Content-Type', 'application/json'),
+--       body := '{}'::jsonb
+--     )
+--   $$);
+--
+-- Inspect:   select * from cron.job;
+--            select * from cron.job_run_details order by start_time desc limit 10;
+-- Remove:    select cron.unschedule('process-send-queue');

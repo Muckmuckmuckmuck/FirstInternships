@@ -1029,8 +1029,8 @@ function Landing({ onGetStarted, onAuthSuccess }) {
             <strong style={{ fontWeight:600, color:K.ink3 }}>Hiring contact opt-out:</strong>{" "}
             If you are a company recruiter or HR contact and would like to be removed from our database,
             email{" "}
-            <a href="mailto:optout@firstinternships.com" style={{ color:K.ink3, textDecoration:"underline" }}>
-              optout@firstinternships.com
+            <a href="mailto:contactfirstinternships@gmail.com" style={{ color:K.ink3, textDecoration:"underline" }}>
+              contactfirstinternships@gmail.com
             </a>
             {" "}with the subject line <em>"Remove listing"</em> and your company name.
             We process all requests within 5 business days.
@@ -1044,7 +1044,7 @@ function Landing({ onGetStarted, onAuthSuccess }) {
           <nav aria-label="Footer links" style={{ display:"flex", gap:20 }}>
             <a href="/privacy" style={{ fontSize:12, color:K.ink4 }}>Privacy</a>
             <a href="/terms"   style={{ fontSize:12, color:K.ink4 }}>Terms</a>
-            <a href="mailto:hello@firstinternships.com" style={{ fontSize:12, color:K.ink4 }}>Contact</a>
+            <a href="mailto:contactfirstinternships@gmail.com" style={{ fontSize:12, color:K.ink4 }}>Contact</a>
           </nav>
           <span style={{ fontSize:12, color:K.ink4 }}>© 2026 FirstInternships</span>
         </div>

@@ -717,7 +717,8 @@ function AuthModal({ defaultTab = "signin", onSuccess, onClose }) {
         onSuccess({ id: user.id, email: form.email, name: user.user_metadata?.name || form.email.split("@")[0] });
       }
     } catch(e) {
-      setErr(e.message || "Authentication failed. Check your credentials.");
+      const msg = typeof e?.message === "string" ? e.message : (typeof e === "string" ? e : "Authentication failed. Check your credentials.");
+      setErr(msg || "Authentication failed. Check your credentials.");
       setLoad(false);
     }
   }

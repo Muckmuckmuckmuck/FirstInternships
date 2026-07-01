@@ -205,6 +205,37 @@ returns void language sql security definer as $$
   update profiles set credits = credits + delta where id = uid;
 $$;
 
+-- ── CREDIT SECURITY (do not weaken) ─────────────────────────────────────────
+-- Credits/plan MUST NOT be client-writable, or users can grant themselves
+-- unlimited credits / free Pro from the browser console and bypass the paywall.
+-- 1) Only profile-info columns are updatable by the signed-in user.
+revoke update on public.profiles from authenticated, anon;
+grant update (name, school, grad_year, major, experience, interest, marketing_consent, account_type)
+  on public.profiles to authenticated;
+-- 2) The daily/monthly reset therefore runs server-side (SECURITY DEFINER), not
+--    from the client. Free = 5/day, Pro = 1,000/month; resets even if unused.
+create or replace function reset_credits_if_due()
+returns void language plpgsql security definer set search_path = public as $$
+declare p public.profiles%rowtype;
+begin
+  select * into p from public.profiles where id = auth.uid();
+  if not found then return; end if;
+  if p.plan = 'pro' then
+    if coalesce(to_char(p.cycle_start,'YYYY-MM'),'') <> to_char(current_date,'YYYY-MM') then
+      update public.profiles set credits = 1000, cycle_start = current_date,
+             discovery_used = 0, discovery_cycle = to_char(current_date,'YYYY-MM')
+      where id = auth.uid();
+    end if;
+  else
+    if p.daily_date is distinct from current_date then
+      update public.profiles set credits = 5, daily_date = current_date where id = auth.uid();
+    end if;
+  end if;
+end; $$;
+grant execute on function reset_credits_if_due() to authenticated;
+-- (Credits are only ever changed by: reset_credits_if_due, increment_credits,
+--  and the service-role server functions send-email / stripe-webhook.)
+
 -- ── Send-queue worker scheduler (pg_cron + pg_net) ──────────────────────────
 -- The /api/process-queue endpoint delivers queued emails via Gmail. It must be
 -- pinged on a schedule. We use Supabase's in-database cron instead of GitHub

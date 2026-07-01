@@ -1894,9 +1894,13 @@ export default function App() {
       } else {
         setAppView("onboarding");
       }
-      setAppReady(true);
     }
-    init();
+    // Never let a failed data load trap the user on the loading spinner: always
+    // release the gate, even if init throws. A stale/expired session falls back
+    // to the landing page rather than hanging.
+    init()
+      .catch((e) => { console.error("init failed:", e); setAppView("landing"); })
+      .finally(() => setAppReady(true));
     // Load firms from Supabase
     api.listFirms({ limit: 20000 }).then(firms => {
       if (firms?.length) setDbFirms(firms.map(normalizeFirm));

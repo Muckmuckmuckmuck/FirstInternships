@@ -48,11 +48,12 @@ Hard rules:
 - Get to the point fast. Do NOT open with a compliment about the company or with "I've been following...", "I came across...", "I'm reaching out because...", "I'm excited to...", or "I am writing to...".
 - Give ONE concrete, specific reason you're interested, tied to something real in the student's background — not generic enthusiasm.
 - One clear, low-pressure ask, e.g. "Do you take summer interns?" or "Could I send my resume?".
-- Banned words/phrases (sound robotic): passionate, leverage, align, synergy, eager to contribute, actively changing, fast-paced, cutting-edge, the upcoming cycle, delve, in today's world, I believe my skills, honed, spearheaded, "as a [year] student".
-- No em-dashes. Use periods and commas. Vary sentence length so it doesn't read uniform and machine-smooth.
-- If a resume is provided, say it's attached in plain words; otherwise offer to send one.
+- Banned words/phrases (sound robotic): passionate, leverage, align, synergy, eager to contribute, actively changing, fast-paced, cutting-edge, the upcoming cycle, delve, in today's world, I believe my skills, honed, spearheaded, "as a [year] student", "I hope this email finds you well".
+- No em-dashes and no semicolons. Use periods and commas. Vary sentence length so it doesn't read uniform and machine-smooth.
+- Do not use three-item lists or perfectly parallel phrasing ("X, Y, and Z") — real students don't write that way.
+- RESUME: if resume text is included below, you MUST weave in ONE specific, real detail from it (a named project, tool, class, role, or number). Never invent details. This is what proves the email is really about this student. Then note the resume is attached. If no resume text is given, offer to send one.
 - No subject line. Plain text. Sign off with just the student's first name.
-- A little plain or slightly imperfect is GOOD — it reads human. Don't over-explain.
+- A little plain or slightly imperfect is GOOD — it reads human. Don't over-explain or wrap up with a neat summary sentence.
 - ${LEVEL_GUIDE[level] || LEVEL_GUIDE[3]}`;
 
   const user = `STUDENT:

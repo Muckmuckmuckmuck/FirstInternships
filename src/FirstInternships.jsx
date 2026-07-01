@@ -240,8 +240,8 @@ const DISCOVERY_CAP = 200; // Pro AI-discovery searches per billing month (margi
 // fast or send too much in a day. These caps protect the user's own Gmail.
 // Warm-up: as the account ages (days since first send), the safe daily cap rises.
 const WARMUP = {
-  gmail:     [{ d:0, n:10 }, { d:7, n:20 }, { d:14, n:35 }, { d:21, n:50 }],   // personal @gmail.com
-  workspace: [{ d:0, n:25 }, { d:7, n:50 }, { d:14, n:75 }, { d:21, n:120 }],  // Google Workspace
+  gmail:     [{ d:0, n:30 }, { d:5, n:45 }, { d:12, n:60 }, { d:21, n:75 }],    // personal @gmail.com
+  workspace: [{ d:0, n:60 }, { d:5, n:100 }, { d:12, n:150 }, { d:21, n:250 }], // Google Workspace
 };
 
 // Today's safe send cap for an account, given its type and first-send date.
@@ -601,6 +601,13 @@ function CreditMeter({ credits, planId }) {
     </div>
   );
 }
+
+// Remembers the user's preferred personalization level across drafts/sessions.
+// Set the slider to 1 (non-personalized) and it stays there next time; same for any level.
+const prefLevel = {
+  get: () => { const v = parseInt(localStorage.getItem("fi_pref_level"), 10); return (v >= 1 && v <= 5) ? v : 3; },
+  set: (v) => { try { localStorage.setItem("fi_pref_level", String(v)); } catch {} },
+};
 
 function PersonalizationSlider({ value, onChange }) {
   const labels = ["Generic","Light","Tailored","Detailed","Deep"];
@@ -1207,9 +1214,12 @@ function Onboarding({ user, onDone }) {
           <InfoBox color="neutral" icon="🔒">
             <strong>gmail.send scope only.</strong> We cannot read your inbox. Emails only send when you click Send. Your credentials stay with Google.
           </InfoBox>
+          {!(p.gmailToken && !p.gmailToken.startsWith("skip")) && (
+            <InfoBox color="amber" icon="⚠">You won't be able to send any emails until you connect Gmail. You can do it now, or later from <strong>Settings</strong>.</InfoBox>
+          )}
           {!p.gmailToken && (
             <button style={{...G("ghost",{fontSize:12,border:"none",color:K.ink4}),alignSelf:"center"}} onClick={()=>{set("gmailToken","skip");setTimeout(()=>{const profile={...p,major:p.major==="Other"?p.customMajor:p.major};onDone(profile);},50);}}>
-              Skip for now
+              I'll connect later
             </button>
           )}
         </div>
@@ -1428,7 +1438,7 @@ function ResumeModal({ resume, onSave, onClose }) {
 // ─── DRAFT MODAL ──────────────────────────────────────────────────────────────
 function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sendBlockReason, onClose, onSend }) {
   const [draft,   setDraft]   = useState("");
-  const [level,   setLevel]   = useState(3);
+  const [level,   setLevel]   = useState(() => prefLevel.get());
   const [genLevel,setGenLevel]= useState(null);  // level the current draft was generated at
   const [loading, setLoad]    = useState(false);
   const [sending, setSending] = useState(false);
@@ -1458,6 +1468,7 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
 
   async function send() {
     if(!draft||sending||sent)return;
+    if(localStorage.getItem("fi_gmail_ok")!=="1"){setErr("Connect your Gmail first — use the banner at the top of the page or Settings. Emails send from your own account.");return;}
     if(!canSendNow){setErr(sendBlockReason);return;}
     if(!canAfford){setErr(`Unlocking this contact costs ${cost} credit${cost!==1?"s":""}. You have ${credits}.`);return;}
     setSending(true); setErr("");
@@ -1486,7 +1497,7 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
             ))}
           </div>
           <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"14px 14px 12px" }}>
-            <PersonalizationSlider value={level} onChange={setLevel} />
+            <PersonalizationSlider value={level} onChange={v=>{setLevel(v); prefLevel.set(v);}} />
           </div>
           <div style={{ border:`1px solid ${K.b}`, borderRadius:8, overflow:"hidden" }}>
             <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", borderBottom:`1px solid ${K.bs}`, gap:10 }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>To</span><span style={{ fontSize:13, color:K.bl }}>{company.email}</span></div>
@@ -1533,7 +1544,7 @@ function BulkModal({ companies, profile, resume, sentList, credits, remainingSen
   const [stage, setStage] = useState("confirm");
   const [log,   setLog]   = useState([]);
   const [pct,   setPct]   = useState(0);
-  const [level, setLevel] = useState(2);
+  const [level, setLevel] = useState(() => prefLevel.get());
   const eligibleAll = useMemo(()=>companies.filter(c=>!sentList.includes(c.id)),[companies,sentList]);
   const skipped   = companies.length-eligibleAll.length;
   const cap       = remainingSends;
@@ -1586,7 +1597,7 @@ function BulkModal({ companies, profile, resume, sentList, credits, remainingSen
               {skipped>0&&<InfoBox color="amber" icon="⚠">{skipped} company{skipped!==1?"s":""} skipped — already unlocked (you can email them free anytime).</InfoBox>}
               {queued.length>0&&<InfoBox color="amber" icon="🛡">To protect your Gmail from spam flags, <strong>{eligible.length} will send today</strong> (your warm-up limit is {sendLimit}/day). The other <strong>{queued.length}</strong> are held — send them over the next few days.</InfoBox>}
               <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"14px 14px 12px" }}>
-                <PersonalizationSlider value={level} onChange={setLevel} />
+                <PersonalizationSlider value={level} onChange={v=>{setLevel(v); prefLevel.set(v);}} />
               </div>
               <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"11px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                 <span style={{ fontSize:13, color:K.ink3 }}>{eligible.length} sending now{discCount>0?` (${discCount} AI-discovered)`:""}</span>
@@ -1829,7 +1840,7 @@ export default function App() {
     }
     init();
     // Load firms from Supabase
-    api.listFirms({ limit: 5000 }).then(firms => {
+    api.listFirms({ limit: 20000 }).then(firms => {
       if (firms?.length) setDbFirms(firms.map(normalizeFirm));
     }).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -2489,6 +2500,14 @@ export default function App() {
       </nav>
 
       <div style={{ maxWidth:1200, margin:"0 auto", padding:"0 16px" }} aria-live="polite">
+        {!gmailConnected&&(
+          <div style={{ marginTop:10, padding:"11px 14px", background:K.ink, border:`1px solid ${K.ink}`, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:13, flexWrap:"wrap", gap:8 }} role="alert">
+            <span style={{ color:"#fff", fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
+              <span aria-hidden="true">✉️</span> Connect your Gmail to send emails — nothing sends until you do.
+            </span>
+            <button className="btn-lift" style={G("green",{fontSize:12,padding:"6px 14px",background:"#fff",color:K.ink,border:"none"})} onClick={()=>setModal("profileEdit")}>Connect Gmail →</button>
+          </div>
+        )}
         {credits<=2&&credits>0&&(
           <div style={{ marginTop:10, padding:"9px 14px", background:K.ambT, border:`1px solid ${K.ambB}`, borderRadius:7, display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:13, flexWrap:"wrap", gap:8 }} role="alert">
             <span style={{ color:K.amb, fontWeight:500 }}>⚠ Only {credits} credit{credits!==1?"s":""} remaining</span>

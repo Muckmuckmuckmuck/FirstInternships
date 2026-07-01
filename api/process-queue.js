@@ -7,7 +7,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { sendGmail } from "../lib/gmail.js";
 
-const MAX_PER_TICK = 8;          // small batch per run = naturally paced
+const MAX_PER_TICK = 25;         // per-run batch across all users (cron runs every ~2 min)
 const MAX_ATTEMPTS = 3;
 
 export default async function handler(req, res) {

@@ -10,8 +10,8 @@ import { createClient } from "@supabase/supabase-js";
 
 // Warm-up: as the account ages (days since first send), the safe daily cap rises.
 const WARMUP = {
-  gmail:     [{ d: 0, n: 10 }, { d: 7, n: 20 }, { d: 14, n: 35 }, { d: 21, n: 50 }],
-  workspace: [{ d: 0, n: 25 }, { d: 7, n: 50 }, { d: 14, n: 75 }, { d: 21, n: 120 }],
+  gmail:     [{ d: 0, n: 30 }, { d: 5, n: 45 }, { d: 12, n: 60 }, { d: 21, n: 75 }],
+  workspace: [{ d: 0, n: 60 }, { d: 5, n: 100 }, { d: 12, n: 150 }, { d: 21, n: 250 }],
 };
 const SPACING_MS = 4 * 60 * 1000; // ~4 min between sends so a batch never looks like a blast
 

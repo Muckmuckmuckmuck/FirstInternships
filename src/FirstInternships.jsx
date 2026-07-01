@@ -235,6 +235,64 @@ const STATUS = Object.fromEntries(STATUSES.map(s=>[s.id,s]));
 const FOLLOWUP_DAYS = 5;   // default "nudge me to follow up" window
 const DISCOVERY_CAP = 200; // Pro AI-discovery searches per billing month (margin guardrail)
 
+// ─── INDUSTRY BUCKETS ───────────────────────────────────────────────────────
+// The raw `industry` values in the data are messy and overlapping (e.g.
+// "Financial Services", "FinTech", "Financial Services/Banking"). We group them
+// into clean user-facing categories: a firm is in a bucket if its industry text
+// contains any of the bucket's match terms.
+const INDUSTRY_GROUPS = [
+  { label:"Technology",                match:["technolog","software","saas"," ai","artificial intelligence","cloud","cyber","data","developer","information technology","semiconductor","telecom","broadband"] },
+  { label:"Finance & FinTech",         match:["financ","fintech","bank","accounting","asset management","insurance","invest","capital","payments","venture","equity","hedge"] },
+  { label:"Healthcare & Biotech",      match:["health","biotech","bio","pharma","medical","medtech","life science","clinical"] },
+  { label:"Education",                 match:["education","edtech","university","school","academ"] },
+  { label:"Media & Marketing",         match:["media","journalism","entertainment","marketing","advertis","publish","content","gaming"] },
+  { label:"Consumer & Retail",         match:["consumer","retail","e-commerce","ecommerce","fashion","apparel","food","beverage","cpg"] },
+  { label:"Energy",                    match:["energy","oil","gas","utilit","solar","renewable","power","climate","environment"] },
+  { label:"Manufacturing & Industrial",match:["manufactur","industrial","chemical","materials","automotive","machin","engineering"] },
+  { label:"Aerospace & Defense",       match:["aerospace","defense","defence","space","satellite","aviation","aircraft","evtol"] },
+  { label:"Legal",                     match:["legal","law"] },
+  { label:"Consulting & Staffing",     match:["consult","professional services","advisory","staffing","recruit","hr services","human resources","market research"] },
+  { label:"Real Estate & Construction",match:["real estate","construction","property","proptech","architecture"] },
+  { label:"Logistics & Transportation",match:["logistic","transport","freight","supply chain","shipping"] },
+  { label:"Agriculture",               match:["agricultur","agritech","farm"] },
+  { label:"Travel & Hospitality",      match:["travel","hospitality","hotel","tourism"] },
+  { label:"Government & Nonprofit",     match:["government","public sector","nonprofit","non-profit","ngo"] },
+  { label:"Sports",                    match:["sport","athletic","fitness"] },
+];
+const industryMatch = (industry, label) => {
+  const g = INDUSTRY_GROUPS.find(x => x.label === label); if (!g) return true;
+  const s = (industry || "").toLowerCase();
+  return g.match.some(m => s.includes(m));
+};
+
+// Smart-search synonym expansion: "aerospace" also surfaces defense/space firms,
+// "finance" surfaces fintech/banking, etc. — so a field/topic search finds the
+// right companies even when the exact word isn't in the industry label.
+const SEARCH_SYNONYMS = {
+  aerospace:["aerospace","defense","defence","space","satellite","aviation","aircraft"],
+  space:["space","satellite","aerospace","defense"], defense:["defense","defence","aerospace","military","space"],
+  aviation:["aviation","aerospace","airline","aircraft"],
+  tech:["tech","software","saas","cloud"," ai","data","cyber"], ai:["artificial intelligence","machine learning"," ai ","ml"],
+  finance:["financ","fintech","bank","invest","capital","accounting","asset"], fintech:["fintech","financ","payments","bank"],
+  banking:["bank","financ"], health:["health","biotech","pharma","medical","medtech"], healthcare:["health","biotech","pharma","medical"],
+  biotech:["biotech","bio","pharma","life science","health"], pharma:["pharma","pharmaceutical","biotech"],
+  media:["media","journalism","entertainment","publish","content"], marketing:["marketing","advertis","brand","media"],
+  retail:["retail","e-commerce","ecommerce","consumer","fashion"], energy:["energy","oil","gas","solar","renewable","power","utilit"],
+  automotive:["automotive","auto","vehicle","car"," ev"], law:["law","legal","attorney"], legal:["legal","law"],
+  consulting:["consult","advisory","professional services"], logistics:["logistic","supply chain","freight","transport","shipping"],
+  agriculture:["agricultur","agritech","farm","food"], gaming:["gaming","games","esports"], sports:["sport","athletic","fitness"],
+  education:["education","edtech","university","school"], nonprofit:["nonprofit","non-profit","ngo","charity"],
+  government:["government","public sector","federal"],
+};
+function expandSearch(q) {
+  const query = q.toLowerCase().trim();
+  const terms = new Set([query]);
+  for (const [k, vals] of Object.entries(SEARCH_SYNONYMS)) {
+    if (query.includes(k) || vals.some(v => query.includes(v.trim()))) vals.forEach(v => terms.add(v.trim()));
+  }
+  return [...terms].filter(Boolean);
+}
+
 // ─── DELIVERABILITY GUARDRAILS ────────────────────────────────────────────────
 // Cold email from a personal inbox gets the SENDER spam-flagged if they ramp too
 // fast or send too much in a day. These caps protect the user's own Gmail.
@@ -876,7 +934,7 @@ function Landing({ onGetStarted, onAuthSuccess }) {
       {/* STATS */}
       <section style={{ background:K.surf, borderBottom:`1px solid ${K.b}` }}>
         <dl style={{ maxWidth:1100, margin:"0 auto", display:"grid", gridTemplateColumns:"repeat(4,1fr)" }}>
-          {[["4,600+","Company contacts"],["40+","Industries"],["Direct","Outreach, not portals"],["Minutes","To your first email"]].map(([n,l],i)=>(
+          {[["16,000+","Company contacts"],["17","Industries"],["Direct","Outreach, not portals"],["Minutes","To your first email"]].map(([n,l],i)=>(
             <div key={n} style={{ padding:"28px 24px", borderRight:i<3?`1px solid ${K.b}`:"none" }}>
               <dt style={{ fontSize:"clamp(20px,3vw,30px)", fontWeight:800, letterSpacing:-1, lineHeight:1 }}>{n}</dt>
               <dd style={{ fontSize:13, color:K.ink3, marginTop:5 }}>{l}</dd>
@@ -1916,19 +1974,18 @@ export default function App() {
   // Filter options derived from the ACTUAL loaded data (so they always match).
   // Remote/paid/intern pills only appear if the data actually varies on them.
   const facets = useMemo(() => {
-    const ind = {}, typ = {};
+    const counts = {};
     let remoteT=false, remoteF=false, paidT=false, paidF=false, internT=false, internF=false;
     allFirms.forEach(c => {
-      const i = c.industry || "Other"; ind[i] = (ind[i]||0)+1;
-      if (c.type) typ[c.type] = (typ[c.type]||0)+1;
+      const s = (c.industry || "").toLowerCase();
+      INDUSTRY_GROUPS.forEach(g => { if (g.match.some(m => s.includes(m))) counts[g.label] = (counts[g.label]||0)+1; });
       if (c.remote) remoteT=true; else remoteF=true;
       if (c.compPaid) paidT=true; else paidF=true;
       if (c.intern) internT=true; else internF=true;
     });
-    const top = (o, n) => Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,n).map(([k])=>k);
     return {
-      industries: top(ind, 7),
-      types:      top(typ, 6),
+      // Only show buckets that actually contain firms (drops empty ones automatically).
+      industries: INDUSTRY_GROUPS.map(g => g.label).filter(l => (counts[l] || 0) > 0),
       showRemote: remoteT && remoteF,
       showPaid:   paidT && paidF,
       showIntern: internT && internF,
@@ -1942,16 +1999,20 @@ export default function App() {
 
   const visible = useMemo(() => {
     let list = allFirms.map(c=>({...c,score:scores[c.id]}));
-    if(fInd!=="All")          list=list.filter(c=>(c.industry||"").includes(fInd));
-    if(fType!=="All")         list=list.filter(c=>c.type===fType);
+    if(fInd!=="All")          list=list.filter(c=>industryMatch(c.industry, fInd));
     if(fAccess==="Remote")    list=list.filter(c=>c.remote);
     if(fAccess==="On-site")   list=list.filter(c=>!c.remote);
     if(fPaid==="Paid")        list=list.filter(c=>c.compPaid);
     if(fPaid==="Unpaid")      list=list.filter(c=>!c.compPaid);
     if(fIntern)               list=list.filter(c=>c.intern);
     if(search.trim()){
-      const q=search.toLowerCase();
-      list=list.filter(c=>(c.dba||"").toLowerCase().includes(q)||(c.name||"").toLowerCase().includes(q)||(c.city||"").toLowerCase().includes(q)||(c.industry||"").toLowerCase().includes(q)||(c.cname||"").toLowerCase().includes(q));
+      // Smart search: expand the query with synonyms and match across all fields,
+      // so "aerospace" finds Defense & Aerospace / Satellite-Space firms, etc.
+      const terms=expandSearch(search);
+      list=list.filter(c=>{
+        const hay=`${c.dba||""} ${c.name||""} ${c.city||""} ${c.state||""} ${c.industry||""} ${c.type||""} ${c.knownFor||""} ${c.cname||""}`.toLowerCase();
+        return terms.some(t=>hay.includes(t));
+      });
     }
     list.sort((a,b)=>{
       const av=sortCol==="score"?a.score:(a[sortCol]??0);
@@ -2246,34 +2307,29 @@ export default function App() {
       {/* Filters */}
       <div style={{ padding:"12px 16px", borderBottom:`1px solid ${K.b}`, display:"flex", flexDirection:"column", gap:10 }}>
         <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
-          <div style={{ position:"relative", flexShrink:0 }}>
-            <span style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", color:K.ink4, fontSize:14, pointerEvents:"none" }} aria-hidden="true">⌕</span>
+          <div style={{ position:"relative", flex:"1 1 260px", minWidth:200 }}>
+            <span style={{ position:"absolute", left:11, top:"50%", transform:"translateY(-50%)", color:K.ink4, fontSize:14, pointerEvents:"none" }} aria-hidden="true">⌕</span>
             <label htmlFor="co-search" style={{ position:"absolute", left:-9999 }}>Search companies</label>
-            <input id="co-search" style={F({width:220,paddingLeft:28})} placeholder="Search companies, industries…" value={search} onChange={e=>setSearch(e.target.value)} />
+            <input id="co-search" style={F({width:"100%",paddingLeft:30})} placeholder="Search by company, field, or topic (e.g. aerospace, fintech, design)" value={search} onChange={e=>setSearch(e.target.value)} />
           </div>
-          <div style={{ display:"flex", gap:5, flexWrap:"wrap" }} role="group" aria-label="Industry filter">
-            {["All",...facets.industries].map(t=>(
-              <button key={t} className={`pill${fInd===t?" on":""}`} onClick={()=>setFInd(t)} aria-pressed={fInd===t}>{t==="All"?"All industries":t}</button>
-            ))}
-          </div>
+          <select value={fInd} onChange={e=>setFInd(e.target.value)} style={F({width:"auto",minWidth:170,fontWeight:500})} aria-label="Industry">
+            <option value="All">All industries</option>
+            {facets.industries.map(l=><option key={l} value={l}>{l}</option>)}
+          </select>
+          <button className="btn-lift" style={G("dark",{fontSize:12,padding:"8px 13px"})} onClick={aiAutoSelect}>✦ AI auto-select best 10</button>
         </div>
-        <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-          {[["All","Any type"],...facets.types.map(t=>[t,t])].map(([v,l])=>(
-            <button key={v} className={`pill${fType===v?" on":""}`} onClick={()=>setFType(v)} aria-pressed={fType===v}>{l}</button>
-          ))}
-          {facets.showRemote && <>
-            <span style={{ color:K.b, padding:"0 2px" }} aria-hidden="true">|</span>
-            {[["All","Any location"],["Remote","Remote"],["On-site","On-site"]].map(([v,l])=>(
+        <div style={{ display:"flex", gap:5, flexWrap:"wrap", alignItems:"center" }}>
+          {facets.showRemote &&
+            [["All","Any location"],["Remote","Remote"],["On-site","On-site"]].map(([v,l])=>(
               <button key={v} className={`pill${fAccess===v?" on":""}`} onClick={()=>setFAccess(v)} aria-pressed={fAccess===v}>{l}</button>
             ))}
-          </>}
           {facets.showPaid && <>
-            <span style={{ color:K.b, padding:"0 2px" }} aria-hidden="true">|</span>
+            {facets.showRemote && <span style={{ color:K.b, padding:"0 2px" }} aria-hidden="true">|</span>}
             {[["All","Any comp"],["Paid","Paid"],["Unpaid","Unpaid"]].map(([v,l])=>(
               <button key={v} className={`pill${fPaid===v?" on":""}`} onClick={()=>setFPaid(v)} aria-pressed={fPaid===v}>{l}</button>
             ))}
           </>}
-          {facets.showIntern && <button className={`pill${fIntern?" on":""}`} onClick={()=>setFIntern(v=>!v)} aria-pressed={fIntern}>★ Intern programs</button>}
+          {facets.showIntern && <><span style={{ color:K.b, padding:"0 2px" }} aria-hidden="true">|</span><button className={`pill${fIntern?" on":""}`} onClick={()=>setFIntern(v=>!v)} aria-pressed={fIntern}>★ Intern programs</button></>}
         </div>
       </div>
 
@@ -2354,9 +2410,8 @@ export default function App() {
           </div>
         )}
       </div>
-      <div style={{ padding:"10px 16px", borderTop:`1px solid ${K.b}`, display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:12, color:K.ink4, flexWrap:"wrap", gap:8 }}>
-        <span>{visible.length} companies · {sentList.length} contacted · Match = how well a company's industry fits your interests</span>
-        <button style={G("ghost",{fontSize:12,padding:"5px 11px"})} onClick={aiAutoSelect}>✦ AI auto-select</button>
+      <div style={{ padding:"10px 16px", borderTop:`1px solid ${K.b}`, fontSize:12, color:K.ink4 }}>
+        {visible.length.toLocaleString()} companies · {sentList.length} contacted · Match = how well a company's industry fits your interests
       </div>
     </div>
   );

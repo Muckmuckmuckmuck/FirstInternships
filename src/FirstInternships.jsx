@@ -1103,15 +1103,42 @@ function Landing({ onGetStarted, onAuthSuccess }) {
         </div>
       </section>
 
-      <footer role="contentinfo" style={{ borderTop:`1px solid ${K.b}`, padding:"20px 24px" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
-          <span style={{ fontWeight:800, fontSize:15, letterSpacing:-.5 }}>firstinternships</span>
-          <nav aria-label="Footer links" style={{ display:"flex", gap:20 }}>
-            <a href="/privacy" style={{ fontSize:12, color:K.ink4 }}>Privacy</a>
-            <a href="/terms"   style={{ fontSize:12, color:K.ink4 }}>Terms</a>
-            <a href="mailto:contactfirstinternships@gmail.com" style={{ fontSize:12, color:K.ink4 }}>Contact</a>
-          </nav>
-          <span style={{ fontSize:12, color:K.ink4 }}>© 2026 FirstInternships</span>
+      <footer role="contentinfo" style={{ borderTop:`1px solid ${K.b}`, padding:"36px 24px 24px" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:32, marginBottom:26 }}>
+            <div style={{ minWidth:200 }}>
+              <div style={{ fontWeight:800, fontSize:15, letterSpacing:-.5, marginBottom:6 }}>firstinternships</div>
+              <div style={{ fontSize:12, color:K.ink4, lineHeight:1.6, maxWidth:240 }}>Land your first internship by emailing companies directly.</div>
+            </div>
+            <div>
+              <div style={{ fontSize:11, fontWeight:700, color:K.ink3, textTransform:"uppercase", letterSpacing:.05, marginBottom:10 }}>Free guides</div>
+              <nav style={{ display:"flex", flexDirection:"column", gap:7 }}>
+                <a href="/guides/how-to-get-an-internship" style={{ fontSize:13, color:K.ink3 }}>How to get an internship</a>
+                <a href="/guides/cold-email-for-internship" style={{ fontSize:13, color:K.ink3 }}>Cold email for an internship</a>
+                <a href="/guides/internship-email-templates" style={{ fontSize:13, color:K.ink3 }}>Email templates</a>
+                <a href="/guides/internship-with-no-experience" style={{ fontSize:13, color:K.ink3 }}>Internship with no experience</a>
+                <a href="/guides/" style={{ fontSize:13, color:K.ink3 }}>All guides →</a>
+              </nav>
+            </div>
+            <div>
+              <div style={{ fontSize:11, fontWeight:700, color:K.ink3, textTransform:"uppercase", letterSpacing:.05, marginBottom:10 }}>Internships by industry</div>
+              <nav style={{ display:"flex", flexDirection:"column", gap:7 }}>
+                <a href="/internships/technology" style={{ fontSize:13, color:K.ink3 }}>Technology internships</a>
+                <a href="/internships/finance-and-fintech" style={{ fontSize:13, color:K.ink3 }}>Finance internships</a>
+                <a href="/internships/healthcare-and-biotech" style={{ fontSize:13, color:K.ink3 }}>Healthcare internships</a>
+                <a href="/internships/aerospace-and-defense" style={{ fontSize:13, color:K.ink3 }}>Aerospace &amp; defense</a>
+                <a href="/guides/" style={{ fontSize:13, color:K.ink3 }}>All 17 industries →</a>
+              </nav>
+            </div>
+          </div>
+          <div style={{ borderTop:`1px solid ${K.b}`, paddingTop:16, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
+            <nav aria-label="Footer links" style={{ display:"flex", gap:20 }}>
+              <a href="/privacy" style={{ fontSize:12, color:K.ink4 }}>Privacy</a>
+              <a href="/terms"   style={{ fontSize:12, color:K.ink4 }}>Terms</a>
+              <a href="mailto:contactfirstinternships@gmail.com" style={{ fontSize:12, color:K.ink4 }}>Contact</a>
+            </nav>
+            <span style={{ fontSize:12, color:K.ink4 }}>© 2026 FirstInternships</span>
+          </div>
         </div>
       </footer>
     </main>

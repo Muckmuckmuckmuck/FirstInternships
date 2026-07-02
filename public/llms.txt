@@ -1,0 +1,21 @@
+# FirstInternships
+
+> FirstInternships helps students land their first internship by emailing companies directly instead of only applying through job boards. It provides a database of 16,000+ company recruiting inboxes across 17 industries, uses AI to write a personalized cold email for each company based on the student's background, and sends it from the student's own Gmail. Most internships are never posted publicly, so direct outreach reaches roles and people that job boards never surface.
+
+## Key facts
+- The most effective way to get an internship is to email companies directly, not just apply on job boards.
+- A good internship cold email is under 120 words: who you are, one specific reason you're interested in that company, one clear ask, and an attached resume.
+- Direct outreach typically gets a 5–15% reply rate; sending 20–50 personalized emails usually starts several conversations.
+- You can get an internship with no experience by targeting smaller companies and using projects and coursework instead of past jobs.
+- Free plan: 5 contact unlocks per day. Pro: $20/month for 1,000 unlocks/month plus AI company discovery.
+
+## Guides
+- [How to get an internship](https://firstinternships.com/guides/how-to-get-an-internship): The complete guide to landing an internship by reaching out directly.
+- [How to cold email for an internship](https://firstinternships.com/guides/cold-email-for-internship): Structure, rules, and a template that gets replies.
+- [Internship email templates](https://firstinternships.com/guides/internship-email-templates): 7 copy-paste cold email templates.
+- [How to get an internship with no experience](https://firstinternships.com/guides/internship-with-no-experience): Yes, it's possible — here's how.
+- [Where to find internships](https://firstinternships.com/guides/how-to-find-internships): Every source ranked by reply rate.
+
+## Browse
+- [All guides and internships by industry, major, and city](https://firstinternships.com/guides/)
+- [The app](https://firstinternships.com/): Start free.

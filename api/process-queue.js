@@ -68,12 +68,20 @@ export default async function handler(req, res) {
       }, { onConflict: "user_id,firm_id" });
       sent++;
     } catch (e) {
-      const giveUp = item.attempts + 1 >= MAX_ATTEMPTS;
+      const msg = String(e.message || e);
+      // A revoked/expired refresh token (invalid_grant) will never recover on retry.
+      // Fail it immediately, refund, and remove the dead Gmail connection so the
+      // user is prompted to reconnect instead of every send silently failing.
+      const deadToken = /invalid_grant|token_refresh_failed|no_refresh_token/i.test(msg);
+      const giveUp = deadToken || item.attempts + 1 >= MAX_ATTEMPTS;
       await admin.from("send_queue").update({
         status: giveUp ? "failed" : "queued",
         scheduled_for: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // back off 10 min
-        error: String(e.message || e).slice(0, 300),
+        error: msg.slice(0, 300),
       }).eq("id", item.id);
+      if (deadToken) {
+        await admin.from("gmail_accounts").delete().eq("user_id", item.user_id).catch(() => {});
+      }
       // Refund the reserved credit if we permanently failed.
       if (giveUp) {
         const cost = 1; // (look up firm.source for 2-credit discovered if desired)

@@ -1592,6 +1592,15 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
               ? <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", gap:10, borderTop:`1px solid ${K.bs}` }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>Attach</span><span style={{ fontSize:12, color:K.grn, fontWeight:600 }}>📎 {resume.name||"resume.pdf"}</span></div>
               : <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", gap:10, borderTop:`1px solid ${K.bs}` }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>Attach</span><span style={{ fontSize:12, color:K.ink4 }}>No resume — adding one in Settings boosts replies</span></div>}
           </div>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
+            <button style={G("ghost",{fontSize:12})} onClick={generate} disabled={loading}>{loading?<><SpB/>Generating…</>:draft?"✦ Regenerate":"✦ Generate draft"}</button>
+            <div style={{ display:"flex", gap:8 }}>
+              <button style={G("ghost",{fontSize:12})} onClick={onClose}>Cancel</button>
+              <button className="btn-lift" style={G(sent?"green":"dark",{fontSize:13,minWidth:140})} onClick={send} disabled={!draft||sending||sent||!canAfford||!canSendNow}>
+                {sent?"✓ Sent":sending?<><Sp/>Sending…</>:isSent?"Send follow-up →":"Send via Gmail →"}
+              </button>
+            </div>
+          </div>
           <div style={{ position:"relative" }}>
             <textarea style={F({resize:"vertical",minHeight:210,lineHeight:1.8,fontFamily:"inherit",fontSize:13,padding:"13px 14px"})} placeholder="Click Generate to create a personalized draft, or write your own." value={draft} onChange={e=>setDraft(e.target.value)} disabled={loading} aria-label="Email draft" />
             {loading&&<div style={{ position:"absolute", inset:0, background:"rgba(255,255,255,.9)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:7, gap:8, color:K.bl, fontSize:13, fontWeight:500 }} aria-live="polite"><SpB/>Drafting with AI…</div>}
@@ -1609,15 +1618,6 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
                 ? <>This is an AI-discovered contact — sending unlocks it for <strong>{DISCOVER_COST} credits</strong> (covers the discovery). </>
                 : <>Sending unlocks this contact for <strong>{UNLOCK_COST} credit</strong>. </>}
                 After that, every email and follow-up to them is free. Writing and regenerating are always free.</InfoBox>}
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
-            <button style={G("ghost",{fontSize:12})} onClick={generate} disabled={loading}>{loading?<><SpB/>Generating…</>:draft?"✦ Regenerate":"✦ Generate draft"}</button>
-            <div style={{ display:"flex", gap:8 }}>
-              <button style={G("ghost",{fontSize:12})} onClick={onClose}>Cancel</button>
-              <button className="btn-lift" style={G(sent?"green":"dark",{fontSize:13,minWidth:140})} onClick={send} disabled={!draft||sending||sent||!canAfford||!canSendNow}>
-                {sent?"✓ Sent":sending?<><Sp/>Sending…</>:isSent?"Send follow-up →":"Send via Gmail →"}
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

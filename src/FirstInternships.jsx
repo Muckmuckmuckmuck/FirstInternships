@@ -1874,6 +1874,12 @@ export default function App() {
       if (params.get("upgraded") === "1" || params.get("topup") === "1") {
         window.history.replaceState({}, "", "/");
       }
+      // Referral: remember the code even for logged-out visitors, so it applies on signup.
+      const refCode = params.get("ref");
+      if (refCode) {
+        if (!localStorage.getItem("fi_ref")) localStorage.setItem("fi_ref", refCode.toUpperCase());
+        window.history.replaceState({}, "", "/");
+      }
 
       const session = await api.getSession();
       if (!session) { setAppView("landing"); setAppReady(true); return; }
@@ -1892,6 +1898,18 @@ export default function App() {
         setCredits(p.credits ?? 5);
         setAccountType(p.account_type || "gmail");
         setDiscoverUsed(p.discovery_used || 0);
+
+        // Redeem a pending referral once (server-side is idempotent + guards self/double).
+        const pendingRef = localStorage.getItem("fi_ref");
+        if (pendingRef && !p.referred_by) {
+          const res = await api.redeemReferral(pendingRef);
+          localStorage.removeItem("fi_ref");
+          if (res && res.ok) {
+            const fresh = await api.getProfile();
+            if (fresh) { setProfile(fresh); setCredits(fresh.credits ?? 5); }
+            setTimeout(() => msg(`🎉 Referral applied — +${res.reward} credits and a permanent daily bonus`), 700);
+          }
+        }
 
         const tk = {}, sent = [];
         (contacts || []).forEach(c => {
@@ -2519,6 +2537,29 @@ export default function App() {
     <div style={{ padding:24, maxWidth:480 }}>
       <h2 style={{ fontSize:17, fontWeight:800, letterSpacing:-.5, marginBottom:4 }}>Settings</h2>
       <p style={{ color:K.ink3, fontSize:13, marginBottom:22 }}>Profile, Gmail, credits, and subscription.</p>
+
+      {/* Refer friends — growth loop */}
+      {(() => {
+        const code = profile?.referral_code || "";
+        const link = `${typeof window!=="undefined"?window.location.origin:"https://firstinternships.com"}/?ref=${code}`;
+        return (
+        <div style={{ border:`1px solid ${K.ink}`, background:K.ink, borderRadius:10, padding:"16px 16px 14px", marginBottom:14, color:"#fff" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap", marginBottom:8 }}>
+            <div style={{ fontWeight:700, fontSize:15 }}>🎁 Refer friends, earn credits</div>
+            <div style={{ fontSize:12, color:"#c7c7d2" }}>{profile?.referral_count||0} joined · +{profile?.referral_bonus||0}/day bonus</div>
+          </div>
+          <p style={{ fontSize:12.5, color:"#c7c7d2", lineHeight:1.6, marginBottom:12 }}>
+            Give a friend <strong style={{color:"#fff"}}>5 free credits</strong> — and for every friend who signs up, you get <strong style={{color:"#fff"}}>5 credits + a permanent +5 daily unlocks</strong> boost (up to +25/day).
+          </p>
+          <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+            <input readOnly value={link} onFocus={e=>e.target.select()} style={{ flex:"1 1 200px", minWidth:180, fontFamily:"inherit", fontSize:12.5, color:K.ink, background:"#fff", border:"none", borderRadius:7, padding:"9px 12px", outline:"none" }} aria-label="Your referral link" />
+            <button className="btn-lift" style={G("green",{fontSize:12,padding:"9px 16px",background:"#fff",color:K.ink,border:"none"})}
+              onClick={()=>{ try{ navigator.clipboard.writeText(link); }catch{} msg("✓ Referral link copied — share it anywhere"); track("referral_copied"); }}>Copy link</button>
+          </div>
+        </div>
+        );
+      })()}
+
       <div style={{ border:`1px solid ${K.b}`, borderRadius:10, overflow:"hidden", marginBottom:14 }}>
         <div style={{ padding:"13px 16px", borderBottom:`1px solid ${K.b}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
           <div><div style={{ fontWeight:600, fontSize:14 }}>Profile</div><div style={{ fontSize:12, color:K.ink3, marginTop:2 }}>{profile?.name||"—"} · {profile?.school||profile?.eduLevel||"Not set"}</div></div>

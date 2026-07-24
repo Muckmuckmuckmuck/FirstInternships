@@ -1912,7 +1912,8 @@ function BulkModal({ companies, profile, resume, sentList, credits, remainingSen
   // SETUP → DRAFTING: write every selected email with AI, in parallel (fast). Any that
   // fail fall back to the basic template so the batch never stalls.
   async function startDrafting(){
-    if(!gmailConnected){ setErr("Connect your Gmail first, bulk emails send from your own account."); return; }
+    // Writing is free, so you can draft and review WITHOUT Gmail connected. The Gmail
+    // gate lives on the actual send (sendAll) — matching the single-draft flow.
     if(eligible.length===0){ setErr("Nothing to send here, these are already contacted or over today's limit."); return; }
     setErr(""); setStage("drafting"); setProg(0);
     let done = 0;

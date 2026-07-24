@@ -550,10 +550,19 @@ const CSS = `
   .ntab:hover{background:#f0f0f6;color:#0c0c0e}
   .ntab:active{transform:scale(.94);transition-duration:.05s}
   .ntab.on{background:#f0f0f6;color:#0c0c0e;font-weight:600}
-  /* App nav tab strip: scrolls horizontally on narrow screens so the logo, credits,
-     and profile stay visible instead of the row overflowing off-screen. */
-  .navtabs{display:flex;gap:1;min-width:0;flex-shrink:1;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  .navtabs::-webkit-scrollbar{display:none}
+  /* App top nav. Desktop: one row [logo][tabs] ....... [credits/profile].
+     Mobile: logo + credits/profile on row 1, the four tabs on a full-width row 2
+     with each tab evenly sized so labels are never cut off. */
+  .appnav-inner{max-width:1200px;margin:0 auto;padding:0 16px;min-height:52px;display:flex;align-items:center;gap:12px}
+  .appnav-logo{font-weight:800;font-size:15px;letter-spacing:-.5px;flex-shrink:0}
+  .appnav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:auto}
+  .navtabs{display:flex;gap:1px;min-width:0}
+  @media(max-width:600px){
+    .appnav-inner{flex-wrap:wrap;padding-top:8px;padding-bottom:8px;row-gap:8px}
+    .appnav-right{order:2}
+    .navtabs{order:3;flex-basis:100%;width:100%;gap:4px}
+    .navtabs .ntab{flex:1;text-align:center;padding:8px 4px}
+  }
 
   .ov{position:fixed;inset:0;background:rgba(12,12,14,.55);z-index:900;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
   @media(min-width:600px){.ov{align-items:center;padding:16px}}
@@ -2684,7 +2693,7 @@ export default function App() {
               <th scope="col" style={{ padding:"9px 12px", textAlign:"left" }} className="hm"><SortBtn label="Location" col="city" sortCol={sortCol} sortDir={sortDir} onSort={onSort}/></th>
               <th scope="col" style={{ padding:"9px 12px", textAlign:"left" }} className="hm"><SortBtn label="Type" col="type" sortCol={sortCol} sortDir={sortDir} onSort={onSort}/></th>
               <th scope="col" style={{ padding:"9px 12px", textAlign:"left" }}><SortBtn label="Match" col="score" sortCol={sortCol} sortDir={sortDir} onSort={onSort}/></th>
-              <th scope="col" style={{ padding:"9px 12px" }}></th>
+              <th scope="col" className="hm2" style={{ padding:"9px 12px" }}></th>
             </tr>
           </thead>
           <tbody>
@@ -2716,7 +2725,7 @@ export default function App() {
                       ? <span style={{ fontSize:12, color:K.ink4 }}>—</span>
                       : <span className="chip" style={{ background:fitBg(sc), borderColor:fitBd(sc), color:fitC(sc) }}>{sc}%</span>}
                   </td>
-                  <td style={{ padding:"9px 12px", textAlign:"right" }}>
+                  <td className="hm2" style={{ padding:"9px 12px", textAlign:"right" }}>
                     {isSent
                       ?<button style={G("green",{fontSize:11,padding:"4px 10px"})} onClick={()=>openDraft(company)}>Follow up</button>
                       :<button className="btn-lift" style={G("dark",{fontSize:12,padding:"5px 12px"})} onClick={()=>openDraft(company)}>Draft & send</button>
@@ -2807,7 +2816,7 @@ export default function App() {
                   </select>
                 </td>
                 <td style={{ padding:"10px 16px", textAlign:"right", whiteSpace:"nowrap" }}>
-                  <button style={G("ghost",{fontSize:12,padding:"5px 10px",color:K.red,borderColor:K.redB,marginRight:6})} title="Got a bounce-back? We'll refund your credit." onClick={()=>{ if(window.confirm(`Report that your email to ${company.dba} bounced (came back undeliverable)?\n\nWe'll refund the credit you spent and flag it so it gets cleaned up.`)) reportBounce(company.id); }}>↩ Bounced</button>
+                  <button className="hm2" style={G("ghost",{fontSize:12,padding:"5px 10px",color:K.red,borderColor:K.redB,marginRight:6})} title="Got a bounce-back? We'll refund your credit." onClick={()=>{ if(window.confirm(`Report that your email to ${company.dba} bounced (came back undeliverable)?\n\nWe'll refund the credit you spent and flag it so it gets cleaned up.`)) reportBounce(company.id); }}>↩ Bounced</button>
                   <button style={G("ghost",{fontSize:12,padding:"5px 11px"})} onClick={()=>openDraft(company)}>Follow up</button>
                 </td>
               </tr>
@@ -2966,16 +2975,14 @@ export default function App() {
     <>
       <style>{CSS}</style>
       <nav style={{ position:"sticky", top:0, zIndex:200, background:"rgba(255,255,255,.97)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)", borderBottom:`1px solid ${K.b}` }} role="navigation" aria-label="App navigation">
-        <div style={{ maxWidth:1200, margin:"0 auto", padding:"0 16px", height:52, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
-            <span style={{ fontWeight:800, fontSize:15, letterSpacing:-.5, flexShrink:0 }}>firstinternships</span>
-            <div className="navtabs" role="tablist">
-              {[["dashboard","Home"],["companies","Companies"],["pipeline",`Pipeline${stats.dueIds.length>0?` (${stats.dueIds.length})`:""}`],["settings","Settings"]].map(([id,lbl])=>(
-                <button key={id} className={`ntab${tab===id?" on":""}`} onClick={()=>setTab(id)} role="tab" aria-selected={tab===id}>{lbl}</button>
-              ))}
-            </div>
+        <div className="appnav-inner">
+          <span className="appnav-logo">firstinternships</span>
+          <div className="navtabs" role="tablist">
+            {[["dashboard","Home"],["companies","Companies"],["pipeline",`Pipeline${stats.dueIds.length>0?` (${stats.dueIds.length})`:""}`],["settings","Settings"]].map(([id,lbl])=>(
+              <button key={id} className={`ntab${tab===id?" on":""}`} onClick={()=>setTab(id)} role="tab" aria-selected={tab===id}>{lbl}</button>
+            ))}
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:10, flexShrink:0, paddingLeft:8 }}>
+          <div className="appnav-right">
             <CreditMeter credits={credits} planId={planId} />
             {planId==="pro"&&<Chip color="dark">Pro</Chip>}
             <button style={G("ghost",{fontSize:12,padding:"5px 12px"})} onClick={()=>setModal("profileEdit")}>{profile?.name?.split(" ")[0]||"Profile"}</button>

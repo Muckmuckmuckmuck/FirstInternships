@@ -1649,6 +1649,12 @@ function ResumeModal({ resume, onSave, onClose }) {
     setBusy(true);
     const saved = await api.saveResume({ file: fileObj, text: text.trim() }).catch(()=>null);
     setBusy(false);
+    // If a file was chosen but its upload failed, keep the modal open and tell them,
+    // rather than closing as if the attachment saved. Text is still saved.
+    if (fileObj && (saved === null || saved.uploadFailed)) {
+      setNote("We saved your text, but that file couldn't be uploaded. Try a smaller PDF (under 5 MB) and re-attach.");
+      return;
+    }
     const rv = { name: name || fileObj?.name || "resume.pdf", text: text.trim(),
                  storagePath: saved?.storage_path || resume?.storagePath || null, updatedAt: Date.now() };
     onSave(rv); onClose();

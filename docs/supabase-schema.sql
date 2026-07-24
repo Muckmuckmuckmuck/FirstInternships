@@ -166,8 +166,10 @@ alter table send_queue    enable row level security;
 alter table events        enable row level security;
 alter table firms         enable row level security;
 
--- Firms: public read, no client writes (writes happen via service role only).
-create policy "firms readable by all" on firms for select using (true);
+-- Firms: readable by SIGNED-IN users only (the directory is the core asset; anon
+-- read would let anyone scrape all ~11k inboxes with the public anon key). No client
+-- writes (writes happen via service role only).
+create policy "firms readable by authed" on firms for select to authenticated using (true);
 
 -- Per-user owner policies (select/insert/update/delete on own rows).
 create policy "own profile"  on profiles      for all using (auth.uid() = id)       with check (auth.uid() = id);
@@ -180,6 +182,15 @@ create policy "own events r" on events        for select using (auth.uid() = use
 -- gmail_accounts + send_queue: NO client access at all. Only the service role
 -- (server functions) reads/writes these. RLS with no permissive policy = deny.
 -- (Refresh tokens and queued sends must never be reachable from the browser.)
+
+-- Storage: the 'resumes' bucket is PRIVATE. storage.objects has RLS on; without a
+-- policy the client can't upload at all (uploads silently fail and resumes never
+-- attach). This lets a signed-in user read/write ONLY their own "<uid>/" folder.
+-- The service role bypasses RLS to download files for attaching to sends.
+create policy "own resume files" on storage.objects
+  for all to authenticated
+  using      (bucket_id = 'resumes' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'resumes' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ── Auto-create a profile row on signup ─────────────────────────────────────
 -- NOTE: `set search_path = public` is REQUIRED. Without it, the auth role that

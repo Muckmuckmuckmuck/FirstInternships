@@ -23,7 +23,10 @@ import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const MODEL = "gemini-3.1-flash-lite";   // cheap tier; proven working in this env (same as discovery)
+// Non-thinking, fast, cheap tier meant for short generation like this. The 3.x
+// "flash-lite" models spend time on internal reasoning, which can blow past the
+// serverless time limit and time out into the client's template fallback.
+const MODEL = "gemini-2.5-flash-lite";
 
 // Per-user daily cap on AI drafts. Writing stays free and unlimited-feeling for real
 // students (a heavy day is maybe 20-40 drafts), but this stops a script from spinning

@@ -1,7 +1,10 @@
 {
   "cleanUrls": true,
   "functions": {
-    "api/process-queue.js": { "maxDuration": 60 }
+    "api/process-queue.js": { "maxDuration": 60 },
+    "api/generate-email.js": { "maxDuration": 30 },
+    "api/discover-firms.js": { "maxDuration": 60 },
+    "api/grade.js": { "maxDuration": 30 }
   },
   "crons": [
     { "path": "/api/process-queue", "schedule": "0 8 * * *" }

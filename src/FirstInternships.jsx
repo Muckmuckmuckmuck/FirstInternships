@@ -432,7 +432,11 @@ function buildDraft(company, profile, level, opts = {}) {
     .replace("career changer", "career changer looking to transition");
   const maj  = profile.major || "my field";
   const sch  = profile.school || "university";
-  const exp  = (profile.experience || "I have been building skills through coursework, personal projects, and hands-on work that I'm excited to bring to a professional setting.").trim();
+  // Use the student's own background only if it's substantive. A too-short/vague entry
+  // like "Not a lot" reads badly when spliced into a sentence, so fall back to a clean
+  // default. Always end it as a complete sentence so it never runs into the next clause.
+  const rawExp = (profile.experience || "").replace(/\s+/g, " ").trim();
+  const exp  = (rawExp.length > 14 ? rawExp : "I've been building skills through coursework, personal projects, and hands-on work I'm excited to put to use").replace(/[.!?]+$/, "") + ".";
   const ref1 = company.knownFor ? company.knownFor.split(".")[0] : `${company.dba}'s work in ${company.industry}`;
   const ref2 = company.quote ? `I keep coming back to the idea that "${company.quote.substring(0, 70)}${company.quote.length > 70 ? "…" : ""}", it reflects exactly the kind of work I want to be part of.` : "";
 
@@ -1709,6 +1713,7 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
   const [sending, setSending] = useState(false);
   const [sent,    setSent]    = useState(false);
   const [err,     setErr]     = useState("");
+  const draftRef  = useRef(null);   // to scroll the written draft into view (esp. mobile)
   const cost      = isSent ? 0 : contactCost(company);   // follow-ups free; discovered cost more
   const canAfford = credits >= cost;
   const subject   = `Internship inquiry, ${profile?.name || "student"}`;  // sent through to Gmail via send-email → process-queue
@@ -1729,6 +1734,10 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
     }
     setGenLevel(level);
     setLoad(false);
+    // Reveal the freshly written draft. In the tall modal on mobile it sits below the
+    // fold, so users couldn't tell it generated or reach it to review/edit. Scroll it
+    // into view once the DOM updates.
+    setTimeout(() => { try { draftRef.current?.scrollIntoView({ behavior:"smooth", block:"center" }); } catch {} }, 60);
   }
 
   async function send() {
@@ -1811,7 +1820,7 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
             </div>
           </div>
           <div style={{ position:"relative" }}>
-            <textarea style={F({resize:"vertical",minHeight:210,lineHeight:1.8,fontFamily:"inherit",fontSize:13,padding:"13px 14px"})} placeholder="Click Generate to create a personalized draft, or write your own." value={draft} onChange={e=>setDraft(e.target.value)} disabled={loading} aria-label="Email draft" />
+            <textarea ref={draftRef} style={F({resize:"vertical",minHeight:210,lineHeight:1.8,fontFamily:"inherit",fontSize:13,padding:"13px 14px"})} placeholder="Click Generate to create a personalized draft, or write your own." value={draft} onChange={e=>setDraft(e.target.value)} disabled={loading} aria-label="Email draft" />
             {loading&&<div style={{ position:"absolute", inset:0, background:"rgba(255,255,255,.9)", display:"flex", alignItems:"center", justifyContent:"center", borderRadius:7, gap:8, color:K.bl, fontSize:13, fontWeight:500 }} aria-live="polite"><SpB/>Drafting with AI…</div>}
             {draft&&<div style={{ position:"absolute", bottom:8, right:10, fontSize:10, color:K.ink4 }}>{draft.length}ch</div>}
           </div>

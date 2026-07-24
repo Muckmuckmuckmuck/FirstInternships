@@ -2229,6 +2229,38 @@ export default function App() {
     }).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-update, especially on mobile. A loaded SPA keeps running its OLD JS after a
+  // new deploy (Safari holds the tab in memory + back/forward cache), so the phone
+  // "won't see the new version". When the tab becomes visible again (or every few
+  // minutes), fetch the latest index.html and compare the hashed bundle name; if a
+  // newer build shipped, reload to pick it up. Guards: never reload while a modal is
+  // open (don't lose a draft), and never reload twice for the same target (no loop).
+  useEffect(() => {
+    const currentBundle = [...document.querySelectorAll("script[src]")]
+      .map(s => s.getAttribute("src") || "")
+      .find(s => /\/assets\/index-.*\.js$/.test(s)) || "";
+    if (!currentBundle) return;
+    let busy = false;
+    const check = async () => {
+      if (document.visibilityState !== "visible" || busy) return;
+      if (document.querySelector(".ov")) return;  // a modal/draft is open — don't interrupt
+      busy = true;
+      try {
+        const html = await fetch("/?_v=" + Date.now(), { cache: "no-store" }).then(r => r.text());
+        const m = html.match(/\/assets\/index-[A-Za-z0-9_-]+\.js/);
+        if (m && !currentBundle.endsWith(m[0]) && sessionStorage.getItem("fi_upd") !== m[0]) {
+          sessionStorage.setItem("fi_upd", m[0]);  // only reload once per new version (no loop)
+          window.location.reload();
+        }
+      } catch {} finally { busy = false; }
+    };
+    document.addEventListener("visibilitychange", check);
+    const onShow = e => { if (e.persisted) check(); };
+    window.addEventListener("pageshow", onShow);
+    const iv = setInterval(check, 5 * 60 * 1000);
+    return () => { document.removeEventListener("visibilitychange", check); window.removeEventListener("pageshow", onShow); clearInterval(iv); };
+  }, []);
+
   // ── AI FIRM DISCOVERY ──────────────────────────────────────────────────────
   // Takes a natural-language query, finds matching firms + contact emails, and
   // adds new ones to the database.

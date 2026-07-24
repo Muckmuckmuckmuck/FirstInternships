@@ -55,6 +55,7 @@ const TONE_GUIDE = {
 const LENGTH_GUIDE = {
   short:  "60 to 90 words. Very tight — cut anything that isn't doing work.",
   medium: "90 to 130 words. Room for one extra concrete detail, no more.",
+  long:   "130 to 180 words. Room to connect two real details from the student's background to the company, but stay skimmable and never padded.",
 };
 
 export default async function handler(req, res) {
@@ -97,8 +98,9 @@ Voice for this email: ${toneLine}
 Hard rules:
 - Length: ${lengthLine}
 - Plain, everyday language and contractions (I'm, I've, don't). Simple words over fancy ones. Write at about a 9th-grade reading level.
-- Get to the point fast. Do NOT open with a compliment about the company or with "I've been following...", "I came across...", "I'm reaching out because...", "I'm excited to...", or "I am writing to...". Start like a real person would.
-- Give ONE concrete, specific reason you're interested, tied to something real in the student's background — not generic enthusiasm. Specific beats impressive.
+- Get to the point fast. Do NOT open with a compliment about the company or with "I've been following...", "I came across...", "I'm reaching out because...", "I'm excited to...", "I am writing to...", or a generic "I'm looking into internships and saw you do X". Start like a real person would.
+- The opening line should feel specific to THIS company — name a concrete product, team, market, or thing they actually do (use what's given below), not just their industry.
+- Give ONE concrete, specific reason you're interested, tied to something real in the student's own background — a named project, class, tool, or interest. Connect the student to the company; don't just praise the company. Specific beats impressive. Never invent facts about the student.
 - One clear, low-pressure ask, e.g. "Do you take summer interns?" or "Could I send my resume?".
 - Banned words/phrases (sound robotic): passionate, leverage, align, synergy, eager to contribute, actively changing, fast-paced, cutting-edge, the upcoming cycle, delve, in today's world, I believe my skills, honed, spearheaded, tapestry, testament, "as a [year] student", "I hope this email finds you well", "I would love the opportunity".
 - No em-dashes and no semicolons. Use periods and commas. Vary sentence length hard — mix a very short sentence with a longer one so it doesn't read uniform and machine-smooth.

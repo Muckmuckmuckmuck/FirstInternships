@@ -1726,12 +1726,23 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
     // Writing is always free and unlimited, no credit gate here.
     if(!profile?.name){setErr("Complete your profile first.");return;}
     setLoad(true); setErr("");
-    try {
-      const email = await api.generateEmail({ firm: company, profile, level, resume: resume?.text||null, tone, length, emphasis });
-      setDraft(email || "");
-    } catch {
-      setDraft(buildDraft(company, profile, level, { resume: !!(resume?.text) }));
+    // Retry the AI a few times: a stale token, a cold serverless start, or a flaky
+    // mobile connection can fail the first call. Each retry re-reads (and refreshes)
+    // the auth token. Only after all attempts fail do we fall back to a basic template,
+    // and we TELL the user that's what happened instead of passing it off as the AI.
+    let email = "", aiWorked = false;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const out = await api.generateEmail({ firm: company, profile, level, resume: resume?.text||null, tone, length, emphasis });
+        if (out && out.trim()) { email = out; aiWorked = true; break; }
+      } catch { /* fall through to retry / fallback */ }
+      if (attempt < 3) await new Promise(r => setTimeout(r, 400 * attempt));
     }
+    if (!aiWorked) {
+      email = buildDraft(company, profile, level, { resume: !!(resume?.text) });
+      setErr("Couldn't reach the AI writer just now (connection or a busy server). This is a basic draft, tap Regenerate to try the AI again.");
+    }
+    setDraft(email);
     setGenLevel(level);
     setLoad(false);
     // Reveal the freshly written draft. In the tall modal on mobile it sits below the
@@ -1807,6 +1818,7 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
                 <select value={length} onChange={e=>{setLength(e.target.value); prefLen.set(e.target.value);}} style={F({fontSize:12, padding:"7px 8px", cursor:"pointer"})} aria-label="Email length">
                   <option value="short">Short (60-90 words)</option>
                   <option value="medium">Medium (90-130 words)</option>
+                  <option value="long">Long (130-180 words)</option>
                 </select>
               </div>
             </div>
@@ -1823,14 +1835,8 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
               ? <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", gap:10, borderTop:`1px solid ${K.bs}` }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>Attach</span><span style={{ fontSize:12, color:K.grn, fontWeight:600 }}>📎 {resume.name||"resume.pdf"}</span></div>
               : <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", gap:10, borderTop:`1px solid ${K.bs}` }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>Attach</span><span style={{ fontSize:12, color:K.ink4 }}>No resume, adding one in Settings boosts replies</span></div>}
           </div>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
             <button style={G("ghost",{fontSize:12})} onClick={generate} disabled={loading}>{loading?<><SpB/>Generating…</>:draft?"✦ Regenerate":"✦ Generate draft"}</button>
-            <div style={{ display:"flex", gap:8 }}>
-              <button style={G("ghost",{fontSize:12})} onClick={onClose}>Cancel</button>
-              <button className="btn-lift" style={G(sent?"green":"dark",{fontSize:13,minWidth:140})} onClick={send} disabled={!draft||sending||sent||!canAfford||!canSendNow||!gmailConnected}>
-                {sent?"✓ Sent":sending?<><Sp/>Sending…</>:isSent?"Send follow-up →":"Send via Gmail →"}
-              </button>
-            </div>
           </div>
           <div style={{ position:"relative" }}>
             <textarea ref={draftRef} style={F({resize:"vertical",minHeight:210,lineHeight:1.8,fontFamily:"inherit",fontSize:13,padding:"13px 14px"})} placeholder="Click Generate to create a personalized draft, or write your own." value={draft} onChange={e=>setDraft(e.target.value)} disabled={loading} aria-label="Email draft" />
@@ -1855,6 +1861,14 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
                   ? <>This is an AI-discovered contact, sending unlocks it for <strong>{DISCOVER_COST} credits</strong> (covers the discovery). </>
                   : <>This inbox is on a live domain but we couldn't confirm the exact mailbox, so it's cheap, unlocks for <strong>{UNLOCK_COST} credit</strong>. </>}
                   After that, every email and follow-up to them is free. Writing and regenerating are always free.</InfoBox>}
+          {/* Sticky action bar: Send stays reachable no matter how far you scroll the
+              draft, so you never have to scroll back up to send. */}
+          <div style={{ position:"sticky", bottom:0, zIndex:5, display:"flex", gap:8, justifyContent:"flex-end", alignItems:"center", background:"#fff", borderTop:`1px solid ${K.b}`, padding:"11px 0 6px", marginTop:2 }}>
+            <button style={G("ghost",{fontSize:13})} onClick={onClose}>Cancel</button>
+            <button className="btn-lift" style={G(sent?"green":"dark",{fontSize:13,minWidth:150})} onClick={send} disabled={!draft||sending||sent||!canAfford||!canSendNow||!gmailConnected}>
+              {sent?"✓ Sent":sending?<><Sp/>Sending…</>:isSent?"Send follow-up →":"Send via Gmail →"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

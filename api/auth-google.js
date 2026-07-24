@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   const { code, state } = req.query;
   if (!code || !state) return res.status(400).send("missing_code_or_state");
 
-  // `state` is HMAC-signed and short-lived (minted by /api/gmail-oauth-url from the
+  // `state` is HMAC-signed and short-lived (minted by /api/gmail POST from the
   // authenticated session). Verify it before trusting the user id inside — a raw,
   // forgeable state would let an attacker bind a Gmail account to someone else's user.
   const userId = verifyState(state);

@@ -1735,9 +1735,22 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
     setGenLevel(level);
     setLoad(false);
     // Reveal the freshly written draft. In the tall modal on mobile it sits below the
-    // fold, so users couldn't tell it generated or reach it to review/edit. Scroll it
-    // into view once the DOM updates.
-    setTimeout(() => { try { draftRef.current?.scrollIntoView({ behavior:"smooth", block:"center" }); } catch {} }, 60);
+    // fold, so users couldn't tell it generated or reach it to review/edit. Note:
+    // element.scrollIntoView() is a no-op inside this position:fixed overlay, so we
+    // scroll the modal's own scroll container (.mo) to the textarea directly.
+    setTimeout(() => {
+      try {
+        const ta = draftRef.current; if (!ta) return;
+        let sc = ta.parentElement;
+        while (sc && !(sc.scrollHeight > sc.clientHeight && /(auto|scroll)/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+        if (sc) {
+          const delta = ta.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+          sc.scrollTo({ top: sc.scrollTop + delta - 70, behavior: "smooth" });
+        } else {
+          ta.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      } catch {}
+    }, 80);
   }
 
   async function send() {

@@ -2773,7 +2773,14 @@ export default function App() {
                 <tr key={company.id} className={`trow${isSel?" sel":""}`} aria-selected={isSel}>
                   <td style={{ padding:"9px 14px", textAlign:"center" }}><input type="checkbox" className="cb" checked={isSel} onChange={()=>toggleOne(company.id)} aria-label={`Select ${company.dba}`}/></td>
                   <td style={{ padding:"9px 12px" }}>
-                    <button className="co-name" onClick={()=>{setFocus(company);setModal("detail");}}>
+                    <button className="co-name" onClick={()=>{
+                      // On phones the inline "Draft & send" button is hidden, so tapping the
+                      // company must open the full COMPOSER directly (slider, length, editable
+                      // email) — not the bare info modal, which lacks all customization and made
+                      // people feel they couldn't see or edit the email before sending.
+                      if (typeof window!=="undefined" && window.matchMedia("(max-width:520px)").matches) openDraft(company);
+                      else { setFocus(company); setModal("detail"); }
+                    }}>
                       <div className="co-title" style={{ fontWeight:600, color:K.ink, fontSize:13, lineHeight:1.4, display:"flex", alignItems:"center", gap:6 }}>
                         {company.dba}
                         {company.discovered && <span className="badge-new" style={{ background:K.blT, border:`1px solid ${K.blB}`, color:K.bl, borderRadius:3, padding:"0 5px", fontSize:9, fontWeight:700, letterSpacing:.03 }}>NEW</span>}

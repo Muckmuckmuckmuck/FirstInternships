@@ -1876,108 +1876,173 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
 }
 
 // ─── BULK MODAL ───────────────────────────────────────────────────────────────
+// Bulk send with real per-email review. Flow: SETUP (pick style once) → DRAFTING
+// (AI writes every email in parallel) → REVIEW (flip through one at a time, edit,
+// skip, regenerate, see the deliverability check) → SENDING → DONE. No wall of 10
+// open modals; it's a single stepper you page through.
 function BulkModal({ companies, profile, resume, sentList, credits, remainingSends, sendLimit, gmailConnected, uid, onClose, onDone }) {
-  const [stage, setStage] = useState("confirm");
-  const [log,   setLog]   = useState([]);
-  const [pct,   setPct]   = useState(0);
-  const [level, setLevel] = useState(() => prefLevel.get());
-  const [err,   setErr]   = useState("");
-  const eligibleAll = useMemo(()=>companies.filter(c=>!sentList.includes(c.id)),[companies,sentList]);
-  const skipped   = companies.length-eligibleAll.length;
-  const cap       = remainingSends;
-  const eligible  = eligibleAll.slice(0, cap);   // safe to send today (warm-up cap)
-  const queued    = eligibleAll.slice(cap);      // held, send over following days
-  const totalCost = eligible.reduce((s,c)=>s+contactCost(c),0);   // discovered contacts cost more
-  const discCount = eligible.filter(c=>c.discovered).length;
-  const canAfford = credits>=totalCost;
-  const canRun    = eligible.length>0 && canAfford;
+  const [stage, setStage]   = useState("setup");   // setup | drafting | review | sending | done
+  const [level, setLevel]   = useState(() => prefLevel.get());
+  const [tone,  setTone]    = useState(() => prefTone.get());
+  const [length,setLength]  = useState(() => prefLen.get());
+  const [err,   setErr]     = useState("");
+  const [drafts, setDrafts] = useState([]);         // [{ firmId, company, body, skipped }]
+  const [idx,    setIdx]    = useState(0);
+  const [prog,   setProg]   = useState(0);          // count for drafting / sending progress
+  const [regenning, setRegenning] = useState(false);
 
-  async function run(){
-    if(!gmailConnected){ setErr("Connect your Gmail first, bulk emails send from your own account, so nothing goes out until it's linked."); return; }
-    setStage("running"); setErr("");
+  const eligibleAll = useMemo(()=>companies.filter(c=>!sentList.includes(c.id)),[companies,sentList]);
+  const alreadySent = companies.length - eligibleAll.length;
+  const cap      = Math.max(0, remainingSends);
+  const eligible = eligibleAll.slice(0, cap);       // safe to send today (warm-up cap)
+  const held     = eligibleAll.slice(cap);          // over cap, send later
+
+  const included  = drafts.filter(d=>!d.skipped);
+  const totalCost = included.reduce((s,d)=>s+contactCost(d.company),0);
+  const canAfford = credits >= totalCost;
+  const subject   = `Internship inquiry, ${profile?.name||"student"}`;
+
+  async function draftOne(c){
+    let body = "";
+    try { body = await api.generateEmail({ firm:c, profile, level, resume:resume?.text||null, tone, length }); } catch {}
+    if(!body || !body.trim()) body = buildDraft(c, profile, level, { resume:!!(resume?.text) });
+    return body;
+  }
+
+  // SETUP → DRAFTING: write every selected email with AI, in parallel (fast). Any that
+  // fail fall back to the basic template so the batch never stalls.
+  async function startDrafting(){
+    if(!gmailConnected){ setErr("Connect your Gmail first, bulk emails send from your own account."); return; }
+    if(eligible.length===0){ setErr("Nothing to send here, these are already contacted or over today's limit."); return; }
+    setErr(""); setStage("drafting"); setProg(0);
+    let done = 0;
+    const results = await Promise.all(eligible.map(async c => {
+      const body = await draftOne(c);
+      done++; setProg(done);
+      return { firmId:c.id, company:c, body, skipped:false };
+    }));
+    setDrafts(results); setIdx(0); setStage("review");
+  }
+
+  const setBody = (i, v) => setDrafts(ds => ds.map((d,j)=> j===i ? { ...d, body:v } : d));
+  const toggleSkip = i => setDrafts(ds => ds.map((d,j)=> j===i ? { ...d, skipped:!d.skipped } : d));
+  async function regenCurrent(){
+    setRegenning(true);
+    const body = await draftOne(drafts[idx].company);
+    setBody(idx, body); setRegenning(false);
+  }
+
+  async function sendAll(){
+    if(!gmailConnected){ setErr("Connect your Gmail first."); return; }
+    const items = included.map(d => ({ firmId:d.firmId, toEmail:d.company.email, subject, body:d.body }));
+    if(!items.length){ setErr("Every email is skipped, nothing to send."); return; }
+    if(!canAfford){ setErr(`This batch needs ${totalCost} credits and you have ${credits}. Skip a few or top up.`); return; }
+    setErr(""); setStage("sending"); setProg(0);
     try {
-      const items = eligible.map(c=>({
-        firmId: c.id, toEmail: c.email,
-        subject: `Internship inquiry, ${profile?.name||"student"}`,
-        body: buildDraft(c, profile, level, { resume:!!(resume&&resume.text), commercial:eligible.length>5 }),
-      }));
-      for(let i=0;i<eligible.length;i++){
-        const c=eligible[i];
-        setLog(l=>[...l,{id:c.id,name:c.dba,st:"drafting"}]);
-        await new Promise(r=>setTimeout(r,120));
-        setLog(l=>l.map(x=>x.id===c.id?{...x,st:"sending"}:x));
-        setPct(Math.round(((i+1)/eligible.length)*100));
-      }
-      await api.sendEmails(items, null);
-      setLog(l=>l.map(x=>({...x,st:"sent"})));
-      setPct(100); setStage("done");
-      onDone(eligible.map(c=>({id:c.id,cost:contactCost(c)})));
-    } catch(e) {
-      const m=String(e.message||"");
-      if(/no_gmail_connection/.test(m)) setErr("Your Gmail isn't connected, so nothing sent and you weren't charged. Connect it and try again.");
+      await api.sendEmails(items, resume?.storagePath||null);
+      setProg(items.length); setStage("done");
+      onDone(included.map(d => ({ id:d.firmId, cost:contactCost(d.company) })));
+    } catch(e){
+      const m = String(e.message||"");
+      if(/no_gmail_connection/.test(m)) setErr("Your Gmail isn't connected, nothing sent and you weren't charged.");
       else if(/daily_limit/.test(m)) setErr("You've hit today's safe sending limit. Try a smaller batch or come back tomorrow.");
-      else if(/insufficient_credits/.test(m)) setErr("You don't have enough credits for this batch.");
+      else if(/insufficient_credits/.test(m)) setErr("Not enough credits for this batch.");
       else setErr("Send failed, check your Gmail connection and try again.");
-      setStage("confirm");
+      setStage("review");
     }
   }
-  const sc=s=>s==="sent"?K.grn:s==="sending"?K.bl:K.ink4;
-  const si=s=>s==="sent"?"✓":s==="sending"?"⟳":"…";
+
+  const cur     = drafts[idx];
+  const curWarn = cur ? deliverabilityCheck(subject, cur.body) : [];
+
+  const titles = { setup:`Bulk send · ${eligible.length}`, drafting:"Writing your drafts…", review:`Review ${idx+1} of ${drafts.length}`, sending:"Sending…", done:"All sent" };
+  const busy = stage==="drafting" || stage==="sending";
 
   return (
     <div className="ov" role="dialog" aria-modal="true" aria-labelledby="bulk-title">
-      <div className="mo" style={{ maxWidth:460 }}>
+      <div className="mo" style={{ maxWidth: stage==="review" ? 560 : 460 }}>
         <div className="mhd">
-          <h2 id="bulk-title" style={{ fontWeight:700, fontSize:14 }}>
-            {stage==="done"?`Complete, ${log.filter(x=>x.st==="sent").length} sent`:stage==="running"?"Sending…":`Bulk send, ${eligible.length} companies`}
-          </h2>
-          {stage!=="running"&&<button className="mcl" onClick={onClose} aria-label="Close">×</button>}
+          <h2 id="bulk-title" style={{ fontWeight:700, fontSize:14 }}>{titles[stage]}</h2>
+          {!busy && <button className="mcl" onClick={onClose} aria-label="Close">×</button>}
         </div>
-        <div style={{ padding:20 }}>
-          {stage==="confirm"&&(
-            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-              <p style={{ fontSize:13, color:K.ink3, lineHeight:1.65 }}>AI will draft a personalized email for each selected company and send from your Gmail. Each is a new contact, so this unlocks them, every future email to them is free.</p>
-              {skipped>0&&<InfoBox color="amber" icon="⚠">{skipped} company{skipped!==1?"s":""} skipped, already unlocked (you can email them free anytime).</InfoBox>}
-              {queued.length>0&&<InfoBox color="amber" icon="🛡">To protect your Gmail from spam flags, <strong>{eligible.length} will send today</strong> (your warm-up limit is {sendLimit}/day). The other <strong>{queued.length}</strong> are held, send them over the next few days.</InfoBox>}
-              <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"14px 14px 12px" }}>
-                <PersonalizationSlider value={level} onChange={v=>{setLevel(v); prefLevel.set(v);}} />
+        <div style={{ padding:18, display:"flex", flexDirection:"column", gap:14 }}>
+
+          {stage==="setup" && (<>
+            <p style={{ fontSize:13, color:K.ink3, lineHeight:1.65 }}>The AI writes a personalized email for each company. You'll <strong>review and edit every one</strong> before anything sends.</p>
+            {alreadySent>0 && <InfoBox color="amber" icon="⚠">{alreadySent} already contacted, skipped (you can email them free anytime).</InfoBox>}
+            {held.length>0 && <InfoBox color="amber" icon="🛡">To protect your Gmail, <strong>{eligible.length} send today</strong> (warm-up limit {sendLimit}/day). The other <strong>{held.length}</strong> are held, select them again in a day or two.</InfoBox>}
+            <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"14px 14px 12px" }}>
+              <PersonalizationSlider value={level} onChange={v=>{setLevel(v); prefLevel.set(v);}} />
+            </div>
+            <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"12px 14px", display:"flex", gap:10, flexWrap:"wrap" }}>
+              <div style={{ flex:"1 1 150px" }}>
+                <div style={{ fontSize:10, fontWeight:600, color:K.ink4, textTransform:"uppercase", letterSpacing:".05em", marginBottom:4 }}>Tone</div>
+                <select value={tone} onChange={e=>{setTone(e.target.value); prefTone.set(e.target.value);}} style={F({fontSize:12, padding:"7px 8px", cursor:"pointer"})} aria-label="Tone">
+                  <option value="genuine">Genuine (default)</option><option value="warm">Warm</option><option value="direct">Direct</option><option value="curious">Curious</option><option value="confident">Confident</option>
+                </select>
               </div>
-              <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"11px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                <span style={{ fontSize:13, color:K.ink3 }}>{eligible.length} sending now{discCount>0?` (${discCount} AI-discovered)`:""}</span>
-                <span style={{ fontSize:15, fontWeight:800, color:canAfford?K.ink:K.red }}>{totalCost} credit{totalCost!==1?"s":""}{!canAfford&&" (insufficient)"}</span>
-              </div>
-              {!canAfford&&<InfoBox color="red" icon="⚠">You have {credits} credits. This batch needs {totalCost}. Reduce selection or buy top-up credits.</InfoBox>}
-              {err&&<InfoBox color="red" icon="⚠">{err}</InfoBox>}
-              {!gmailConnected&&<InfoBox color="amber" icon="✉">
-                <strong>Connect your Gmail to send.</strong> Bulk emails go out from your own account, nothing sends until it's linked.
-                <span style={{ display:"block", marginTop:8 }}><GmailConnectButton userId={uid} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} /></span>
-              </InfoBox>}
-              <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
-                <button style={G("ghost")} onClick={onClose}>Cancel</button>
-                <button style={G("dark")} onClick={run} disabled={!canRun||!gmailConnected}>{cap===0?"Daily limit reached":`Send ${eligible.length} emails →`}</button>
+              <div style={{ flex:"1 1 150px" }}>
+                <div style={{ fontSize:10, fontWeight:600, color:K.ink4, textTransform:"uppercase", letterSpacing:".05em", marginBottom:4 }}>Length</div>
+                <select value={length} onChange={e=>{setLength(e.target.value); prefLen.set(e.target.value);}} style={F({fontSize:12, padding:"7px 8px", cursor:"pointer"})} aria-label="Length">
+                  <option value="short">Short (60-90 words)</option><option value="medium">Medium (90-130 words)</option><option value="long">Long (130-180 words)</option>
+                </select>
               </div>
             </div>
-          )}
-          {(stage==="running"||stage==="done")&&(
-            <>
-              <div style={{ marginBottom:14 }}>
-                <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:K.ink3, marginBottom:5 }}>
-                  <span aria-live="polite">{stage==="done"?"Complete":"Sending…"}</span>
-                  <span>{log.filter(x=>x.st==="sent").length}/{eligible.length}</span>
-                </div>
-                <div className="pb"><div className="pf" style={{ width:pct+"%", background:stage==="done"?K.grn:K.ink }} /></div>
-              </div>
-              <div style={{ maxHeight:260, overflowY:"auto", display:"flex", flexDirection:"column", gap:3 }} role="log" aria-live="polite">
-                {log.map(e=>(
-                  <div key={e.id} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"7px 10px", background:e.st==="sent"?K.grnT:K.surf, borderRadius:6, transition:"background .2s" }}>
-                    <span style={{ fontSize:12, color:K.ink2 }}>{e.name}</span>
-                    <span style={{ fontSize:12, fontWeight:700, color:sc(e.st) }}>{si(e.st)}</span>
-                  </div>
-                ))}
-              </div>
-              {stage==="done"&&<button style={G("dark",{width:"100%",padding:"10px 0",marginTop:16})} onClick={onClose}>Done →</button>}
-            </>
-          )}
+            {err && <InfoBox color="red" icon="⚠">{err}</InfoBox>}
+            {!gmailConnected && <InfoBox color="amber" icon="✉"><strong>Connect your Gmail to send.</strong> Bulk emails go out from your own account. Drafting and reviewing are free without it.
+              <span style={{ display:"block", marginTop:8 }}><GmailConnectButton userId={uid} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} /></span></InfoBox>}
+            <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
+              <button style={G("ghost")} onClick={onClose}>Cancel</button>
+              <button style={G("dark")} onClick={startDrafting} disabled={eligible.length===0}>{eligible.length===0?"Daily limit reached":`Draft ${eligible.length} emails →`}</button>
+            </div>
+          </>)}
+
+          {stage==="drafting" && (<>
+            <p style={{ fontSize:13, color:K.ink3 }}>Writing {eligible.length} personalized emails, this takes a few seconds.</p>
+            <div className="pb"><div className="pf" style={{ width:`${Math.round((prog/Math.max(1,eligible.length))*100)}%`, background:K.ink, transition:"width .2s" }} /></div>
+            <div style={{ textAlign:"center", fontSize:12, color:K.ink3 }}><SpB/> {prog} of {eligible.length} drafted</div>
+          </>)}
+
+          {stage==="review" && cur && (<>
+            {/* stepper */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
+              <button style={G("ghost",{fontSize:12,padding:"6px 12px"})} onClick={()=>setIdx(i=>Math.max(0,i-1))} disabled={idx===0}>← Prev</button>
+              <span style={{ fontSize:12, color:K.ink3, fontWeight:600 }}>{included.length} to send · {drafts.length-included.length} skipped</span>
+              <button style={G("ghost",{fontSize:12,padding:"6px 12px"})} onClick={()=>setIdx(i=>Math.min(drafts.length-1,i+1))} disabled={idx===drafts.length-1}>Next →</button>
+            </div>
+            <div style={{ borderTop:`1px solid ${K.b}`, paddingTop:12 }}>
+              <div style={{ fontWeight:700, fontSize:14, display:"flex", alignItems:"center", gap:8 }}>{cur.company.dba}{cur.skipped&&<span style={{ fontSize:10, fontWeight:700, color:K.amb, background:K.ambT, border:`1px solid ${K.ambB}`, borderRadius:20, padding:"1px 8px" }}>SKIPPED</span>}</div>
+              <div style={{ fontSize:12, color:K.bl, marginTop:1 }}>{cur.company.email}</div>
+            </div>
+            <textarea value={cur.body} onChange={e=>setBody(idx, e.target.value)} disabled={cur.skipped||regenning}
+              style={F({ resize:"vertical", minHeight:200, lineHeight:1.8, fontFamily:"inherit", fontSize:13, padding:"13px 14px", opacity: cur.skipped?0.5:1 })} aria-label={`Email to ${cur.company.dba}`} />
+            {!cur.skipped && (curWarn.length>0
+              ? <InfoBox color="amber" icon="🛡"><strong>Deliverability ({curWarn.length}):</strong>{curWarn.map((x,i)=><span key={i} style={{display:"block",fontSize:12,marginTop:2}}>• {x}</span>)}</InfoBox>
+              : <InfoBox color="green" icon="✓">Looks good, personal and concise with a clear ask.</InfoBox>)}
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+              <button style={G("ghost",{fontSize:12})} onClick={regenCurrent} disabled={regenning||cur.skipped}>{regenning?<><SpB/>Rewriting…</>:"✦ Regenerate"}</button>
+              <button style={G(cur.skipped?"green":"ghost",{fontSize:12,color:cur.skipped?undefined:K.red,borderColor:cur.skipped?undefined:K.redB})} onClick={()=>toggleSkip(idx)}>{cur.skipped?"↩ Include this one":"✕ Skip this one"}</button>
+            </div>
+            {err && <InfoBox color="red" icon="⚠">{err}</InfoBox>}
+            {/* sticky send bar */}
+            <div style={{ position:"sticky", bottom:0, zIndex:5, display:"flex", gap:10, alignItems:"center", justifyContent:"space-between", background:"#fff", borderTop:`1px solid ${K.b}`, padding:"11px 0 4px", marginTop:2 }}>
+              <span style={{ fontSize:12, color:canAfford?K.ink3:K.red, fontWeight:600 }}>{totalCost} credit{totalCost!==1?"s":""}{!canAfford?" (short)":""}</span>
+              <button className="btn-lift" style={G("dark",{fontSize:13,minWidth:150})} onClick={sendAll} disabled={included.length===0||!gmailConnected}>Send {included.length} email{included.length!==1?"s":""} →</button>
+            </div>
+          </>)}
+
+          {stage==="sending" && (<>
+            <p style={{ fontSize:13, color:K.ink3 }}>Queueing {included.length} emails to send from your Gmail at a safe pace.</p>
+            <div className="pb"><div className="pf" style={{ width:"100%", background:K.ink }} /></div>
+            <div style={{ textAlign:"center", fontSize:12, color:K.ink3 }}><SpB/> Sending…</div>
+          </>)}
+
+          {stage==="done" && (<>
+            <InfoBox color="green" icon="✓"><strong>{included.length} email{included.length!==1?"s":""} queued.</strong> They'll go out from your Gmail over the next little while at a safe pace, you can watch them in Pipeline.</InfoBox>
+            {held.length>0 && <InfoBox color="amber" icon="🛡">{held.length} were held for your daily warm-up limit, select them again in a day or two to send more.</InfoBox>}
+            <button style={G("dark",{width:"100%",padding:"10px 0"})} onClick={onClose}>Done →</button>
+          </>)}
+
         </div>
       </div>
     </div>

@@ -546,10 +546,14 @@ const CSS = `
   .srt:hover{color:#0c0c0e}
   .srt.on{color:#1a56db}
 
-  .ntab{padding:6px 12px;border-radius:6px;border:none;background:transparent;font-size:13px;font-weight:500;cursor:pointer;color:#6b6b72;font-family:inherit;transition:transform .14s cubic-bezier(.34,1.45,.5,1),background .15s,color .15s;-webkit-tap-highlight-color:transparent}
+  .ntab{padding:6px 12px;border-radius:6px;border:none;background:transparent;font-size:13px;font-weight:500;cursor:pointer;color:#6b6b72;font-family:inherit;white-space:nowrap;transition:transform .14s cubic-bezier(.34,1.45,.5,1),background .15s,color .15s;-webkit-tap-highlight-color:transparent}
   .ntab:hover{background:#f0f0f6;color:#0c0c0e}
   .ntab:active{transform:scale(.94);transition-duration:.05s}
   .ntab.on{background:#f0f0f6;color:#0c0c0e;font-weight:600}
+  /* App nav tab strip: scrolls horizontally on narrow screens so the logo, credits,
+     and profile stay visible instead of the row overflowing off-screen. */
+  .navtabs{display:flex;gap:1;min-width:0;flex-shrink:1;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .navtabs::-webkit-scrollbar{display:none}
 
   .ov{position:fixed;inset:0;background:rgba(12,12,14,.55);z-index:900;display:flex;align-items:flex-end;justify-content:center;padding:0;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
   @media(min-width:600px){.ov{align-items:center;padding:16px}}
@@ -2441,8 +2445,12 @@ export default function App() {
   async function handleOnboardingDone(p){
     const safeProfile = stripToken(p);
     await api.saveProfile(onboardingPatch(safeProfile)).catch(() => {});
-    setProfile(safeProfile);
+    // Re-read the canonical profile (snake_case DB shape) and use THAT for state, so
+    // Settings reads the same keys it writes (talent_opt_in / city / linkedin_url).
+    // Setting the camelCase onboarding object here made the talent toggle show "off"
+    // and city/LinkedIn blank right after onboarding, until the next reload.
     const freshProfile = await api.getProfile().catch(() => null);
+    setProfile(freshProfile || safeProfile);
     if (freshProfile) { setPlanId(freshProfile.plan || "free"); setCredits(freshProfile.credits ?? 5); }
     if (safeProfile.gmailToken && safeProfile.gmailToken !== "skip") {
       const gs = await api.gmailStatus();
@@ -2959,15 +2967,15 @@ export default function App() {
       <style>{CSS}</style>
       <nav style={{ position:"sticky", top:0, zIndex:200, background:"rgba(255,255,255,.97)", backdropFilter:"blur(8px)", WebkitBackdropFilter:"blur(8px)", borderBottom:`1px solid ${K.b}` }} role="navigation" aria-label="App navigation">
         <div style={{ maxWidth:1200, margin:"0 auto", padding:"0 16px", height:52, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <span style={{ fontWeight:800, fontSize:15, letterSpacing:-.5 }}>firstinternships</span>
-            <div style={{ display:"flex", gap:1 }} role="tablist">
+          <div style={{ display:"flex", alignItems:"center", gap:12, minWidth:0 }}>
+            <span style={{ fontWeight:800, fontSize:15, letterSpacing:-.5, flexShrink:0 }}>firstinternships</span>
+            <div className="navtabs" role="tablist">
               {[["dashboard","Home"],["companies","Companies"],["pipeline",`Pipeline${stats.dueIds.length>0?` (${stats.dueIds.length})`:""}`],["settings","Settings"]].map(([id,lbl])=>(
                 <button key={id} className={`ntab${tab===id?" on":""}`} onClick={()=>setTab(id)} role="tab" aria-selected={tab===id}>{lbl}</button>
               ))}
             </div>
           </div>
-          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, flexShrink:0, paddingLeft:8 }}>
             <CreditMeter credits={credits} planId={planId} />
             {planId==="pro"&&<Chip color="dark">Pro</Chip>}
             <button style={G("ghost",{fontSize:12,padding:"5px 12px"})} onClick={()=>setModal("profileEdit")}>{profile?.name?.split(" ")[0]||"Profile"}</button>

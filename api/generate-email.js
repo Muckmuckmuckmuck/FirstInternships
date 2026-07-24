@@ -78,6 +78,12 @@ export default async function handler(req, res) {
   const { company, profile, level = 3, resume = null, tone = "genuine", length = "short", emphasis = "" } = req.body || {};
   if (!company?.dba || !profile?.name) return res.status(400).json({ error: "Missing company or profile" });
 
+  // Bound every client-supplied field that goes into the prompt. The body is fully
+  // client-controlled, so without caps a logged-in user could send a megabyte-long
+  // field and run up the per-call Gemini input-token cost. resume/emphasis are capped
+  // where used below.
+  const clip = (v, n) => String(v ?? "").slice(0, n);
+
   const toneLine   = TONE_GUIDE[tone]     || TONE_GUIDE.genuine;
   const lengthLine = LENGTH_GUIDE[length] || LENGTH_GUIDE.short;
 
@@ -100,18 +106,18 @@ Hard rules:
 - ${LEVEL_GUIDE[level] || LEVEL_GUIDE[3]}`;
 
   const user = `STUDENT:
-Name: ${profile.name}
-Education: ${profile.eduLevel || profile.year || "student"}
-School: ${profile.school || "—"}
-Field: ${profile.major || "—"}
-Background: ${profile.experience || "—"}
-Interests: ${profile.interest || "—"}
+Name: ${clip(profile.name, 120)}
+Education: ${clip(profile.eduLevel || profile.year || "student", 80)}
+School: ${clip(profile.school || "—", 120)}
+Field: ${clip(profile.major || "—", 80)}
+Background: ${clip(profile.experience || "—", 2000)}
+Interests: ${clip(profile.interest || "—", 500)}
 ${resume && resume.text ? `\nRESUME (use real, specific details from this):\n${String(resume.text).slice(0, 4000)}\n` : ""}
 COMPANY:
-Name: ${company.dba}
-Industry: ${company.industry || "—"}
-Known for: ${company.knownFor || "—"}
-${company.cname ? `Contact: ${company.cname}${company.ctitle ? `, ${company.ctitle}` : ""}` : "Contact: careers/recruiting inbox"}
+Name: ${clip(company.dba, 120)}
+Industry: ${clip(company.industry || "—", 80)}
+Known for: ${clip(company.knownFor || "—", 500)}
+${company.cname ? `Contact: ${clip(company.cname, 120)}${company.ctitle ? `, ${clip(company.ctitle, 120)}` : ""}` : "Contact: careers/recruiting inbox"}
 ${emphasis && String(emphasis).trim() ? `\nThe student specifically wants this worked in naturally (do not quote it verbatim, weave it in like they wrote it): "${String(emphasis).slice(0, 300).trim()}"\n` : ""}
 Write the email body now.`;
 

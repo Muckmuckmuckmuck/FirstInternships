@@ -62,19 +62,18 @@ export default async function handler(req, res) {
 
   // ── Pro-gating + monthly discovery cap (server-enforced; the client can't skip it) ──
   const { data: profile } = await supabase
-    .from("profiles").select("plan, discovery_used, discovery_cycle").eq("id", user.id).single();
+    .from("profiles").select("plan").eq("id", user.id).single();
   if (!profile) return res.status(400).json({ error: "no_profile" });
   if (profile.plan !== "pro") return res.status(403).json({ error: "pro_required" });
 
+  // Atomically reserve one search against the monthly cap BEFORE calling Gemini (a
+  // grounded search bills per query whether or not it returns results). The RPC does
+  // a single locked check+increment, so concurrent calls can't overspend the cap.
   const cycle = new Date().toISOString().slice(0, 7);   // 'YYYY-MM' — resets monthly
-  const used = profile.discovery_cycle === cycle ? (profile.discovery_used || 0) : 0;
-  if (used >= DISCOVERY_CAP)
-    return res.status(429).json({ error: "discovery_cap_reached", cap: DISCOVERY_CAP });
-
-  // Reserve the search now — a grounded search bills per query whether or not it
-  // returns results, so count it before calling Gemini.
-  await supabase.from("profiles")
-    .update({ discovery_used: used + 1, discovery_cycle: cycle }).eq("id", user.id);
+  const { data: allowed, error: capErr } = await supabase
+    .rpc("reserve_discovery", { uid: user.id, cyc: cycle, cap: DISCOVERY_CAP });
+  if (capErr) return res.status(500).json({ error: "cap_check_failed" });
+  if (!allowed) return res.status(429).json({ error: "discovery_cap_reached", cap: DISCOVERY_CAP });
 
   try {
     const firms = await discover(query.trim());

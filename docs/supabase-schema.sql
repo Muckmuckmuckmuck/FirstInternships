@@ -238,6 +238,25 @@ end; $$;
 revoke execute on function charge_credits(uuid, integer) from public, anon, authenticated;
 grant  execute on function charge_credits(uuid, integer) to service_role;
 
+-- ── Atomic discovery reservation (used by discover-firms) ────────────────────
+-- Single locked check+increment against the monthly Pro discovery cap, so
+-- concurrent grounded searches can't both pass the cap and overspend the Gemini
+-- budget. Returns true if allowed (and counted), false if the cap is reached.
+create or replace function reserve_discovery(uid uuid, cyc text, cap integer)
+returns boolean language plpgsql security definer set search_path = public as $$
+declare cur_cycle text; cur_used integer;
+begin
+  select discovery_cycle, discovery_used into cur_cycle, cur_used
+    from public.profiles where id = uid for update;
+  if not found then return false; end if;
+  if cur_cycle is distinct from cyc then cur_used := 0; end if;
+  if cur_used >= cap then return false; end if;
+  update public.profiles set discovery_used = cur_used + 1, discovery_cycle = cyc where id = uid;
+  return true;
+end; $$;
+revoke execute on function reserve_discovery(uuid, text, integer) from public, anon, authenticated;
+grant  execute on function reserve_discovery(uuid, text, integer) to service_role;
+
 -- ── CREDIT SECURITY (do not weaken) ─────────────────────────────────────────
 -- Credits/plan MUST NOT be client-writable, or users can grant themselves
 -- unlimited credits / free Pro from the browser console and bypass the paywall.

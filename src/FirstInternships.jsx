@@ -1580,11 +1580,12 @@ function Paywall({ credits, onClose, onUpgrade }) {
 function TopupModal({ onClose, onTopup }) {
   const [qty,  setQty]  = useState(1);
   const [load, setLoad] = useState(false);
+  const [err,  setErr]  = useState("");
   const total = qty*5;
   async function buy(){
-    setLoad(true);
+    setLoad(true); setErr("");
     try { await api.buyTopup(qty); } // redirects to Stripe Checkout
-    catch(e) { setLoad(false); }
+    catch(e) { setErr("Couldn't start checkout. Please try again."); setLoad(false); }
   }
   return (
     <div className="ov" role="dialog" aria-modal="true" aria-labelledby="tu-title">
@@ -1610,6 +1611,7 @@ function TopupModal({ onClose, onTopup }) {
           <button style={G("dark",{width:"100%",padding:"11px 0",fontSize:14})} onClick={buy} disabled={load}>
             {load?<><Sp/>Processing…</>:`Buy ${qty*100} credits · $${total}`}
           </button>
+          {err && <p style={{ fontSize:12, color:K.red, margin:0, textAlign:"center" }}>{err}</p>}
         </div>
       </div>
     </div>

@@ -6,9 +6,18 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { sendGmail } from "../lib/gmail.js";
+import { costOfFirm } from "../lib/credits.js";
 
 const MAX_PER_TICK = 25;         // per-run batch across all users (cron runs every ~2 min)
 const MAX_ATTEMPTS = 3;
+
+// Refund exactly what the send was charged (2 for verified/discovered, 1 otherwise).
+// Must mirror the charge in api/send-email.js — both use costOfFirm so they can't drift.
+async function refundReserved(admin, item) {
+  const { data: firm } = await admin.from("firms")
+    .select("source,verification_status").eq("id", item.firm_id).maybeSingle();
+  try { await admin.rpc("increment_credits", { uid: item.user_id, delta: costOfFirm(firm) }); } catch {}
+}
 
 export default async function handler(req, res) {
   // Allow only Vercel Cron / authorized callers.
@@ -31,10 +40,13 @@ export default async function handler(req, res) {
 
   for (const item of due) {
     // Re-check the user's gate at send time (cap could have changed, bounce spiked).
-    const { data: profile } = await admin.from("profiles").select("*").eq("id", item.user_id).single();
-    const { data: gmail } = await admin.from("gmail_accounts").select("*").eq("user_id", item.user_id).single();
+    const { data: profile } = await admin.from("profiles").select("*").eq("id", item.user_id).maybeSingle();
+    const { data: gmail } = await admin.from("gmail_accounts").select("*").eq("user_id", item.user_id).maybeSingle();
     if (!profile || !gmail?.refresh_token) {
       await admin.from("send_queue").update({ status: "failed", error: "no_gmail_connection" }).eq("id", item.id);
+      // The send never happened — refund the reserved credit(s) so the user isn't charged
+      // for a connection that dropped between enqueue and delivery.
+      await refundReserved(admin, item);
       failed++; continue;
     }
 
@@ -80,13 +92,10 @@ export default async function handler(req, res) {
         error: msg.slice(0, 300),
       }).eq("id", item.id);
       if (deadToken) {
-        await admin.from("gmail_accounts").delete().eq("user_id", item.user_id).catch(() => {});
+        try { await admin.from("gmail_accounts").delete().eq("user_id", item.user_id); } catch {}
       }
-      // Refund the reserved credit if we permanently failed.
-      if (giveUp) {
-        const cost = 1; // (look up firm.source for 2-credit discovered if desired)
-        await admin.rpc("increment_credits", { uid: item.user_id, delta: cost }).catch(() => {});
-      }
+      // Refund the reserved credit(s) if we permanently failed.
+      if (giveUp) await refundReserved(admin, item);
       failed++;
     }
   }

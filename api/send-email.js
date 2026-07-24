@@ -7,6 +7,7 @@
 // Auth: Supabase access token in the Authorization header.
 
 import { createClient } from "@supabase/supabase-js";
+import { costOfFirm } from "../lib/credits.js";
 
 // Warm-up: as the account ages (days since first send), the safe daily cap rises.
 const WARMUP = {
@@ -40,6 +41,15 @@ export default async function handler(req, res) {
   if (!profile) return res.status(400).json({ error: "no_profile" });
   if (!profile.plan) return res.status(400).json({ error: "no_plan" });
 
+  // HARD GATE: a working Gmail connection must exist BEFORE we charge credits or
+  // enqueue anything. Without this, a user with no (or a dropped) connection could
+  // queue sends into a void, get charged, and every one fails as no_gmail_connection.
+  // The client's localStorage flag is not authoritative — this is.
+  const { data: gmailAcct } = await admin
+    .from("gmail_accounts").select("refresh_token").eq("user_id", user.id).maybeSingle();
+  if (!gmailAcct?.refresh_token)
+    return res.status(409).json({ error: "no_gmail_connection" });
+
   // How many can still go out today? (warm-up cap minus today's queued+sent)
   const since = new Date(); since.setHours(0, 0, 0, 0);
   const { count: usedToday } = await admin.from("send_queue")
@@ -58,10 +68,20 @@ export default async function handler(req, res) {
   // Charge credits up front (reserve). 1 per DB contact / 2 per discovered — the
   // caller passes firmId; look up source to price it.
   const firmIds = accepted.map(i => i.firmId);
-  const { data: firms } = await admin.from("firms").select("id,source").in("id", firmIds);
-  const costOf = id => (firms?.find(f => f.id === id)?.source === "discovered" ? 2 : 1);
+  // Price by deliverability confidence: verified mailbox = 2 (premium, guaranteed to land),
+  // discovered = 2 (covers discovery), everything else = 1 (break-even for might-bounce).
+  const { data: firms } = await admin.from("firms").select("id,source,verification_status").in("id", firmIds);
+  const costOf = id => costOfFirm(firms?.find(x => x.id === id));
   const totalCost = accepted.reduce((s, i) => s + costOf(i.firmId), 0);
-  if (profile.credits < totalCost)
+
+  // Deduct ATOMICALLY before enqueuing. charge_credits deducts only if the balance
+  // is sufficient and returns whether it did — this is a single guarded UPDATE, so
+  // two concurrent sends (double-click, two tabs, single+bulk at once) can't both
+  // read the same balance and overspend. A plain read-then-write here would let a
+  // user get free sends by racing requests.
+  const { data: charged, error: chargeErr } = await admin.rpc("charge_credits", { uid: user.id, amt: totalCost });
+  if (chargeErr) return res.status(500).json({ error: "charge_failed", detail: chargeErr.message });
+  if (!charged)
     return res.status(402).json({ error: "insufficient_credits", have: profile.credits, need: totalCost });
 
   // Stagger scheduled_for so the worker releases them gradually.
@@ -74,10 +94,12 @@ export default async function handler(req, res) {
   }));
 
   const { error: qErr } = await admin.from("send_queue").insert(rows);
-  if (qErr) return res.status(500).json({ error: "enqueue_failed", detail: qErr.message });
-
-  // Deduct reserved credits.
-  await admin.from("profiles").update({ credits: profile.credits - totalCost }).eq("id", user.id);
+  if (qErr) {
+    // Enqueue failed after we already charged — refund so the user isn't billed for
+    // sends that never got queued.
+    try { await admin.rpc("increment_credits", { uid: user.id, delta: totalCost }); } catch {}
+    return res.status(500).json({ error: "enqueue_failed", detail: qErr.message });
+  }
 
   return res.status(200).json({ queued: accepted.length, held, remainingToday: remaining - accepted.length, chargedCredits: totalCost });
 }

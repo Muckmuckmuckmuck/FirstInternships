@@ -20,9 +20,16 @@
 // ════════════════════════════════════════════════════════════════════════════
 
 import { GoogleGenAI } from "@google/genai";
+import { createClient } from "@supabase/supabase-js";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const MODEL = "gemini-3.1-flash-lite";   // cheap tier; proven working in this env (same as discovery)
+
+// Per-user daily cap on AI drafts. Writing stays free and unlimited-feeling for real
+// students (a heavy day is maybe 20-40 drafts), but this stops a script from spinning
+// the endpoint thousands of times and running up the Gemini bill. Counted from the
+// events log, so it doubles as usage tracking.
+const DAILY_GEN_CAP = { free: 80, pro: 400 };
 
 const LEVEL_GUIDE = {
   1: "Generic: mention only the student's school and background. No company specifics.",
@@ -32,28 +39,64 @@ const LEVEL_GUIDE = {
   5: "Deep: read as if the student has studied this company closely and specifically.",
 };
 
+// Voice the student can pick. Kept subtle — the goal is a real person, never a persona.
+const TONE_GUIDE = {
+  genuine:   "Natural and sincere — a normal student being real, not performing.",
+  warm:      "Friendly and appreciative, but still tight. A little human warmth, no gushing.",
+  direct:    "Straight to the point. Almost no warm-up, respects their time.",
+  curious:   "Leads with real curiosity about what the company actually does.",
+  confident: "Self-assured but humble — knows their value without bragging.",
+};
+
+// Target length. Shorter almost always gets more replies; short is the default.
+const LENGTH_GUIDE = {
+  short:  "60 to 90 words. Very tight — cut anything that isn't doing work.",
+  medium: "90 to 130 words. Room for one extra concrete detail, no more.",
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  // TODO: verify the user's Supabase session JWT (writing is free, but still gate to logged-in users).
+  // Require a logged-in user. This endpoint calls a paid API, so it must never be
+  // open to the internet (it was — that's how anyone could burn credits for free).
+  const token = (req.headers.authorization || "").replace("Bearer ", "");
+  const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const { data: { user: authUser }, error: authErr } = await admin.auth.getUser(token);
+  if (authErr || !authUser) return res.status(401).json({ error: "unauthorized" });
 
-  const { company, profile, level = 3, resume = null } = req.body || {};
+  // Daily draft cap (abuse / cost guard), counted from today's generation events.
+  const since = new Date(); since.setHours(0, 0, 0, 0);
+  const { count: usedToday } = await admin.from("events")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", authUser.id).eq("event", "generate_email")
+    .gte("created_at", since.toISOString());
+  const { data: prof } = await admin.from("profiles").select("plan").eq("id", authUser.id).single();
+  const cap = DAILY_GEN_CAP[prof?.plan === "pro" ? "pro" : "free"];
+  if ((usedToday || 0) >= cap)
+    return res.status(429).json({ error: "generation_limit", message: "You've reached today's draft limit. It resets tomorrow." });
+
+  const { company, profile, level = 3, resume = null, tone = "genuine", length = "short", emphasis = "" } = req.body || {};
   if (!company?.dba || !profile?.name) return res.status(400).json({ error: "Missing company or profile" });
 
-  const system = `You're a student writing a short, real cold email to ask about an internship. Write the way an actual person quickly types a sincere email — NOT the way an AI writes. Cold, polished, "balanced" prose is an instant tell; avoid it.
+  const toneLine   = TONE_GUIDE[tone]     || TONE_GUIDE.genuine;
+  const lengthLine = LENGTH_GUIDE[length] || LENGTH_GUIDE.short;
+
+  const system = `You're a student quickly typing a short, real cold email to ask about an internship. Write the way an actual 19-year-old types a sincere email to a stranger — NOT the way an AI writes. Smooth, polished, perfectly balanced prose is the #1 tell that a bot wrote it. Avoid it on purpose.
+
+Voice for this email: ${toneLine}
 
 Hard rules:
-- 70–120 words. Short. Cut anything that doesn't add real information.
-- Plain, everyday language and contractions (I'm, I've, don't). Simple words over fancy ones.
-- Get to the point fast. Do NOT open with a compliment about the company or with "I've been following...", "I came across...", "I'm reaching out because...", "I'm excited to...", or "I am writing to...".
-- Give ONE concrete, specific reason you're interested, tied to something real in the student's background — not generic enthusiasm.
+- Length: ${lengthLine}
+- Plain, everyday language and contractions (I'm, I've, don't). Simple words over fancy ones. Write at about a 9th-grade reading level.
+- Get to the point fast. Do NOT open with a compliment about the company or with "I've been following...", "I came across...", "I'm reaching out because...", "I'm excited to...", or "I am writing to...". Start like a real person would.
+- Give ONE concrete, specific reason you're interested, tied to something real in the student's background — not generic enthusiasm. Specific beats impressive.
 - One clear, low-pressure ask, e.g. "Do you take summer interns?" or "Could I send my resume?".
-- Banned words/phrases (sound robotic): passionate, leverage, align, synergy, eager to contribute, actively changing, fast-paced, cutting-edge, the upcoming cycle, delve, in today's world, I believe my skills, honed, spearheaded, "as a [year] student", "I hope this email finds you well".
-- No em-dashes and no semicolons. Use periods and commas. Vary sentence length so it doesn't read uniform and machine-smooth.
+- Banned words/phrases (sound robotic): passionate, leverage, align, synergy, eager to contribute, actively changing, fast-paced, cutting-edge, the upcoming cycle, delve, in today's world, I believe my skills, honed, spearheaded, tapestry, testament, "as a [year] student", "I hope this email finds you well", "I would love the opportunity".
+- No em-dashes and no semicolons. Use periods and commas. Vary sentence length hard — mix a very short sentence with a longer one so it doesn't read uniform and machine-smooth.
 - Do not use three-item lists or perfectly parallel phrasing ("X, Y, and Z") — real students don't write that way.
+- It's fine, even good, to be a little plain or slightly imperfect. Don't over-explain and don't wrap up with a neat summary sentence. End a bit abruptly, like a real person who's busy.
 - RESUME: if resume text is included below, you MUST weave in ONE specific, real detail from it (a named project, tool, class, role, or number). Never invent details. This is what proves the email is really about this student. Then note the resume is attached. If no resume text is given, offer to send one.
 - No subject line. Plain text. Sign off with just the student's first name.
-- A little plain or slightly imperfect is GOOD — it reads human. Don't over-explain or wrap up with a neat summary sentence.
 - ${LEVEL_GUIDE[level] || LEVEL_GUIDE[3]}`;
 
   const user = `STUDENT:
@@ -69,7 +112,7 @@ Name: ${company.dba}
 Industry: ${company.industry || "—"}
 Known for: ${company.knownFor || "—"}
 ${company.cname ? `Contact: ${company.cname}${company.ctitle ? `, ${company.ctitle}` : ""}` : "Contact: careers/recruiting inbox"}
-
+${emphasis && String(emphasis).trim() ? `\nThe student specifically wants this worked in naturally (do not quote it verbatim, weave it in like they wrote it): "${String(emphasis).slice(0, 300).trim()}"\n` : ""}
 Write the email body now.`;
 
   try {
@@ -80,6 +123,12 @@ Write the email body now.`;
     });
     const email = (response.text || "").trim();
     if (!email) return res.status(502).json({ error: "Empty draft" });
+    // Log the generation: powers the daily cap and gives you a usage/cost trail.
+    // (Fire-and-forget; a Supabase builder has no .catch, so use .then's reject arg.)
+    admin.from("events").insert({
+      user_id: authUser.id, event: "generate_email",
+      props: { company: company.dba, tone, length, level },
+    }).then(() => {}, () => {});
     return res.status(200).json({ email });
   } catch (e) {
     console.error("generate-email error:", e);

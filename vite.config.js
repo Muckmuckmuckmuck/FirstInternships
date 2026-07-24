@@ -10,4 +10,16 @@ export default defineConfig({
       "/api": "http://localhost:3001",
     },
   },
+  build: {
+    // Split heavy vendor libs into their own long-cached chunks so they download
+    // in parallel and stay cached across deploys (faster first + repeat loads).
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom"],
+          supabase: ["@supabase/supabase-js"],
+        },
+      },
+    },
+  },
 });

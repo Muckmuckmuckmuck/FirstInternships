@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Free AI Resume Grader, Score Your Resume in Seconds | FirstInternships</title>
+<meta name="description" content="Paste your resume and get an instant AI score out of 100, plus the top fixes that actually get you interviews. Free, no signup, built for students and first internships."/>
+<link rel="canonical" href="https://firstinternships.com/tools/resume-grader"/>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1"/>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="Free AI Resume Grader, Score Your Resume in Seconds"/>
+<meta property="og:description" content="Instant AI resume score out of 100, plus the top fixes that get interviews. Free, no signup."/>
+<meta property="og:url" content="https://firstinternships.com/tools/resume-grader"/>
+<meta property="og:site_name" content="FirstInternships"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Free AI Resume Grader"/>
+<meta name="twitter:description" content="Instant AI resume score out of 100 plus the top fixes. Free, no signup."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"AI Resume Grader","url":"https://firstinternships.com/tools/resume-grader","applicationCategory":"BusinessApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"FirstInternships"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is the resume grader free?","acceptedAnswer":{"@type":"Answer","text":"Yes. It's completely free and needs no signup. Paste or upload your resume and you get an instant AI score out of 100 with specific fixes."}},{"@type":"Question","name":"How is my resume scored?","acceptedAnswer":{"@type":"Answer","text":"An AI recruiter grades it on five things: quantified impact, clarity and formatting, relevance and focus, writing and action verbs, and length and structure. You get a score, a verdict, and the three highest-impact fixes."}},{"@type":"Question","name":"Is my resume stored?","acceptedAnswer":{"@type":"Answer","text":"No. Your resume text is sent to the AI to grade it and is not saved to an account. There's no signup."}}]},{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://firstinternships.com/"},{"@type":"ListItem","position":2,"name":"Free tools","item":"https://firstinternships.com/tools/resume-grader"},{"@type":"ListItem","position":3,"name":"Resume Grader","item":"https://firstinternships.com/tools/resume-grader"}]}]</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1a1a1f;background:#fff;line-height:1.7;font-size:16px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 22px}
+  header.nav{border-bottom:1px solid #eee;position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);z-index:10}
+  header.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .logo{font-weight:800;font-size:16px;letter-spacing:-.5px;color:#0c0c0e;text-decoration:none}
+  .cta{background:#0c0c0e;color:#fff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;text-decoration:none}
+  h1{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.15;margin:34px 0 8px}
+  .lead{font-size:19px;color:#33333a;font-weight:500;margin:0 0 26px}
+  h2{font-size:23px;font-weight:700;letter-spacing:-.4px;margin:36px 0 12px}
+  p{margin-bottom:16px;color:#33333a}
+  a{color:#1a56db}
+  textarea{width:100%;min-height:200px;border:1px solid #d8d8e0;border-radius:10px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;line-height:1.6;color:#1a1a1f;resize:vertical}
+  textarea:focus{outline:none;border-color:#0c0c0e}
+  .drop{border:2px dashed #d0d0da;border-radius:10px;padding:16px;text-align:center;color:#888;font-size:14px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,background .15s}
+  .drop:hover,.drop.over{border-color:#0c0c0e;background:#fafafc;color:#555}
+  .row{display:flex;gap:10px;align-items:center;margin:14px 0 6px;flex-wrap:wrap}
+  .btn{display:inline-block;background:#0c0c0e;color:#fff;font-weight:600;padding:13px 26px;border-radius:9px;text-decoration:none;font-size:15px;border:none;cursor:pointer}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn-ghost{background:#fff;color:#0c0c0e;border:1px solid #d8d8e0}
+  .muted{font-size:13px;color:#999}
+  /* results */
+  #result{display:none;margin-top:8px}
+  .scorecard{display:flex;align-items:center;gap:22px;background:#f7f8fc;border:1px solid #e8e8ee;border-radius:14px;padding:22px 24px;margin-bottom:8px}
+  .ring{position:relative;flex:0 0 auto}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:30px;letter-spacing:-1px}
+  .ring .num small{font-weight:600;font-size:11px;color:#999;letter-spacing:0}
+  .verdict{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px}
+  .verdict-sub{font-size:14px;color:#888}
+  .sec{border:1px solid #e8e8ee;border-radius:10px;padding:13px 16px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+  .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;margin-top:7px}
+  .dot.strong{background:#16a34a}.dot.ok{background:#eab308}.dot.weak{background:#ef4444}
+  .sec .lbl{font-weight:700;font-size:14px}
+  .sec .nt{font-size:14px;color:#555}
+  .fixes{background:#0c0c0e;color:#e8e8ee;border-radius:12px;padding:18px 22px;margin:16px 0 8px}
+  .fixes h3{font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
+  .fixes ol{margin:0 0 0 18px}.fixes li{margin-bottom:8px;font-size:14px;line-height:1.55}
+  .box{background:#f7f8fc;border:1px solid #e8e8ee;border-radius:12px;padding:20px 22px;margin:22px 0}
+  .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px;margin-right:8px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .err{color:#ef4444;font-size:14px;font-weight:500;margin-top:10px}
+  footer{border-top:1px solid #eee;margin-top:50px;padding:26px 0;font-size:13px;color:#888}
+  footer a{color:#666;margin-right:16px}
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap"><a class="logo" href="/">firstinternships</a><a class="cta" href="/">Start free →</a></div></header>
+<main class="wrap">
+
+<h1>Free AI Resume Grader</h1>
+<p class="lead">Paste your resume or drop in your PDF. An AI recruiter scores it out of 100 and hands you the three fixes that actually get interviews. No signup, no email.</p>
+
+<div class="drop" id="drop">
+  <strong>Drop your resume PDF here</strong> or click to upload · or just paste the text below
+  <input type="file" id="file" accept=".pdf,.txt,.md" hidden/>
+</div>
+<textarea id="text" placeholder="Paste your full resume text here, every section. The more you paste, the sharper the feedback."></textarea>
+<div class="row">
+  <button class="btn" id="go">Grade my resume</button>
+  <span class="muted" id="hint">Takes about 5 seconds.</span>
+</div>
+<div class="err" id="err"></div>
+
+<div id="result">
+  <div class="scorecard">
+    <div class="ring" id="ring"></div>
+    <div>
+      <div class="verdict" id="verdict"></div>
+      <div class="verdict-sub">Your resume score</div>
+    </div>
+  </div>
+  <div id="sections"></div>
+  <div class="fixes"><h3>Your 3 highest-impact fixes</h3><ol id="fixes"></ol></div>
+</div>
+
+<div class="box">
+  <p style="margin:0 0 14px;font-weight:500;color:#1a1a1f">A great resume is only half of it. The students who land first internships also <strong>email companies directly</strong> instead of waiting on job boards.</p>
+  <p style="margin:0 0 16px">FirstInternships gives you 11,000+ company contacts, writes a personalized cold email for each, and sends it from your Gmail. Free to start.</p>
+  <a class="btn" href="/">Try it free →</a>
+</div>
+
+<h2>How the resume score works</h2>
+<p>An AI trained to think like a recruiter reads your resume and grades five things: <strong>quantified impact</strong> (real numbers, not duties), <strong>clarity and formatting</strong>, <strong>relevance and focus</strong>, <strong>writing and action verbs</strong>, and <strong>length and structure</strong>. You get an overall score, a one-line verdict, a rating on each area, and the three changes that will move the needle most. It's built for students and first-time applicants, so the advice assumes you don't have ten years of experience yet.</p>
+
+<h2>Frequently asked questions</h2>
+<p><strong>Is it really free?</strong> Yes, and there's no signup or email required.</p>
+<p><strong>Is my resume stored?</strong> No. The text is sent to the AI to grade it and isn't saved to any account.</p>
+<p><strong>What file types work?</strong> PDF and plain text upload directly. For a Word doc, open it and paste the text into the box.</p>
+<p><strong>Next step after fixing it?</strong> <a href="/tools/cold-email-grader">Grade your cold email</a>, then start reaching out to companies on <a href="/">FirstInternships</a>.</p>
+
+</main>
+<footer><div class="wrap">
+<a href="/">Home</a><a href="/tools/cold-email-grader">Cold Email Grader</a><a href="/guides/">Guides</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a>
+<p style="margin-top:12px">FirstInternships, land your first internship by emailing companies directly. © 2026 FirstInternships.</p>
+</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function(){
+  var pdfjs = window['pdfjsLib'];
+  if (pdfjs) pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  var $ = function(id){ return document.getElementById(id); };
+  var drop=$('drop'), file=$('file'), text=$('text'), go=$('go'), err=$('err'), hint=$('hint');
+
+  drop.addEventListener('click', function(){ file.click(); });
+  ['dragover','dragenter'].forEach(function(e){ drop.addEventListener(e,function(ev){ev.preventDefault();drop.classList.add('over');}); });
+  ['dragleave','drop'].forEach(function(e){ drop.addEventListener(e,function(ev){ev.preventDefault();drop.classList.remove('over');}); });
+  drop.addEventListener('drop', function(ev){ if(ev.dataTransfer.files[0]) handleFile(ev.dataTransfer.files[0]); });
+  file.addEventListener('change', function(){ if(file.files[0]) handleFile(file.files[0]); });
+
+  function handleFile(f){
+    err.textContent='';
+    if(/\.(txt|md)$/i.test(f.name)){
+      var r=new FileReader(); r.onload=function(){ text.value=r.result; drop.querySelector('strong').textContent='Loaded '+f.name; }; r.readAsText(f); return;
+    }
+    if(/\.pdf$/i.test(f.name)){
+      if(!pdfjs){ err.textContent='PDF reader did not load, please paste your resume text instead.'; return; }
+      drop.querySelector('strong').textContent='Reading '+f.name+'…';
+      var r=new FileReader();
+      r.onload=function(){
+        pdfjs.getDocument({data:r.result}).promise.then(function(pdf){
+          var pages=[]; for(var i=1;i<=pdf.numPages;i++) pages.push(pdf.getPage(i));
+          return Promise.all(pages);
+        }).then(function(ps){
+          return Promise.all(ps.map(function(p){ return p.getTextContent().then(function(c){ return c.items.map(function(it){return it.str;}).join(' '); }); }));
+        }).then(function(chunks){
+          text.value=chunks.join('\n\n').replace(/\s{3,}/g,'  ').trim();
+          drop.querySelector('strong').textContent='Loaded '+f.name;
+        }).catch(function(){ err.textContent='Could not read that PDF, try pasting the text instead.'; drop.querySelector('strong').textContent='Drop your resume PDF here'; });
+      };
+      r.readAsArrayBuffer(f); return;
+    }
+    err.textContent='Upload a PDF or .txt, or paste your resume text.';
+  }
+
+  function ring(score){
+    var color = score>=80?'#16a34a':score>=60?'#eab308':'#ef4444';
+    var R=44, C=2*Math.PI*R, off=C*(1-score/100);
+    return '<svg width="104" height="104" viewBox="0 0 104 104">'+
+      '<circle cx="52" cy="52" r="'+R+'" fill="none" stroke="#e8e8ee" stroke-width="9"/>'+
+      '<circle cx="52" cy="52" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'"/>'+
+      '</svg><div class="num" style="color:'+color+'">'+score+'<small>OUT OF 100</small></div>';
+  }
+
+  go.addEventListener('click', function(){
+    var body=text.value.trim();
+    err.textContent='';
+    if(body.length<40){ err.textContent='Paste your full resume first (it looks too short).'; return; }
+    go.disabled=true; go.innerHTML='<span class="spin"></span>Grading…'; hint.textContent='';
+    fetch('/api/grade',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'resume',text:body})})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){
+        if(!res.ok){ err.textContent=res.j.error||'Something went wrong, try again.'; return; }
+        var d=res.j;
+        $('ring').innerHTML=ring(d.score);
+        $('verdict').textContent=d.verdict||'Your resume score';
+        $('sections').innerHTML=(d.sections||[]).map(function(s){
+          return '<div class="sec"><span class="dot '+s.rating+'"></span><div><div class="lbl">'+esc(s.label)+'</div><div class="nt">'+esc(s.note)+'</div></div></div>';
+        }).join('');
+        $('fixes').innerHTML=(d.fixes||[]).map(function(f){ return '<li>'+esc(f)+'</li>'; }).join('');
+        $('result').style.display='block';
+        $('result').scrollIntoView({behavior:'smooth',block:'start'});
+      })
+      .catch(function(){ err.textContent='Network error, try again.'; })
+      .finally(function(){ go.disabled=false; go.textContent='Grade my resume'; });
+  });
+
+  function esc(s){ return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+})();
+</script>
+</body>
+</html>

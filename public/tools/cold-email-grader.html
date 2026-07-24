@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Free Cold Email Grader, Will a Recruiter Reply? | FirstInternships</title>
+<meta name="description" content="Paste your internship cold email and get an instant AI score out of 100, the exact fixes, and a rewritten version that gets replies. Free, no signup."/>
+<link rel="canonical" href="https://firstinternships.com/tools/cold-email-grader"/>
+<link rel="icon" href="/favicon.ico" sizes="any"/>
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png"/>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"/>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1"/>
+<meta property="og:type" content="website"/>
+<meta property="og:title" content="Free Cold Email Grader, Will a Recruiter Reply?"/>
+<meta property="og:description" content="Instant AI score for your internship cold email, plus a rewrite that gets replies. Free, no signup."/>
+<meta property="og:url" content="https://firstinternships.com/tools/cold-email-grader"/>
+<meta property="og:site_name" content="FirstInternships"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Free Cold Email Grader"/>
+<meta name="twitter:description" content="Instant AI score for your internship cold email plus a rewrite that gets replies. Free."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"Cold Email Grader","url":"https://firstinternships.com/tools/cold-email-grader","applicationCategory":"BusinessApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"FirstInternships"}},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is the cold email grader free?","acceptedAnswer":{"@type":"Answer","text":"Yes, and there's no signup. Paste your internship cold email and get an instant AI score out of 100 with specific fixes and a rewritten version."}},{"@type":"Question","name":"What makes a cold email get a reply?","acceptedAnswer":{"@type":"Answer","text":"A short email (70 to 120 words) that gets to the point, gives one specific reason tied to that company, makes one clear ask, and reads like a real person rather than AI or a cover letter."}},{"@type":"Question","name":"Does it rewrite my email?","acceptedAnswer":{"@type":"Answer","text":"Yes. Along with the score and fixes, you get an improved version you can copy, edit, and send."}}]},{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://firstinternships.com/"},{"@type":"ListItem","position":2,"name":"Free tools","item":"https://firstinternships.com/tools/cold-email-grader"},{"@type":"ListItem","position":3,"name":"Cold Email Grader","item":"https://firstinternships.com/tools/cold-email-grader"}]}]</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,-apple-system,sans-serif;color:#1a1a1f;background:#fff;line-height:1.7;font-size:16px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 22px}
+  header.nav{border-bottom:1px solid #eee;position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);z-index:10}
+  header.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .logo{font-weight:800;font-size:16px;letter-spacing:-.5px;color:#0c0c0e;text-decoration:none}
+  .cta{background:#0c0c0e;color:#fff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;text-decoration:none}
+  h1{font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1.15;margin:34px 0 8px}
+  .lead{font-size:19px;color:#33333a;font-weight:500;margin:0 0 26px}
+  h2{font-size:23px;font-weight:700;letter-spacing:-.4px;margin:36px 0 12px}
+  p{margin-bottom:16px;color:#33333a}
+  a{color:#1a56db}
+  textarea{width:100%;min-height:180px;border:1px solid #d8d8e0;border-radius:10px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;line-height:1.6;color:#1a1a1f;resize:vertical}
+  textarea:focus{outline:none;border-color:#0c0c0e}
+  .wc{font-size:12px;color:#aaa;text-align:right;margin-top:4px}
+  .row{display:flex;gap:10px;align-items:center;margin:8px 0 6px;flex-wrap:wrap}
+  .btn{display:inline-block;background:#0c0c0e;color:#fff;font-weight:600;padding:13px 26px;border-radius:9px;text-decoration:none;font-size:15px;border:none;cursor:pointer}
+  .btn:disabled{opacity:.5;cursor:default}
+  .muted{font-size:13px;color:#999}
+  #result{display:none;margin-top:8px}
+  .scorecard{display:flex;align-items:center;gap:22px;background:#f7f8fc;border:1px solid #e8e8ee;border-radius:14px;padding:22px 24px;margin-bottom:8px}
+  .ring{position:relative;flex:0 0 auto}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:30px;letter-spacing:-1px}
+  .ring .num small{font-weight:600;font-size:11px;color:#999;letter-spacing:0}
+  .verdict{font-size:20px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px}
+  .verdict-sub{font-size:14px;color:#888}
+  .sec{border:1px solid #e8e8ee;border-radius:10px;padding:13px 16px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+  .dot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;margin-top:7px}
+  .dot.strong{background:#16a34a}.dot.ok{background:#eab308}.dot.weak{background:#ef4444}
+  .sec .lbl{font-weight:700;font-size:14px}
+  .sec .nt{font-size:14px;color:#555}
+  .fixes{background:#0c0c0e;color:#e8e8ee;border-radius:12px;padding:18px 22px;margin:16px 0 8px}
+  .fixes h3{font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
+  .fixes ol{margin:0 0 0 18px}.fixes li{margin-bottom:8px;font-size:14px;line-height:1.55}
+  .rewrite{border:1px solid #e8e8ee;border-radius:12px;overflow:hidden;margin:16px 0 8px}
+  .rewrite .rw-head{display:flex;justify-content:space-between;align-items:center;background:#f7f8fc;padding:11px 16px;font-weight:700;font-size:14px;border-bottom:1px solid #e8e8ee}
+  .rewrite .rw-body{padding:16px;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;line-height:1.65;color:#1a1a1f}
+  .copy{background:#0c0c0e;color:#fff;border:none;border-radius:7px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer}
+  .box{background:#f7f8fc;border:1px solid #e8e8ee;border-radius:12px;padding:20px 22px;margin:22px 0}
+  .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px;margin-right:8px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .err{color:#ef4444;font-size:14px;font-weight:500;margin-top:10px}
+  footer{border-top:1px solid #eee;margin-top:50px;padding:26px 0;font-size:13px;color:#888}
+  footer a{color:#666;margin-right:16px}
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap"><a class="logo" href="/">firstinternships</a><a class="cta" href="/">Start free →</a></div></header>
+<main class="wrap">
+
+<h1>Free Cold Email Grader</h1>
+<p class="lead">Paste the internship email you're about to send. An AI that knows what makes recruiters reply scores it out of 100, tells you exactly what to fix, and rewrites it for you. No signup.</p>
+
+<textarea id="text" placeholder="Paste your cold email here, subject line and body. Example:
+
+Hi Stripe team,
+
+I'm a CS junior at NYU. I built a budgeting app to learn how payment APIs work and loved digging into how you handle it. I'd love to intern this summer.
+
+Do you take summer interns? Resume attached.
+
+Thanks,
+Jay"></textarea>
+<div class="wc" id="wc">0 words</div>
+<div class="row">
+  <button class="btn" id="go">Grade my email</button>
+  <span class="muted" id="hint">Takes about 5 seconds.</span>
+</div>
+<div class="err" id="err"></div>
+
+<div id="result">
+  <div class="scorecard">
+    <div class="ring" id="ring"></div>
+    <div>
+      <div class="verdict" id="verdict"></div>
+      <div class="verdict-sub">Your cold email score</div>
+    </div>
+  </div>
+  <div id="sections"></div>
+  <div class="fixes"><h3>Your 3 highest-impact fixes</h3><ol id="fixes"></ol></div>
+  <div class="rewrite" id="rewrap" style="display:none">
+    <div class="rw-head"><span>✨ Improved version</span><button class="copy" id="copy">Copy</button></div>
+    <div class="rw-body" id="rewrite"></div>
+  </div>
+</div>
+
+<div class="box">
+  <p style="margin:0 0 14px;font-weight:500;color:#1a1a1f">Now send it to the right people. FirstInternships has <strong>11,000+ verified company contacts</strong>, writes a tailored version of this email for each one, and sends it from your own Gmail.</p>
+  <a class="btn" href="/">Try it free →</a>
+</div>
+
+<h2>How the cold email score works</h2>
+<p>The grader reads your email like a recruiter would and rates five things: the <strong>hook and opening</strong> (does it get to the point, or open with filler?), <strong>personalization</strong> (one specific reason tied to that company?), <strong>length and concision</strong> (70 to 120 words wins), the <strong>ask</strong> (one clear, low-pressure question), and <strong>human tone</strong> (does it read like a person or like AI and buzzwords?). You get a score, a rating on each area, the three biggest fixes, and a rewritten version you can copy and send.</p>
+
+<h2>Frequently asked questions</h2>
+<p><strong>Is it free?</strong> Yes, no signup or email needed.</p>
+<p><strong>Does it rewrite my email?</strong> Yes, you get an improved version alongside the score.</p>
+<p><strong>Want the full template guide?</strong> Read <a href="/guides/cold-email-for-internship">how to cold email for an internship</a> and grab our <a href="/guides/internship-email-templates">templates that get replies</a>.</p>
+<p><strong>Next step?</strong> <a href="/tools/resume-grader">Grade your resume</a>, then start reaching out on <a href="/">FirstInternships</a>.</p>
+
+</main>
+<footer><div class="wrap">
+<a href="/">Home</a><a href="/tools/resume-grader">Resume Grader</a><a href="/guides/">Guides</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a>
+<p style="margin-top:12px">FirstInternships, land your first internship by emailing companies directly. © 2026 FirstInternships.</p>
+</div></footer>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var text=$('text'), go=$('go'), err=$('err'), hint=$('hint'), wc=$('wc');
+
+  text.addEventListener('input', function(){
+    var n=text.value.trim()?text.value.trim().split(/\s+/).length:0;
+    wc.textContent=n+' words'+(n>140?' · try to trim under 120':'');
+    wc.style.color=n>140?'#ef4444':'#aaa';
+  });
+
+  function ring(score){
+    var color = score>=80?'#16a34a':score>=60?'#eab308':'#ef4444';
+    var R=44, C=2*Math.PI*R, off=C*(1-score/100);
+    return '<svg width="104" height="104" viewBox="0 0 104 104">'+
+      '<circle cx="52" cy="52" r="'+R+'" fill="none" stroke="#e8e8ee" stroke-width="9"/>'+
+      '<circle cx="52" cy="52" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'"/>'+
+      '</svg><div class="num" style="color:'+color+'">'+score+'<small>OUT OF 100</small></div>';
+  }
+
+  go.addEventListener('click', function(){
+    var body=text.value.trim();
+    err.textContent='';
+    if(body.length<40){ err.textContent='Paste your cold email first (it looks too short).'; return; }
+    go.disabled=true; go.innerHTML='<span class="spin"></span>Grading…'; hint.textContent='';
+    fetch('/api/grade',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'email',text:body})})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){
+        if(!res.ok){ err.textContent=res.j.error||'Something went wrong, try again.'; return; }
+        var d=res.j;
+        $('ring').innerHTML=ring(d.score);
+        $('verdict').textContent=d.verdict||'Your cold email score';
+        $('sections').innerHTML=(d.sections||[]).map(function(s){
+          return '<div class="sec"><span class="dot '+s.rating+'"></span><div><div class="lbl">'+esc(s.label)+'</div><div class="nt">'+esc(s.note)+'</div></div></div>';
+        }).join('');
+        $('fixes').innerHTML=(d.fixes||[]).map(function(f){ return '<li>'+esc(f)+'</li>'; }).join('');
+        if(d.rewrite){ $('rewrite').textContent=d.rewrite; $('rewrap').style.display='block'; }
+        else $('rewrap').style.display='none';
+        $('result').style.display='block';
+        $('result').scrollIntoView({behavior:'smooth',block:'start'});
+      })
+      .catch(function(){ err.textContent='Network error, try again.'; })
+      .finally(function(){ go.disabled=false; go.textContent='Grade my email'; });
+  });
+
+  $('copy').addEventListener('click', function(){
+    var t=$('rewrite').textContent;
+    navigator.clipboard.writeText(t).then(function(){ $('copy').textContent='Copied!'; setTimeout(function(){$('copy').textContent='Copy';},1500); });
+  });
+
+  function esc(s){ return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+})();
+</script>
+</body>
+</html>

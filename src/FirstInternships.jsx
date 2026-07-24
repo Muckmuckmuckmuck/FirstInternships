@@ -14,15 +14,15 @@ function injectSEO() {
     el.setAttribute("content", content);
   };
 
-  document.title = "Get Your First Internship by Reaching Out — FirstInternships";
-  setMeta("description", "The smart way to land your first internship: reach companies directly instead of applying through job boards. AI writes personalized cold emails to real company recruiting inboxes across dozens of industries — you send them from your own Gmail.");
+  document.title = "Get Your First Internship by Reaching Out | FirstInternships";
+  setMeta("description", "The smart way to land your first internship: reach companies directly instead of applying through job boards. AI writes personalized cold emails to real company recruiting inboxes across dozens of industries, you send them from your own Gmail.");
   setMeta("keywords", "internship, get internship, internship outreach, cold email internship, how to get an internship, internship emails, first internship, internship search, entry level jobs, student internships");
   setMeta("robots", "index, follow");
   setMeta("author", "FirstInternships");
   setMeta("viewport", "width=device-width, initial-scale=1, maximum-scale=5");
 
   setMeta("og:type", "website", true);
-  setMeta("og:title", "Get Your First Internship by Reaching Out — FirstInternships", true);
+  setMeta("og:title", "Get Your First Internship by Reaching Out | FirstInternships", true);
   setMeta("og:description", "Curated company recruiting inboxes. AI-written cold emails. Send from your Gmail in minutes.", true);
   setMeta("og:url", "https://firstinternships.com", true);
   setMeta("og:site_name", "FirstInternships", true);
@@ -31,7 +31,7 @@ function injectSEO() {
   setMeta("og:image:height", "630", true);
 
   setMeta("twitter:card", "summary_large_image");
-  setMeta("twitter:title", "Get Your First Internship by Reaching Out — FirstInternships");
+  setMeta("twitter:title", "Get Your First Internship by Reaching Out | FirstInternships");
   setMeta("twitter:description", "Curated company contacts. AI cold emails. Send from Gmail in minutes.");
   setMeta("twitter:image", "https://firstinternships.com/og-image.png");
   setMeta("twitter:site", "@firstinternships");
@@ -71,9 +71,9 @@ function injectSEO() {
         "@type": "FAQPage",
         "mainEntity": [
           { "@type": "Question", "name": "How does FirstInternships help me get an internship?", "acceptedAnswer": { "@type": "Answer", "text": "FirstInternships gives you a curated database of company recruiting inboxes across dozens of industries. Our AI writes a personalized cold email for each company based on your background, and sends it directly from your Gmail account." } },
-          { "@type": "Question", "name": "Do I need experience to use FirstInternships?", "acceptedAnswer": { "@type": "Answer", "text": "No experience required. Students at every level use FirstInternships — from high school to career changers. You just need a Gmail account and a few sentences about yourself." } },
-          { "@type": "Question", "name": "How does pricing work?", "acceptedAnswer": { "@type": "Answer", "text": "You spend credits only to unlock a contact the first time you email them — 1 for a database contact, 2 for an AI-discovered one. After that, writing and follow-ups to that contact are unlimited and free. Free unlocks 5 contacts per day; Pro unlocks 1,000 per month and adds AI firm discovery." } },
-          { "@type": "Question", "name": "Is cold email better than applying on job boards?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, for most smaller companies. Many firms never post internships publicly — they hire students who reach out directly. A well-written cold email to the right person gets responses that portal applications never do." } },
+          { "@type": "Question", "name": "Do I need experience to use FirstInternships?", "acceptedAnswer": { "@type": "Answer", "text": "No experience required. Students at every level use FirstInternships, from high school to career changers. You just need a Gmail account and a few sentences about yourself." } },
+          { "@type": "Question", "name": "How does pricing work?", "acceptedAnswer": { "@type": "Answer", "text": "You spend credits only to unlock a contact the first time you email them. It costs 2 credits for a verified contact (we confirmed the inbox exists) and 1 for an unverified one. After that, writing and follow-ups to that contact are unlimited and free. The free plan unlocks 5 contacts a day. Pro unlocks 1,000 a month and adds AI firm discovery." } },
+          { "@type": "Question", "name": "Is cold email better than applying on job boards?", "acceptedAnswer": { "@type": "Answer", "text": "Yes, for most smaller companies. Many firms never post internships publicly, they hire students who reach out directly. A well-written cold email to the right person gets responses that portal applications never do." } },
           { "@type": "Question", "name": "What industries does FirstInternships cover?", "acceptedAnswer": { "@type": "Answer", "text": "All of them. Tech, marketing, design, finance, law, healthcare, media, nonprofits, startups, and more. Filter by industry, company size, location, and remote availability." } }
         ]
       }
@@ -100,26 +100,33 @@ const PLANS = {
   },
   pro: {
     id:"pro", name:"Pro", price:20, creditsPerMonth:1000, dailyUnlocks:0,
-    features:["Unlock 1,000 contacts / month","AI firm discovery — find firms beyond our database","Unlimited AI email writing & follow-ups","Resume attach & AI personalization","Target lists, pipeline & reply tracking","Send from your Gmail","Top-ups at $5 / 100 credits"],
+    features:["Unlock 1,000 contacts / month","AI firm discovery, find firms beyond our database","Unlimited AI email writing & follow-ups","Resume attach & AI personalization","Target lists, pipeline & reply tracking","Send from your Gmail","Top-ups at $5 / 100 credits"],
     missing:[],
   },
 };
-// Pricing model: unlocking a contact the FIRST time you email them costs credits.
-//   • Existing database contact  → 1 credit  (no discovery cost on our side)
-//   • AI-discovered contact      → 2 credits (covers Gemini grounded-search cost)
+// Pricing model: unlocking a contact the FIRST time you email them costs credits,
+// priced by how likely the email is to actually land (from SMTP verification):
+//   • Verified contact (mailbox confirmed to exist) → 2 credits  (guaranteed deliverable)
+//   • Unverified contact (live domain, deliverability not confirmed) → 1 credit (break-even)
+//   • AI-discovered contact → 2 credits (covers Gemini grounded-search cost)
 // After unlocking, writing emails and follow-ups to that contact is unlimited & free.
-const UNLOCK_COST   = 1;   // preexisting database email
+const VERIFIED_COST = 2;   // SMTP-confirmed the mailbox exists, premium, guaranteed to land
+const UNLOCK_COST   = 1;   // live domain but unconfirmed (catch-all / probe-blocked), cheap
 const DISCOVER_COST = 2;   // newly AI-discovered email (covers discovery cost)
-const contactCost = (company) => company?.discovered ? DISCOVER_COST : UNLOCK_COST;
+const contactCost = (company) =>
+  company?.discovered ? DISCOVER_COST
+  : company?.verification_status === "valid" ? VERIFIED_COST
+  : UNLOCK_COST;
+const isVerified = (company) => company?.verification_status === "valid";
 
 // ─── COMPANY DATABASE ─────────────────────────────────────────────────────────
 // ─── FIRM DATABASE ────────────────────────────────────────────────────────────
 // This is a representative SAMPLE (80 firms) for the preview. The full
 // database (4,816 firms from your CSV) ships in two forms:
-//   • firmsData.js   — import { COMPANIES } from "./firmsData" to bundle them all
-//   • firms-seed.csv — import into the Supabase `firms` table, then fetch at runtime
+//   • firmsData.js  , import { COMPANIES } from "./firmsData" to bundle them all
+//   • firms-seed.csv, import into the Supabase `firms` table, then fetch at runtime
 // In production, replace this array with the import or a Supabase fetch.
-// All emails are role-based recruiting inboxes (careers@/jobs@) — curated business
+// All emails are role-based recruiting inboxes (careers@/jobs@), curated business
 // data, not personal data.
 const COMPANIES = [
   { id:1000, dba:"ZipRecruiter", name:"ZipRecruiter", city:"Santa Monica", state:"CA", industry:"Technology", type:"Job Search Platform", size:null, remote:false, email:"careers@ziprecruiter.com", cname:"", ctitle:"", email2:"", emailConfidence:null, verified:true, intern:true, ugrad:true, compPaid:true, knownFor:"Job Search Platform", quote:"", discovered:false },
@@ -213,6 +220,7 @@ function normalizeFirm(f) {
     compPaid: f.comp_paid || false, intern: f.intern || false,
     knownFor: f.type || "", discovered: f.source === "discovered",
     domain: f.domain, source: f.source,
+    verification_status: f.verification_status || null,   // valid | catch_all | unknown | null
   };
 }
 
@@ -266,7 +274,7 @@ const industryMatch = (industry, label) => {
 };
 
 // Smart-search synonym expansion: "aerospace" also surfaces defense/space firms,
-// "finance" surfaces fintech/banking, etc. — so a field/topic search finds the
+// "finance" surfaces fintech/banking, etc., so a field/topic search finds the
 // right companies even when the exact word isn't in the industry label.
 const SEARCH_SYNONYMS = {
   aerospace:["aerospace","defense","defence","space","satellite","aviation","aircraft"],
@@ -314,18 +322,18 @@ function dailySendLimit(accountType, firstSendAt) {
 function deliverabilityCheck(subject, body) {
   const w = []; const s = (subject || ""); const b = (body || "");
   const links = (b.match(/https?:\/\//g) || []).length;
-  if (links > 2) w.push("Several links — cold emails with many links often hit spam. Keep it to 0–1.");
+  if (links > 2) w.push("Several links, cold emails with many links often hit spam. Keep it to 0-1.");
   if (/\b[A-Z]{6,}\b/.test(s + " " + b)) w.push("ALL-CAPS words read as spam. Use normal sentence case.");
   if ((b.match(/!/g) || []).length > 2) w.push("Several exclamation points look promotional.");
   if (/(free money|guaranteed?|act now|limited time|click here|buy now|risk-free|cash bonus|100% off|earn \$)/i.test(b))
-    w.push("Contains spam-trigger phrases — reword to sound personal.");
-  if (b.length > 1600) w.push("Long email — short, personal notes get more replies and fewer spam flags.");
-  if (b.replace(/\s/g, "").length < 140) w.push("Very short — add a specific, personal reason you're reaching out.");
-  if (!/\?/.test(b)) w.push("No question/ask — cold emails convert better when they end with one clear ask.");
+    w.push("Contains spam-trigger phrases, reword to sound personal.");
+  if (b.length > 1600) w.push("Long email, short, personal notes get more replies and fewer spam flags.");
+  if (b.replace(/\s/g, "").length < 140) w.push("Very short, add a specific, personal reason you're reaching out.");
+  if (!/\?/.test(b)) w.push("No question/ask, cold emails convert better when they end with one clear ask.");
   return w;
 }
 
-// Lightweight analytics — writes to the Supabase `events` table via the data layer.
+// Lightweight analytics, writes to the Supabase `events` table via the data layer.
 // Swap api.track to forward to PostHog / GA / Segment if you prefer.
 function track(event, props = {}) {
   api.track(event, props).catch(() => {});
@@ -355,7 +363,7 @@ function stripToken(obj) {
 // Honest interest match. Scores ONLY on real data: how well the company's
 // industry/type aligns with the student's stated interests, major, and background.
 // We deliberately do NOT factor in intern program, remote, comp, or company size,
-// because the source data doesn't contain those — inventing them would mislead.
+// because the source data doesn't contain those, inventing them would mislead.
 // Returns null when there's nothing real to match on (the UI shows "—").
 function calcFit(company, profile) {
   if (!profile) return null;
@@ -402,21 +410,21 @@ function calcFit(company, profile) {
 function buildComplianceFooter(profile) {
   const who = (profile.name || "").trim();
   if (!who) return "";
-  return `\n\n—\n${who}\n\nTo stop receiving these emails, reply with "unsubscribe": {{UNSUBSCRIBE_URL}}`;
+  return `\n\n--\n${who}\n\nTo stop receiving these emails, reply with "unsubscribe": {{UNSUBSCRIBE_URL}}`;
 }
 
 // ─── EMAIL DRAFT ──────────────────────────────────────────────────────────────
 // DEV stand-in for AI email writing. PRODUCTION: replace with a call to
 // /api/generate-email, which uses a Gemini model (see api-generate-email.js).
-// Writing is unlimited and free for users — the credit is charged on unlock, not
-// per draft — so users can regenerate freely.
+// Writing is unlimited and free for users, the credit is charged on unlock, not
+// per draft, so users can regenerate freely.
 // opts.commercial appends the CAN-SPAM footer (used for bulk sends). A single
 // 1:1 job email omits it, preserving a genuine personal tone.
 function buildDraft(company, profile, level, opts = {}) {
   const name = (profile.name || "[Your name]").trim();
   const rawEdu = profile.eduLevel || profile.year || "student";
   const yr = rawEdu.toLowerCase()
-    .replace("bachelor's student — ", "")
+    .replace("bachelor's student, ", "")
     .replace("bachelor's graduate", "recent graduate")
     .replace("master's student", "master's student")
     .replace("master's graduate", "recent master's graduate")
@@ -426,18 +434,18 @@ function buildDraft(company, profile, level, opts = {}) {
   const sch  = profile.school || "university";
   const exp  = (profile.experience || "I have been building skills through coursework, personal projects, and hands-on work that I'm excited to bring to a professional setting.").trim();
   const ref1 = company.knownFor ? company.knownFor.split(".")[0] : `${company.dba}'s work in ${company.industry}`;
-  const ref2 = company.quote ? `I keep coming back to the idea that "${company.quote.substring(0, 70)}${company.quote.length > 70 ? "…" : ""}" — it reflects exactly the kind of work I want to be part of.` : "";
+  const ref2 = company.quote ? `I keep coming back to the idea that "${company.quote.substring(0, 70)}${company.quote.length > 70 ? "…" : ""}", it reflects exactly the kind of work I want to be part of.` : "";
 
   const d = {
     1: `My name is ${name}, and I'm a ${yr} studying ${maj} at ${sch}.\n\nI'm looking for an internship and wanted to reach out to ${company.dba} directly. I'd be glad to contribute wherever I'd be most useful.\n\nHappy to send a resume if that would help.\n\n${name}`,
 
     2: `My name is ${name}, and I'm a ${yr} in ${maj} at ${sch}.\n\n${exp}\n\nI'm interested in ${company.dba}'s work in ${company.industry.split("/")[0].trim().toLowerCase()} and would love to explore an internship opportunity. I'd work hard to be genuinely useful from day one.\n\nLet me know if a resume would help.\n\n${name}`,
 
-    3: `My name is ${name}, and I'm a ${yr} in ${maj} at ${sch}.\n\n${exp} ${ref1} is what drew me to reach out to ${company.dba} specifically.\n\nI'd love to intern this summer on whatever is most useful — research, support, or execution work. Happy to send a resume.\n\n${name}`,
+    3: `My name is ${name}, and I'm a ${yr} in ${maj} at ${sch}.\n\n${exp} ${ref1} is what drew me to reach out to ${company.dba} specifically.\n\nI'd love to intern this summer on whatever is most useful, research, support, or execution work. Happy to send a resume.\n\n${name}`,
 
     4: `My name is ${name}, and I'm a ${yr} in ${maj} at ${sch}.\n\n${exp} The reason I'm reaching out to ${company.dba} directly is that ${ref1.toLowerCase()}. The kind of work happening there isn't something you find everywhere.\n\n${ref2 || `I'd love the chance to contribute, even in a small way, to what ${company.dba} is building.`}\n\n${name}`,
 
-    5: `My name is ${name}, and I'm a ${yr} in ${maj} at ${sch}.\n\n${exp} When I think about where I want to spend my time this summer, ${company.dba} is the answer. ${ref1}. ${ref2}\n\nI would show up early, stay late, and do whatever work is most useful — without needing to be managed closely. If there's any room, I'd be genuinely grateful for the chance.\n\n${name}`,
+    5: `My name is ${name}, and I'm a ${yr} in ${maj} at ${sch}.\n\n${exp} When I think about where I want to spend my time this summer, ${company.dba} is the answer. ${ref1}. ${ref2}\n\nI would show up early, stay late, and do whatever work is most useful, without needing to be managed closely. If there's any room, I'd be genuinely grateful for the chance.\n\n${name}`,
   };
   const body = d[level] || d[3];
   // If a resume is attached, swap the "happy to send a resume" line for a
@@ -666,6 +674,53 @@ const prefLevel = {
   get: () => { const v = parseInt(localStorage.getItem("fi_pref_level"), 10); return (v >= 1 && v <= 5) ? v : 3; },
   set: (v) => { try { localStorage.setItem("fi_pref_level", String(v)); } catch {} },
 };
+// Same idea for the email's voice and length, remembered across drafts/sessions.
+const TONE_OPTS = ["genuine", "warm", "direct", "curious", "confident"];
+const LEN_OPTS  = ["short", "medium"];
+const prefTone = {
+  get: () => { const v = localStorage.getItem("fi_pref_tone"); return TONE_OPTS.includes(v) ? v : "genuine"; },
+  set: (v) => { try { localStorage.setItem("fi_pref_tone", v); } catch {} },
+};
+const prefLen = {
+  get: () => { const v = localStorage.getItem("fi_pref_len"); return LEN_OPTS.includes(v) ? v : "short"; },
+  set: (v) => { try { localStorage.setItem("fi_pref_len", v); } catch {} },
+};
+// Shows the "connect Gmail" nudge at most once per session (resets on reload).
+let gmailNudgeShown = false;
+
+// Lazily load pdf.js (same build the grader tools use) only when someone actually
+// uploads a PDF, so it never weighs down the initial bundle.
+let pdfJsPromise = null;
+function ensurePdfJs() {
+  if (typeof window !== "undefined" && window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  if (pdfJsPromise) return pdfJsPromise;
+  pdfJsPromise = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    s.onload = () => {
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        resolve(window.pdfjsLib);
+      } else reject(new Error("pdfjs_unavailable"));
+    };
+    s.onerror = () => { pdfJsPromise = null; reject(new Error("pdfjs_load_failed")); };
+    document.head.appendChild(s);
+  });
+  return pdfJsPromise;
+}
+// Extract the text of a PDF File in the browser (so the AI can use real resume detail).
+async function extractPdfText(file) {
+  const pdfjs = await ensurePdfJs();
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjs.getDocument({ data: buf }).promise;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    pages.push(content.items.map(it => it.str).join(" "));
+  }
+  return pages.join("\n\n").replace(/\s{3,}/g, "  ").trim();
+}
 
 function PersonalizationSlider({ value, onChange }) {
   const labels = ["Generic","Light","Tailored","Detailed","Deep"];
@@ -704,13 +759,20 @@ function PersonalizationSlider({ value, onChange }) {
 
 // ─── AUTH MODAL (email + password) ────────────────────────────────────────────
 // Account creation and sign-in. Gmail OAuth is a separate step in Onboarding
-// and is only for the gmail.send scope — not for authentication.
+// and is only for the gmail.send scope, not for authentication.
 function AuthModal({ defaultTab = "signin", onSuccess, onClose }) {
   const [tab,  setTab]  = useState(defaultTab);
   const [form, setForm] = useState({ name:"", email:"", password:"", confirm:"" });
   const [err,  setErr]  = useState("");
   const [load, setLoad] = useState(false);
+  const [gLoad, setGLoad] = useState(false);
   const fv = (k, v) => setForm(p => ({ ...p, [k]:v }));
+
+  async function googleAuth() {
+    setErr(""); setGLoad(true);
+    try { await api.signInWithGoogle(); }        // redirects to Google; return handled on reload
+    catch (e) { setErr(e?.message || "Google sign-in failed. Try again."); setGLoad(false); }
+  }
 
   function validate() {
     if (tab === "signup") {
@@ -769,6 +831,27 @@ function AuthModal({ defaultTab = "signin", onSuccess, onClose }) {
         </div>
 
         <div style={{ display:"flex", flexDirection:"column", gap:11 }}>
+          <button
+            onClick={googleAuth} disabled={gLoad || load}
+            style={{ width:"100%", padding:"11px 0", fontSize:14, fontWeight:600, borderRadius:8,
+              border:`1px solid ${K.b}`, background:"#fff", color:K.ink, cursor:"pointer",
+              display:"flex", alignItems:"center", justifyContent:"center", gap:10, opacity:(gLoad||load)?0.6:1 }}
+          >
+            {gLoad ? <Sp/> : (
+              <svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              </svg>
+            )}
+            Continue with Google
+          </button>
+          <div style={{ display:"flex", alignItems:"center", gap:10, margin:"2px 0" }}>
+            <div style={{ flex:1, height:1, background:K.b }} />
+            <span style={{ fontSize:11, color:K.ink4 }}>or</span>
+            <div style={{ flex:1, height:1, background:K.b }} />
+          </div>
           {tab === "signup" && (
             <div>
               <label className="lbl" htmlFor="auth-name">Full name</label>
@@ -835,14 +918,14 @@ function AuthModal({ defaultTab = "signin", onSuccess, onClose }) {
 // ─── LANDING PAGE ─────────────────────────────────────────────────────────────
 
 // ─── GMAIL CONNECT BUTTON ─────────────────────────────────────────────────────
-// Separate from account auth — this only requests gmail.send scope so the
+// Separate from account auth, this only requests gmail.send scope so the
 // app can send emails on the user's behalf from their own Gmail address.
 function GmailConnectButton({ userId, onSuccess }) {
   const [loading, setLoad] = useState(false);
   function handle() {
     if (userId) {
       setLoad(true);
-      api.connectGmail(userId); // redirects browser to Google OAuth
+      api.connectGmail().catch(() => setLoad(false)); // redirects browser to Google OAuth
     } else {
       // Fallback for onboarding before user id is known
       setLoad(true);
@@ -850,6 +933,7 @@ function GmailConnectButton({ userId, onSuccess }) {
     }
   }
   return (
+    <div style={{ width:"100%" }}>
     <button
       onClick={handle}
       disabled={loading}
@@ -873,6 +957,11 @@ function GmailConnectButton({ userId, onSuccess }) {
       )}
       {loading ? "Connecting…" : "Connect Gmail account"}
     </button>
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:6, marginTop:8, fontSize:11.5, color:K.ink4, lineHeight:1.5, textAlign:"center" }}>
+      <span aria-hidden="true">🔒</span>
+      <span>We can only <strong style={{ color:K.ink3 }}>send</strong> from your account. We can never read your inbox.</span>
+    </div>
+    </div>
   );
 }
 function Landing({ onGetStarted, onAuthSuccess }) {
@@ -888,12 +977,12 @@ function Landing({ onGetStarted, onAuthSuccess }) {
   }, []);
 
   const faqs = [
-    ["How does FirstInternships help me get an internship?","Most companies never post their internships publicly — they hire students who reach out directly. FirstInternships gives you a curated database of company recruiting inboxes and an AI that writes a personalized cold email for each company based on your background. You send it from your own Gmail."],
-    ["Do I need experience or a specific background?","No. Students from every background use FirstInternships — high school, college, grad school, military, career changers. You just need a Gmail account and a few sentences about yourself. The AI handles the rest."],
+    ["How does FirstInternships help me get an internship?","Most companies never post their internships publicly, they hire students who reach out directly. FirstInternships gives you a curated database of company recruiting inboxes and an AI that writes a personalized cold email for each company based on your background. You send it from your own Gmail."],
+    ["Do I need experience or a specific background?","No. Students from every background use FirstInternships, high school, college, grad school, military, career changers. You just need a Gmail account and a few sentences about yourself. The AI handles the rest."],
     ["What industries are covered?","All of them. Tech, media, marketing, design, consulting, law, nonprofits, retail, healthcare, startups, and more. You can filter by industry, company size, location, and remote availability."],
-    ["Is cold emailing actually effective?","Yes — especially for smaller companies. Many organizations never post internship listings at all. A well-written, direct email to the right person consistently gets responses that job board applications don't. Reaching out directly signals initiative in a way that a submitted application simply can't."],
-    ["Will the company know I used AI?","At levels 1–3, no. The emails are short, direct, and written to sound like a real person. At levels 4–5 the emails are more detailed — review before sending. You can always edit the draft before it goes out."],
-    ["How does pricing work?","You spend credits only to unlock a contact the first time you email them — 1 credit for a contact from our database, 2 for one our AI discovers for you. After that, writing and sending unlimited emails and follow-ups to that contact is completely free. The free plan unlocks 5 contacts per day; Pro unlocks 1,000 every month and adds AI firm discovery."],
+    ["Is cold emailing actually effective?","Yes, especially for smaller companies. Many organizations never post internship listings at all. A well-written, direct email to the right person consistently gets responses that job board applications don't. Reaching out directly signals initiative in a way that a submitted application simply can't."],
+    ["Will the company know I used AI?","At levels 1-3, no. The emails are short, direct, and written to sound like a real person. At levels 4-5 the emails are more detailed, review before sending. You can always edit the draft before it goes out."],
+    ["How does pricing work?","You spend credits only to unlock a contact the first time you email them. It costs 2 credits for a verified contact, one whose inbox we confirmed exists, and 1 credit for an unverified one. After that, writing and sending unlimited emails and follow-ups to that contact is completely free. The free plan unlocks 5 contacts a day, and Pro unlocks 1,000 every month and adds AI firm discovery."],
   ];
 
   return (
@@ -921,7 +1010,7 @@ function Landing({ onGetStarted, onAuthSuccess }) {
             Get your first internship.<br />By reaching out, not applying.
           </h1>
           <p style={{ fontSize:"clamp(15px,2vw,18px)", color:K.ink3, lineHeight:1.75, maxWidth:520, margin:"0 auto 32px" }}>
-            Access curated company recruiting inboxes across dozens of industries. AI writes a personalized cold email for each one. Send directly from your Gmail — in minutes, not days.
+            Access curated company recruiting inboxes across dozens of industries. AI writes a personalized cold email for each one. Send directly from your Gmail, in minutes, not days.
           </p>
           <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap", marginBottom:14 }}>
             <button className="btn-lift" style={G("dark",{fontSize:15,padding:"13px 30px",borderRadius:9,boxShadow:"0 2px 16px rgba(0,0,0,.2)"})} onClick={()=>setModal("signup")}>Get started free →</button>
@@ -934,7 +1023,7 @@ function Landing({ onGetStarted, onAuthSuccess }) {
       {/* STATS */}
       <section style={{ background:K.surf, borderBottom:`1px solid ${K.b}` }}>
         <dl style={{ maxWidth:1100, margin:"0 auto", display:"grid", gridTemplateColumns:"repeat(4,1fr)" }}>
-          {[["16,000+","Company contacts"],["17","Industries"],["Direct","Outreach, not portals"],["Minutes","To your first email"]].map(([n,l],i)=>(
+          {[["11,000+","Company contacts"],["17","Industries"],["Direct","Outreach, not portals"],["Minutes","To your first email"]].map(([n,l],i)=>(
             <div key={n} style={{ padding:"28px 24px", borderRight:i<3?`1px solid ${K.b}`:"none" }}>
               <dt style={{ fontSize:"clamp(20px,3vw,30px)", fontWeight:800, letterSpacing:-1, lineHeight:1 }}>{n}</dt>
               <dd style={{ fontSize:13, color:K.ink3, marginTop:5 }}>{l}</dd>
@@ -951,15 +1040,15 @@ function Landing({ onGetStarted, onAuthSuccess }) {
             Most students apply.<br />The ones who get offers reach out directly.
           </h2>
           <p style={{ fontSize:15, color:K.ink3, lineHeight:1.78 }}>
-            Most companies — especially smaller ones — never post internships publicly. The people who land them send a well-written email to the right person. We built the database and the AI to make that possible for everyone.
+            Most companies, especially smaller ones, never post internships publicly. The people who land them send a well-written email to the right person. We built the database and the AI to make that possible for everyone.
           </p>
         </div>
         <ul style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(290px,1fr))", gap:14, listStyle:"none" }}>
           {[
-            ["🏢","Real company inboxes","Thousands of real hiring and careers inboxes across dozens of industries — finance, tech, healthcare, retail, logistics, energy, and more. Ready to contact."],
+            ["🏢","Real company inboxes","Thousands of real hiring and careers inboxes across dozens of industries, finance, tech, healthcare, retail, logistics, energy, and more. Ready to contact."],
             ["✦","AI email drafting","Enter your background once. AI reads each company's mission and culture and writes a short, direct email that sounds like you wrote it specifically for them."],
-            ["📊","Interest matching","Every company is matched against your stated interests and major, so you can focus on the ones whose industry actually fits what you're looking for. We only score on what we know — we don't invent details."],
-            ["🎚","Personalization control","A 5-level slider controls how specific each email is. More personalization costs more credits — you decide the tradeoff."],
+            ["📊","Interest matching","Every company is matched against your stated interests and major, so you can focus on the ones whose industry actually fits what you're looking for. We only score on what we know, we don't invent details."],
+            ["🎚","Personalization control","A 5-level slider controls how specific each email is. More personalization costs more credits, you decide the tradeoff."],
             ["📬","Send from your Gmail","Every email comes from your Gmail address. Companies see your name, not ours. No shared inboxes, no tricks."],
             ["🔁","Campaign memory","Your sent history persists so you never double-contact the same person. AI auto-selects companies you haven't reached out to yet."],
           ].map(([icon,h,b])=>(
@@ -979,7 +1068,7 @@ function Landing({ onGetStarted, onAuthSuccess }) {
           <h2 style={{ fontSize:"clamp(22px,3.5vw,32px)", fontWeight:800, letterSpacing:-.8, marginBottom:14 }}>Be among the first to run the campaign</h2>
           <p style={{ fontSize:15, color:K.ink3, lineHeight:1.75, marginBottom:0 }}>
             FirstInternships is launching now. Sign up free, run your outreach, and shape the product as it grows.
-            Start free — unlock 5 contacts a day, no credit card required.
+            Start free, unlock 5 contacts a day, no credit card required.
           </p>
         </div>
       </section>
@@ -1019,7 +1108,7 @@ function Landing({ onGetStarted, onAuthSuccess }) {
               <div style={{ fontSize:38, fontWeight:800, letterSpacing:-1.5, lineHeight:1 }}>$0</div>
               <div style={{ fontSize:12, color:K.ink4, marginBottom:20, marginTop:3 }}>always free</div>
               {PLANS.free.features.map(f=><div key={f} style={{display:"flex",gap:8,fontSize:13,color:K.ink2,marginBottom:8,alignItems:"flex-start"}}><span style={{color:K.grn,flexShrink:0}}>✓</span>{f}</div>)}
-              {PLANS.free.missing.map(f=><div key={f} style={{display:"flex",gap:8,fontSize:13,color:K.ink4,marginBottom:8,alignItems:"flex-start"}}><span style={{flexShrink:0}}>–</span>{f}</div>)}
+              {PLANS.free.missing.map(f=><div key={f} style={{display:"flex",gap:8,fontSize:13,color:K.ink4,marginBottom:8,alignItems:"flex-start"}}><span style={{flexShrink:0}}>-</span>{f}</div>)}
               <button style={G("ghost",{width:"100%",padding:"10px 0",marginTop:18,fontSize:14})} onClick={()=>setModal("signup")}>Get started free →</button>
             </div>
             <div className="price-card featured">
@@ -1033,7 +1122,7 @@ function Landing({ onGetStarted, onAuthSuccess }) {
           <div style={{ maxWidth:640, margin:"20px auto 0", background:"#fff", border:`1px solid ${K.b}`, borderRadius:10, padding:"16px 20px" }}>
             <div style={{ fontSize:12, fontWeight:700, color:K.ink2, marginBottom:10 }}>How credits work</div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
-              {[["Database contact","1 credit","Unlock to email them"],["AI-discovered","2 credits","Found for you by AI"],["Writing & follow-ups","Free","Unlimited, any depth"]].map(([lvl,type,cost])=>(
+              {[["Verified contact","2 credits","Mailbox confirmed, will land"],["Unverified contact","1 credit","Live domain, not confirmed"],["Writing & follow-ups","Free","Unlimited, any depth"]].map(([lvl,type,cost])=>(
                 <div key={lvl} style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:7, padding:"10px 12px" }}>
                   <div style={{ fontSize:10, fontWeight:600, color:K.ink3, marginBottom:2, textTransform:"uppercase", letterSpacing:.03 }}>{lvl}</div>
                   <div style={{ fontSize:13, fontWeight:600 }}>{type}</div>
@@ -1086,7 +1175,7 @@ function Landing({ onGetStarted, onAuthSuccess }) {
         />
       )}
 
-      {/* OPT-OUT — B2B contacts only; CAN-SPAM § 7704(b)(1) does not require
+      {/* OPT-OUT, B2B contacts only; CAN-SPAM § 7704(b)(1) does not require
            opt-out for transactional/non-commercial messages, but we offer it anyway */}
       <section aria-label="Contact opt-out" style={{ borderTop:`1px solid ${K.b}`, background:K.surf, padding:"18px 24px" }}>
         <div style={{ maxWidth:1100, margin:"0 auto", textAlign:"center" }}>
@@ -1148,8 +1237,8 @@ function Landing({ onGetStarted, onAuthSuccess }) {
 // ─── EDUCATION OPTIONS ────────────────────────────────────────────────────────
 const EDU_LEVELS = [
   "High School Student","High School Graduate","Military / Veteran",
-  "Associate's Degree","Bachelor's Student — Freshman","Bachelor's Student — Sophomore",
-  "Bachelor's Student — Junior","Bachelor's Student — Senior","Bachelor's Graduate",
+  "Associate's Degree","Bachelor's Student, Freshman","Bachelor's Student, Sophomore",
+  "Bachelor's Student, Junior","Bachelor's Student, Senior","Bachelor's Graduate",
   "Master's Student","Master's Graduate","PhD Student","Career Changer","Self-Taught / Bootcamp","Other",
 ];
 const MAJORS = [
@@ -1160,7 +1249,7 @@ const MAJORS = [
 ];
 
 // ─── ONBOARDING ───────────────────────────────────────────────────────────────
-function Onboarding({ user, onDone }) {
+function Onboarding({ user, onDone, onConnectGmail }) {
   const [step, setStep]         = useState(0);
   const [ageAgreed, setAgeAgreed] = useState(false);
   const [p, setP] = useState({
@@ -1168,13 +1257,16 @@ function Onboarding({ user, onDone }) {
     school:     "",
     major:      "Business / Management",
     customMajor:"",
-    eduLevel:   "Bachelor's Student — Freshman",
+    eduLevel:   "Bachelor's Student, Freshman",
     experience: "",
     interest:   "",
     gradYear:   "",
     location:   "",
     linkedin:   "",
-    marketingConsent: false,  // opt-in (unchecked) — valid consent under GDPR and CCPA
+    country:    "",
+    phone:      "",
+    marketingConsent: false,  // opt-in (unchecked), valid consent under GDPR and CCPA
+    talentOptIn: false,       // opt-in (unchecked), share profile with employers for matching
     gmailToken: user?.gmailToken || "",
   });
   const set = (k, v) => setP(prev => ({ ...prev, [k]:v }));
@@ -1194,9 +1286,10 @@ function Onboarding({ user, onDone }) {
           <label style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer", userSelect:"none" }}>
             <input
               type="checkbox"
+              className="cb"
               checked={ageAgreed}
               onChange={e=>setAgeAgreed(e.target.checked)}
-              style={{ marginTop:2, flexShrink:0, accentColor:K.ink, width:15, height:15, cursor:"pointer" }}
+              style={{ marginTop:1, flexShrink:0 }}
               aria-required="true"
             />
             <span style={{ fontSize:12, color:K.ink3, lineHeight:1.65 }}>
@@ -1245,7 +1338,7 @@ function Onboarding({ user, onDone }) {
     {
       h:"What kind of work are you after?",
       sub:"This helps the AI target the right companies and write emails that fit.",
-      valid: p.interest.trim().length > 3,
+      valid: p.interest.trim().length > 3 && p.country.trim().length > 1,
       body: (
         <div style={{ display:"flex", flexDirection:"column", gap:13 }}>
           <div>
@@ -1259,8 +1352,18 @@ function Onboarding({ user, onDone }) {
               <input id="ob-grad" style={F()} placeholder="2027" value={p.gradYear} onChange={e=>set("gradYear",e.target.value)} inputMode="numeric" />
             </div>
             <div>
-              <label className="lbl" htmlFor="ob-loc">Location</label>
+              <label className="lbl" htmlFor="ob-country">Country</label>
+              <input id="ob-country" style={F()} placeholder="United States" value={p.country} onChange={e=>set("country",e.target.value)} />
+            </div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+            <div>
+              <label className="lbl" htmlFor="ob-loc">City <span style={{color:K.ink4,fontWeight:400}}>(optional)</span></label>
               <input id="ob-loc" style={F()} placeholder="Austin, TX" value={p.location} onChange={e=>set("location",e.target.value)} />
+            </div>
+            <div>
+              <label className="lbl" htmlFor="ob-phone">Phone <span style={{color:K.ink4,fontWeight:400}}>(optional)</span></label>
+              <input id="ob-phone" style={F()} placeholder="+1 555 123 4567" value={p.phone} onChange={e=>set("phone",e.target.value)} inputMode="tel" />
             </div>
           </div>
           <div>
@@ -1268,15 +1371,15 @@ function Onboarding({ user, onDone }) {
             <input id="ob-li" style={F()} placeholder="linkedin.com/in/you" value={p.linkedin} onChange={e=>set("linkedin",e.target.value)} />
           </div>
           <div>
-            <label className="lbl" htmlFor="ob-exp">Your background (1–2 sentences)</label>
+            <label className="lbl" htmlFor="ob-exp">Your background (1-2 sentences)</label>
             <textarea id="ob-exp" style={F({resize:"vertical",minHeight:90,lineHeight:1.75,fontFamily:"inherit",fontSize:14})} placeholder="I've built two personal projects using React and Python, competed in a marketing case competition, and run the social media for a local nonprofit with 12k followers." value={p.experience} onChange={e=>set("experience",e.target.value)} />
             <p style={{ fontSize:11, color:K.ink4, marginTop:5, lineHeight:1.65 }}>Any projects, jobs, coursework, or interests. More detail = better emails.</p>
           </div>
-          {/* Marketing / data-sharing consent — kept separate from the ToS agreement so
+          {/* Marketing / data-sharing consent, kept separate from the ToS agreement so
               it is valid, informed consent. Unchecked by default (opt-in), which is
               valid under both GDPR and CCPA. */}
           <label style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer", userSelect:"none", background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"11px 12px" }}>
-            <input type="checkbox" checked={p.marketingConsent} onChange={e=>set("marketingConsent",e.target.checked)} style={{ marginTop:2, flexShrink:0, accentColor:K.ink, width:15, height:15, cursor:"pointer" }} />
+            <input type="checkbox" className="cb" checked={p.marketingConsent} onChange={e=>set("marketingConsent",e.target.checked)} style={{ marginTop:1, flexShrink:0 }} />
             <span style={{ fontSize:11.5, color:K.ink3, lineHeight:1.6 }}>
               Send me relevant internship, job, and partner opportunities, and let FirstInternships share my profile with vetted partner companies and affiliated services. You can opt out anytime in settings or via any email's unsubscribe link. See our{" "}
               <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color:K.ink2, textDecoration:"underline" }}>Privacy Policy</a>.
@@ -1286,15 +1389,51 @@ function Onboarding({ user, onDone }) {
       ),
     },
     {
+      // Dedicated, prominent, benefit-framed opt-in step to maximize sign-ups —
+      // still UNCHECKED by default and skippable (Continue works without it), which
+      // keeps it a valid affirmative opt-in under GDPR/CCPA. Never pre-checked.
+      h:"Get discovered by employers.",
+      sub:"Optional, but this is how a lot of students get found first.",
+      valid: true,
+      body: (
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+          <p style={{ fontSize:14, color:K.ink2, lineHeight:1.7, margin:0 }}>
+            Turn this on and companies hiring interns can <strong>discover your profile and reach out to you directly</strong>, on top of the emails you send yourself. Employers come to you, instead of the other way around.
+          </p>
+          <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            {["Companies looking for someone like you can find you","They reach out to you about real openings","Always optional, and you can turn it off anytime in Settings"].map((t,i)=>(
+              <div key={i} style={{ display:"flex", gap:9, alignItems:"flex-start", fontSize:13, color:K.ink3 }}>
+                <span style={{ color:K.grn, fontWeight:800, flexShrink:0 }}>✓</span><span>{t}</span>
+              </div>
+            ))}
+          </div>
+          <label style={{ display:"flex", alignItems:"flex-start", gap:11, cursor:"pointer", userSelect:"none", background: p.talentOptIn?(K.grnBg||"#e7f6ec"):K.surf, border:`1.5px solid ${p.talentOptIn?(K.grnB||"#9ad3ab"):K.b}`, borderRadius:10, padding:"14px 15px", transition:"all .15s" }}>
+            <input type="checkbox" className="cb" checked={p.talentOptIn} onChange={e=>set("talentOptIn",e.target.checked)} style={{ marginTop:1, flexShrink:0 }} />
+            <span style={{ fontSize:13, color:K.ink, lineHeight:1.6, fontWeight:600 }}>
+              Yes, let employers find me.<span style={{ fontWeight:400, color:K.ink3 }}> Share my profile and resume with companies hiring interns so they can reach out about roles.</span>
+            </span>
+          </label>
+          <p style={{ fontSize:11, color:K.ink4, lineHeight:1.6, margin:0 }}>
+            You control this. It stays off unless you check the box, and you can change it anytime. See our <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color:K.ink3, textDecoration:"underline" }}>Privacy Policy</a>.
+          </p>
+        </div>
+      ),
+    },
+    {
       h:"Connect Gmail to start sending.",
-      sub:"Every email comes from your account — companies see your name, not ours.",
+      sub:"Every email comes from your account, companies see your name, not ours.",
       valid: true,
       body: (
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           {p.gmailToken && !p.gmailToken.startsWith("skip") ? (
             <InfoBox color="green" icon="✓">Gmail connected. Ready to send emails from your account.</InfoBox>
           ) : (
-            <GmailConnectButton userId={user?.id} onSuccess={token=>set("gmailToken",token)} />
+            // Save the profile FIRST, then redirect to Google, otherwise leaving the
+            // page for OAuth would lose everything they just entered.
+            <button className="btn-lift" style={G("dark",{width:"100%",padding:"12px 0",fontSize:14})}
+              onClick={()=>onConnectGmail({...p, major:p.major==="Other"?p.customMajor:p.major})}>
+              Connect Gmail →
+            </button>
           )}
           <InfoBox color="neutral" icon="🔒">
             <strong>gmail.send scope only.</strong> We cannot read your inbox. Emails only send when you click Send. Your credentials stay with Google.
@@ -1342,7 +1481,7 @@ function Onboarding({ user, onDone }) {
   );
 }
 
-// ─── CHECKOUT PAGE (Stripe Checkout — server redirect) ────────────────────────
+// ─── CHECKOUT PAGE (Stripe Checkout, server redirect) ────────────────────────
 function CheckoutPage({ onBack }) {
   const [loading, setLoad] = useState(false);
   const [err, setErr] = useState("");
@@ -1386,7 +1525,7 @@ function CheckoutPage({ onBack }) {
             </div>
           </div>
           <div style={{ padding:"20px 24px", display:"flex", flexDirection:"column", gap:14 }}>
-            <InfoBox color="neutral" icon="🔒"><strong>Secured by Stripe.</strong> You'll be taken to Stripe's secure checkout page — we never handle your card details.</InfoBox>
+            <InfoBox color="neutral" icon="🔒"><strong>Secured by Stripe.</strong> You'll be taken to Stripe's secure checkout page, we never handle your card details.</InfoBox>
             {err && <InfoBox color="red" icon="⚠">{err}</InfoBox>}
             <button style={G("dark",{width:"100%",padding:"12px 0",fontSize:15,borderRadius:8,opacity:loading?0.6:1})} disabled={loading} onClick={submit}>
               {loading ? <><Sp/>Redirecting to checkout…</> : "Continue to payment →"}
@@ -1418,7 +1557,7 @@ function Paywall({ credits, onClose, onUpgrade }) {
               <div style={{ fontSize:32, fontWeight:800, letterSpacing:-1.5, lineHeight:1 }}>5</div>
               <div style={{ fontSize:11, color:K.ink4, marginBottom:14, marginTop:2 }}>unlocks / day</div>
               {PLANS.free.features.map(f=><div key={f} style={{display:"flex",gap:7,fontSize:12,color:K.ink2,marginBottom:6,alignItems:"flex-start"}}><span style={{color:K.grn,flexShrink:0}}>✓</span>{f}</div>)}
-              {PLANS.free.missing.map(f=><div key={f} style={{display:"flex",gap:7,fontSize:12,color:K.ink4,marginBottom:6,alignItems:"flex-start"}}><span style={{flexShrink:0}}>–</span>{f}</div>)}
+              {PLANS.free.missing.map(f=><div key={f} style={{display:"flex",gap:7,fontSize:12,color:K.ink4,marginBottom:6,alignItems:"flex-start"}}><span style={{flexShrink:0}}>-</span>{f}</div>)}
               <div style={{ marginTop:12, padding:"7px 0", textAlign:"center", borderRadius:6, border:`1px solid ${K.b}`, fontSize:12, color:K.ink3, fontWeight:500 }}>Current plan</div>
             </div>
             <div style={{ border:`2px solid ${K.ink}`, borderRadius:10, padding:18, position:"relative" }}>
@@ -1483,19 +1622,35 @@ function TopupModal({ onClose, onTopup }) {
 function ResumeModal({ resume, onSave, onClose }) {
   const [name, setName] = useState(resume?.name || "");
   const [text, setText] = useState(resume?.text || "");
+  const [fileObj, setFileObj] = useState(null);   // the actual File, uploaded for attachment
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
   const fileRef = useRef(null);
-  function onFile(e){
+  async function onFile(e){
     const f = e.target.files && e.target.files[0]; if(!f) return;
-    setName(f.name);
-    if(f.name.toLowerCase().endsWith(".txt")){
+    setNote(""); setName(f.name); setFileObj(f);
+    const lower = f.name.toLowerCase();
+    if(lower.endsWith(".txt")){
       const r=new FileReader(); r.onload=()=>setText(String(r.result||"")); r.readAsText(f);
+    } else if(lower.endsWith(".pdf")){
+      setBusy(true);
+      try {
+        const t = await extractPdfText(f);
+        if(t){ setText(t); setNote("✓ Read your PDF, the AI will use these details. It'll also be attached."); }
+        else setNote("Couldn't find text in that PDF (it may be a scan). Paste your resume text below. The file will still be attached.");
+      } catch { setNote("Couldn't read that PDF automatically. Paste your resume text below, the file will still be attached to your emails."); }
+      setBusy(false);
+    } else {
+      // .doc/.docx can't be parsed reliably in the browser; keep the file for attachment.
+      setNote("Word files can't be read automatically. Paste your resume text below so the AI can use it, the file will still be attached.");
     }
-    // PRODUCTION: upload the file to Supabase Storage and parse PDF/DOCX text
-    // server-side to populate the text box automatically.
   }
   async function save(){
-    const rv = { name: name||"resume.pdf", text: text.trim(), updatedAt: Date.now() };
-    await api.saveResume({ file: null, text: rv.text }).catch(()=>{});
+    setBusy(true);
+    const saved = await api.saveResume({ file: fileObj, text: text.trim() }).catch(()=>null);
+    setBusy(false);
+    const rv = { name: name || fileObj?.name || "resume.pdf", text: text.trim(),
+                 storagePath: saved?.storage_path || resume?.storagePath || null, updatedAt: Date.now() };
     onSave(rv); onClose();
   }
   return (
@@ -1503,17 +1658,18 @@ function ResumeModal({ resume, onSave, onClose }) {
       <div className="mo" style={{ maxWidth:520 }}>
         <div className="mhd"><h2 id="rz-title" style={{ fontWeight:700, fontSize:14 }}>Your resume</h2><button className="mcl" onClick={onClose} aria-label="Close">×</button></div>
         <div style={{ padding:20, display:"flex", flexDirection:"column", gap:14 }}>
-          <p style={{ fontSize:13, color:K.ink3, lineHeight:1.6 }}>Attach a resume to send with your cold emails — and paste its text so the AI tailors each email to your real experience. Emails with a resume get far more replies.</p>
+          <p style={{ fontSize:13, color:K.ink3, lineHeight:1.6 }}>Attach a resume to send with your cold emails. Upload a PDF and we read it automatically so the AI can tailor each email to your real experience. Emails with a resume get far more replies.</p>
           <input ref={fileRef} type="file" accept=".pdf,.doc,.docx,.txt" onChange={onFile} style={{display:"none"}} />
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <button style={G("ghost",{fontSize:13})} onClick={()=>fileRef.current&&fileRef.current.click()}>Choose file…</button>
+            <button style={G("ghost",{fontSize:13})} disabled={busy} onClick={()=>fileRef.current&&fileRef.current.click()}>{busy?<><SpB/>Reading…</>:"Choose file…"}</button>
             <span style={{ fontSize:12, color: name?K.grn:K.ink4, fontWeight: name?600:400 }}>{name? "📎 "+name : "No file selected"}</span>
           </div>
+          {note&&<InfoBox color={note.startsWith("✓")?"green":"amber"} icon={note.startsWith("✓")?"✓":"ℹ"}>{note}</InfoBox>}
           <div>
             <span className="lbl">Resume text (used by the AI)</span>
-            <textarea style={F({resize:"vertical",minHeight:150,fontSize:12,lineHeight:1.6,fontFamily:"inherit"})} placeholder="Paste your resume text here so the AI can reference your real experience. (PDFs/DOCX are parsed automatically on upload in production.)" value={text} onChange={e=>setText(e.target.value)} aria-label="Resume text" />
+            <textarea style={F({resize:"vertical",minHeight:150,fontSize:12,lineHeight:1.6,fontFamily:"inherit"})} placeholder="Upload a PDF above to fill this automatically, or paste your resume text here so the AI can reference your real experience." value={text} onChange={e=>setText(e.target.value)} aria-label="Resume text" />
           </div>
-          <button style={G("dark",{width:"100%",padding:"11px 0",fontSize:14})} onClick={save} disabled={!name&&!text.trim()}>Save resume</button>
+          <button style={G("dark",{width:"100%",padding:"11px 0",fontSize:14})} onClick={save} disabled={busy||(!name&&!text.trim())}>{busy?<><Sp/>Saving…</>:"Save resume"}</button>
         </div>
       </div>
     </div>
@@ -1521,28 +1677,31 @@ function ResumeModal({ resume, onSave, onClose }) {
 }
 
 // ─── DRAFT MODAL ──────────────────────────────────────────────────────────────
-function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sendBlockReason, onClose, onSend }) {
+function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sendBlockReason, gmailConnected, uid, onClose, onSend }) {
   const [draft,   setDraft]   = useState("");
   const [level,   setLevel]   = useState(() => prefLevel.get());
   const [genLevel,setGenLevel]= useState(null);  // level the current draft was generated at
+  const [tone,    setTone]    = useState(() => prefTone.get());
+  const [length,  setLength]  = useState(() => prefLen.get());
+  const [emphasis,setEmphasis]= useState("");     // freeform "mention / emphasize this"
   const [loading, setLoad]    = useState(false);
   const [sending, setSending] = useState(false);
   const [sent,    setSent]    = useState(false);
   const [err,     setErr]     = useState("");
   const cost      = isSent ? 0 : contactCost(company);   // follow-ups free; discovered cost more
   const canAfford = credits >= cost;
-  const subject   = `Internship inquiry — ${profile?.name || "student"}`;  // TODO: pass to Gmail send payload in production
+  const subject   = `Internship inquiry, ${profile?.name || "student"}`;  // sent through to Gmail via send-email → process-queue
   const staleDraft = draft && genLevel !== null && genLevel !== level;
   const dWarn     = draft ? deliverabilityCheck(subject, draft) : [];
 
   useEffect(() => { setErr(""); }, [level]);
 
   async function generate() {
-    // Writing is always free and unlimited — no credit gate here.
+    // Writing is always free and unlimited, no credit gate here.
     if(!profile?.name){setErr("Complete your profile first.");return;}
     setLoad(true); setErr("");
     try {
-      const email = await api.generateEmail({ firm: company, profile, level, resume: resume?.text||null });
+      const email = await api.generateEmail({ firm: company, profile, level, resume: resume?.text||null, tone, length, emphasis });
       setDraft(email || "");
     } catch {
       setDraft(buildDraft(company, profile, level, { resume: !!(resume?.text) }));
@@ -1553,7 +1712,7 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
 
   async function send() {
     if(!draft||sending||sent)return;
-    if(localStorage.getItem("fi_gmail_ok")!=="1"){setErr("Connect your Gmail first — use the banner at the top of the page or Settings. Emails send from your own account.");return;}
+    if(!gmailConnected){setErr("Connect your Gmail first, emails send from your own account. Use the banner at the top of the page or Settings.");return;}
     if(!canSendNow){setErr(sendBlockReason);return;}
     if(!canAfford){setErr(`Unlocking this contact costs ${cost} credit${cost!==1?"s":""}. You have ${credits}.`);return;}
     setSending(true); setErr("");
@@ -1562,7 +1721,11 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
       setSending(false); setSent(true);
       setTimeout(()=>{onSend(company.id,cost);onClose();},600);
     } catch(e) {
-      setErr(e.message||"Send failed — check your Gmail connection and try again.");
+      const m = String(e.message||"");
+      if(/no_gmail_connection/.test(m)) setErr("Your Gmail isn't connected, so this didn't send and you weren't charged. Connect it and try again.");
+      else if(/insufficient_credits/.test(m)) setErr("You're out of credits for this contact.");
+      else if(/daily_limit/.test(m)) setErr("You've hit today's safe sending limit. The rest will be ready tomorrow.");
+      else setErr(m||"Send failed, check your Gmail connection and try again.");
       setSending(false);
     }
   }
@@ -1571,7 +1734,7 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
     <div className="ov" role="dialog" aria-modal="true" aria-labelledby="draft-title">
       <div className="mo" style={{ maxWidth:640 }}>
         <div className="mhd">
-          <div><h2 id="draft-title" style={{ fontWeight:700, fontSize:14 }}>{company.name}</h2><p style={{ fontSize:12, color:K.ink3, marginTop:2 }}>{company.cname?`${company.cname} · `:""}<span style={{ color:K.bl }}>{company.email}</span></p></div>
+          <div><h2 id="draft-title" style={{ fontWeight:700, fontSize:14, display:"flex", alignItems:"center", gap:8 }}>{company.name}{isVerified(company)&&<span style={{ fontSize:10, fontWeight:700, color:K.grn, background:"#e7f6ec", border:`1px solid ${K.grn}`, borderRadius:20, padding:"1px 8px", letterSpacing:".02em" }}>✓ VERIFIED</span>}</h2><p style={{ fontSize:12, color:K.ink3, marginTop:2 }}>{company.cname?`${company.cname} · `:""}<span style={{ color:K.bl }}>{company.email}</span></p></div>
           <button className="mcl" onClick={onClose} aria-label="Close">×</button>
         </div>
         <div style={{ padding:18, display:"flex", flexDirection:"column", gap:12 }}>
@@ -1584,19 +1747,44 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
           <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"14px 14px 12px" }}>
             <PersonalizationSlider value={level} onChange={v=>{setLevel(v); prefLevel.set(v);}} />
           </div>
+          <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"12px 14px", display:"flex", flexDirection:"column", gap:10 }}>
+            <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+              <div style={{ flex:"1 1 150px" }}>
+                <div style={{ fontSize:10, fontWeight:600, color:K.ink4, textTransform:"uppercase", letterSpacing:".05em", marginBottom:4 }}>Tone</div>
+                <select value={tone} onChange={e=>{setTone(e.target.value); prefTone.set(e.target.value);}} style={F({fontSize:12, padding:"7px 8px", cursor:"pointer"})} aria-label="Email tone">
+                  <option value="genuine">Genuine (default)</option>
+                  <option value="warm">Warm</option>
+                  <option value="direct">Direct</option>
+                  <option value="curious">Curious</option>
+                  <option value="confident">Confident</option>
+                </select>
+              </div>
+              <div style={{ flex:"1 1 150px" }}>
+                <div style={{ fontSize:10, fontWeight:600, color:K.ink4, textTransform:"uppercase", letterSpacing:".05em", marginBottom:4 }}>Length</div>
+                <select value={length} onChange={e=>{setLength(e.target.value); prefLen.set(e.target.value);}} style={F({fontSize:12, padding:"7px 8px", cursor:"pointer"})} aria-label="Email length">
+                  <option value="short">Short (60-90 words)</option>
+                  <option value="medium">Medium (90-130 words)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize:10, fontWeight:600, color:K.ink4, textTransform:"uppercase", letterSpacing:".05em", marginBottom:4 }}>Mention or emphasize <span style={{ textTransform:"none", letterSpacing:0, color:K.ink4, fontWeight:400 }}>(optional)</span></div>
+              <input value={emphasis} onChange={e=>setEmphasis(e.target.value)} maxLength={200} placeholder="e.g. I can start in June, or I'm into their design team" style={F({fontSize:12, padding:"8px 10px"})} aria-label="What to emphasize or mention" />
+            </div>
+          </div>
           <div style={{ border:`1px solid ${K.b}`, borderRadius:8, overflow:"hidden" }}>
             <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", borderBottom:`1px solid ${K.bs}`, gap:10 }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>To</span><span style={{ fontSize:13, color:K.bl }}>{company.email}</span></div>
             {company.email2&&<div style={{ display:"flex", alignItems:"center", padding:"7px 12px", borderBottom:`1px solid ${K.bs}`, gap:10 }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>CC</span><span style={{ fontSize:13, color:K.ink3 }}>{company.email2}</span></div>}
             <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", gap:10 }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>Subject</span><span style={{ fontSize:13, color:K.ink2 }}>{subject}</span></div>
             {resume && resume.text
               ? <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", gap:10, borderTop:`1px solid ${K.bs}` }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>Attach</span><span style={{ fontSize:12, color:K.grn, fontWeight:600 }}>📎 {resume.name||"resume.pdf"}</span></div>
-              : <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", gap:10, borderTop:`1px solid ${K.bs}` }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>Attach</span><span style={{ fontSize:12, color:K.ink4 }}>No resume — adding one in Settings boosts replies</span></div>}
+              : <div style={{ display:"flex", alignItems:"center", padding:"7px 12px", gap:10, borderTop:`1px solid ${K.bs}` }}><span style={{ fontSize:11, fontWeight:600, color:K.ink4, minWidth:50 }}>Attach</span><span style={{ fontSize:12, color:K.ink4 }}>No resume, adding one in Settings boosts replies</span></div>}
           </div>
           <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10, flexWrap:"wrap" }}>
             <button style={G("ghost",{fontSize:12})} onClick={generate} disabled={loading}>{loading?<><SpB/>Generating…</>:draft?"✦ Regenerate":"✦ Generate draft"}</button>
             <div style={{ display:"flex", gap:8 }}>
               <button style={G("ghost",{fontSize:12})} onClick={onClose}>Cancel</button>
-              <button className="btn-lift" style={G(sent?"green":"dark",{fontSize:13,minWidth:140})} onClick={send} disabled={!draft||sending||sent||!canAfford||!canSendNow}>
+              <button className="btn-lift" style={G(sent?"green":"dark",{fontSize:13,minWidth:140})} onClick={send} disabled={!draft||sending||sent||!canAfford||!canSendNow||!gmailConnected}>
                 {sent?"✓ Sent":sending?<><Sp/>Sending…</>:isSent?"Send follow-up →":"Send via Gmail →"}
               </button>
             </div>
@@ -1607,17 +1795,23 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
             {draft&&<div style={{ position:"absolute", bottom:8, right:10, fontSize:10, color:K.ink4 }}>{draft.length}ch</div>}
           </div>
           {err&&<InfoBox color="red" icon="⚠">{err}</InfoBox>}
-          {staleDraft&&<InfoBox color="amber" icon="↻">This draft was written for level {genLevel}. You're now on level {level} — regenerate to match, or send as-is.</InfoBox>}
+          {!gmailConnected&&<InfoBox color="amber" icon="✉">
+            <strong>Connect your Gmail to send.</strong> Emails go out from your own account, so nothing sends until it's linked. Writing drafts is free without it.
+            <span style={{ display:"block", marginTop:8 }}><GmailConnectButton userId={uid} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} /></span>
+          </InfoBox>}
+          {staleDraft&&<InfoBox color="amber" icon="↻">This draft was written for level {genLevel}. You're now on level {level}, regenerate to match, or send as-is.</InfoBox>}
           {draft&&(dWarn.length>0
             ? <InfoBox color="amber" icon="🛡"><strong>Deliverability ({dWarn.length}):</strong> these can trip spam filters or lower replies:<span style={{display:"block",marginTop:4}}>{dWarn.map((x,i)=><span key={i} style={{display:"block",fontSize:12,marginTop:2}}>• {x}</span>)}</span></InfoBox>
-            : <InfoBox color="green" icon="✓">Deliverability looks good — personal, concise, with a clear ask.</InfoBox>)}
+            : <InfoBox color="green" icon="✓">Deliverability looks good, personal, concise, with a clear ask.</InfoBox>)}
           {!canSendNow&&<InfoBox color={sendBlockReason.includes("paused")?"red":"amber"} icon="🛡">{sendBlockReason}</InfoBox>}
           {isSent
-            ? <InfoBox color="green" icon="✓">You've already unlocked this contact — this follow-up and any future emails to them are free.</InfoBox>
-            : <InfoBox color="neutral" icon="🔓">{company.discovered
-                ? <>This is an AI-discovered contact — sending unlocks it for <strong>{DISCOVER_COST} credits</strong> (covers the discovery). </>
-                : <>Sending unlocks this contact for <strong>{UNLOCK_COST} credit</strong>. </>}
-                After that, every email and follow-up to them is free. Writing and regenerating are always free.</InfoBox>}
+            ? <InfoBox color="green" icon="✓">You've already unlocked this contact, this follow-up and any future emails to them are free.</InfoBox>
+            : isVerified(company)
+              ? <InfoBox color="green" icon="✓"><strong>Verified inbox.</strong> We SMTP-checked this address and confirmed it exists, so your email will land. Unlocks for <strong>{VERIFIED_COST} credits</strong>. After that, every email and follow-up is free.</InfoBox>
+              : <InfoBox color="neutral" icon="🔓">{company.discovered
+                  ? <>This is an AI-discovered contact, sending unlocks it for <strong>{DISCOVER_COST} credits</strong> (covers the discovery). </>
+                  : <>This inbox is on a live domain but we couldn't confirm the exact mailbox, so it's cheap, unlocks for <strong>{UNLOCK_COST} credit</strong>. </>}
+                  After that, every email and follow-up to them is free. Writing and regenerating are always free.</InfoBox>}
         </div>
       </div>
     </div>
@@ -1625,27 +1819,29 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
 }
 
 // ─── BULK MODAL ───────────────────────────────────────────────────────────────
-function BulkModal({ companies, profile, resume, sentList, credits, remainingSends, sendLimit, onClose, onDone }) {
+function BulkModal({ companies, profile, resume, sentList, credits, remainingSends, sendLimit, gmailConnected, uid, onClose, onDone }) {
   const [stage, setStage] = useState("confirm");
   const [log,   setLog]   = useState([]);
   const [pct,   setPct]   = useState(0);
   const [level, setLevel] = useState(() => prefLevel.get());
+  const [err,   setErr]   = useState("");
   const eligibleAll = useMemo(()=>companies.filter(c=>!sentList.includes(c.id)),[companies,sentList]);
   const skipped   = companies.length-eligibleAll.length;
   const cap       = remainingSends;
   const eligible  = eligibleAll.slice(0, cap);   // safe to send today (warm-up cap)
-  const queued    = eligibleAll.slice(cap);      // held — send over following days
+  const queued    = eligibleAll.slice(cap);      // held, send over following days
   const totalCost = eligible.reduce((s,c)=>s+contactCost(c),0);   // discovered contacts cost more
   const discCount = eligible.filter(c=>c.discovered).length;
   const canAfford = credits>=totalCost;
   const canRun    = eligible.length>0 && canAfford;
 
   async function run(){
-    setStage("running");
+    if(!gmailConnected){ setErr("Connect your Gmail first, bulk emails send from your own account, so nothing goes out until it's linked."); return; }
+    setStage("running"); setErr("");
     try {
       const items = eligible.map(c=>({
         firmId: c.id, toEmail: c.email,
-        subject: `Internship inquiry — ${profile?.name||"student"}`,
+        subject: `Internship inquiry, ${profile?.name||"student"}`,
         body: buildDraft(c, profile, level, { resume:!!(resume&&resume.text), commercial:eligible.length>5 }),
       }));
       for(let i=0;i<eligible.length;i++){
@@ -1660,6 +1856,11 @@ function BulkModal({ companies, profile, resume, sentList, credits, remainingSen
       setPct(100); setStage("done");
       onDone(eligible.map(c=>({id:c.id,cost:contactCost(c)})));
     } catch(e) {
+      const m=String(e.message||"");
+      if(/no_gmail_connection/.test(m)) setErr("Your Gmail isn't connected, so nothing sent and you weren't charged. Connect it and try again.");
+      else if(/daily_limit/.test(m)) setErr("You've hit today's safe sending limit. Try a smaller batch or come back tomorrow.");
+      else if(/insufficient_credits/.test(m)) setErr("You don't have enough credits for this batch.");
+      else setErr("Send failed, check your Gmail connection and try again.");
       setStage("confirm");
     }
   }
@@ -1671,16 +1872,16 @@ function BulkModal({ companies, profile, resume, sentList, credits, remainingSen
       <div className="mo" style={{ maxWidth:460 }}>
         <div className="mhd">
           <h2 id="bulk-title" style={{ fontWeight:700, fontSize:14 }}>
-            {stage==="done"?`Complete — ${log.filter(x=>x.st==="sent").length} sent`:stage==="running"?"Sending…":`Bulk send — ${eligible.length} companies`}
+            {stage==="done"?`Complete, ${log.filter(x=>x.st==="sent").length} sent`:stage==="running"?"Sending…":`Bulk send, ${eligible.length} companies`}
           </h2>
           {stage!=="running"&&<button className="mcl" onClick={onClose} aria-label="Close">×</button>}
         </div>
         <div style={{ padding:20 }}>
           {stage==="confirm"&&(
             <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-              <p style={{ fontSize:13, color:K.ink3, lineHeight:1.65 }}>AI will draft a personalized email for each selected company and send from your Gmail. Each is a new contact, so this unlocks them — every future email to them is free.</p>
-              {skipped>0&&<InfoBox color="amber" icon="⚠">{skipped} company{skipped!==1?"s":""} skipped — already unlocked (you can email them free anytime).</InfoBox>}
-              {queued.length>0&&<InfoBox color="amber" icon="🛡">To protect your Gmail from spam flags, <strong>{eligible.length} will send today</strong> (your warm-up limit is {sendLimit}/day). The other <strong>{queued.length}</strong> are held — send them over the next few days.</InfoBox>}
+              <p style={{ fontSize:13, color:K.ink3, lineHeight:1.65 }}>AI will draft a personalized email for each selected company and send from your Gmail. Each is a new contact, so this unlocks them, every future email to them is free.</p>
+              {skipped>0&&<InfoBox color="amber" icon="⚠">{skipped} company{skipped!==1?"s":""} skipped, already unlocked (you can email them free anytime).</InfoBox>}
+              {queued.length>0&&<InfoBox color="amber" icon="🛡">To protect your Gmail from spam flags, <strong>{eligible.length} will send today</strong> (your warm-up limit is {sendLimit}/day). The other <strong>{queued.length}</strong> are held, send them over the next few days.</InfoBox>}
               <div style={{ background:K.surf, border:`1px solid ${K.b}`, borderRadius:8, padding:"14px 14px 12px" }}>
                 <PersonalizationSlider value={level} onChange={v=>{setLevel(v); prefLevel.set(v);}} />
               </div>
@@ -1689,9 +1890,14 @@ function BulkModal({ companies, profile, resume, sentList, credits, remainingSen
                 <span style={{ fontSize:15, fontWeight:800, color:canAfford?K.ink:K.red }}>{totalCost} credit{totalCost!==1?"s":""}{!canAfford&&" (insufficient)"}</span>
               </div>
               {!canAfford&&<InfoBox color="red" icon="⚠">You have {credits} credits. This batch needs {totalCost}. Reduce selection or buy top-up credits.</InfoBox>}
+              {err&&<InfoBox color="red" icon="⚠">{err}</InfoBox>}
+              {!gmailConnected&&<InfoBox color="amber" icon="✉">
+                <strong>Connect your Gmail to send.</strong> Bulk emails go out from your own account, nothing sends until it's linked.
+                <span style={{ display:"block", marginTop:8 }}><GmailConnectButton userId={uid} onSuccess={()=>{ localStorage.setItem("fi_gmail_ok","1"); }} /></span>
+              </InfoBox>}
               <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
                 <button style={G("ghost")} onClick={onClose}>Cancel</button>
-                <button style={G("dark")} onClick={run} disabled={!canRun}>{cap===0?"Daily limit reached":`Send ${eligible.length} emails →`}</button>
+                <button style={G("dark")} onClick={run} disabled={!canRun||!gmailConnected}>{cap===0?"Daily limit reached":`Send ${eligible.length} emails →`}</button>
               </div>
             </div>
           )}
@@ -1793,7 +1999,7 @@ function ProfileEditModal({ profile, user, onSave, onClose }) {
             <div><label className="lbl" htmlFor="ep-edu">Level</label><select id="ep-edu" style={F()} value={p.eduLevel||""} onChange={e=>set("eduLevel",e.target.value)}>{EDU_LEVELS.map(l=><option key={l} value={l}>{l}</option>)}</select></div>
           </div>
           <div><label className="lbl" htmlFor="ep-int">Industries of interest</label><input id="ep-int" style={F()} value={p.interest||""} onChange={e=>set("interest",e.target.value)} placeholder="Tech, design, media…"/></div>
-          <div><label className="lbl" htmlFor="ep-exp">Background (1–2 sentences)</label><textarea id="ep-exp" style={F({resize:"vertical",minHeight:80,fontFamily:"inherit",lineHeight:1.7})} value={p.experience||""} onChange={e=>set("experience",e.target.value)}/></div>
+          <div><label className="lbl" htmlFor="ep-exp">Background (1-2 sentences)</label><textarea id="ep-exp" style={F({resize:"vertical",minHeight:80,fontFamily:"inherit",lineHeight:1.7})} value={p.experience||""} onChange={e=>set("experience",e.target.value)}/></div>
           <hr style={{ border:"none", borderTop:`1px solid ${K.b}` }} />
           <div>
             <span className="lbl">Gmail connection</span>
@@ -1837,11 +2043,11 @@ export default function App() {
   const [fPaid,    setFPaid]    = useState("All");
   const [fIntern,  setFIntern]  = useState(false);
   const [search,   setSearch]   = useState("");
-  const [shown,    setShown]    = useState(50);   // table pagination — render in pages
+  const [shown,    setShown]    = useState(50);   // table pagination, render in pages
   const [modal,    setModal]    = useState(null);
   const [focus,    setFocus]    = useState(null);
   const [toast,    setToast]    = useState(null);
-  // AI firm discovery — firms found via the discovery search, merged with the
+  // AI firm discovery, firms found via the discovery search, merged with the
   // built-in database.
   const [discovered, setDiscovered] = useState([]);
   const [discovering, setDiscovering] = useState(false);
@@ -1862,7 +2068,7 @@ export default function App() {
   const [dbFirms, setDbFirms] = useState([]);  // NEW: firms from Supabase
   const [appReady, setAppReady] = useState(false);  // NEW: init loading gate
 
-  // ── ASYNC INIT — restore session and load data from Supabase ──────────────
+  // ── ASYNC INIT, restore session and load data from Supabase ──────────────
   useEffect(() => {
     async function init() {
       // Handle OAuth return params
@@ -1884,7 +2090,8 @@ export default function App() {
       const session = await api.getSession();
       if (!session) { setAppView("landing"); setAppReady(true); return; }
 
-      setUser({ id: session.id, email: session.email });
+      setUser({ id: session.id, email: session.email,
+                name: session.user_metadata?.full_name || session.user_metadata?.name || "" });
       const [p, contacts, ls, rv] = await Promise.all([
         api.getProfile(),
         api.listContacts(),
@@ -1907,7 +2114,7 @@ export default function App() {
           if (res && res.ok) {
             const fresh = await api.getProfile();
             if (fresh) { setProfile(fresh); setCredits(fresh.credits ?? 5); }
-            setTimeout(() => msg(`🎉 Referral applied — +${res.reward} credits and a permanent daily bonus`), 700);
+            setTimeout(() => msg(`🎉 Referral applied, +${res.reward} credits and a permanent daily bonus`), 700);
           }
         }
 
@@ -1923,19 +2130,27 @@ export default function App() {
         });
         setTracking(tk); setSent(sent);
         if (ls?.length) setLists(ls);
-        if (rv) setResume({ name: rv.file_name, text: rv.text, updatedAt: rv.updated_at });
-        setGmailConnected(localStorage.getItem("fi_gmail_ok") === "1");
+        if (rv) setResume({ name: rv.file_name, text: rv.text, storagePath: rv.storage_path, updatedAt: rv.updated_at });
+        // Authoritative: ask the server whether a Gmail connection actually exists,
+        // and self-heal the localStorage flag so the UI never claims "connected" when
+        // the token is gone (which is how users ended up sending into a void).
+        const gs = await api.gmailStatus();
+        setGmailConnected(gs.connected);
+        if (gs.connected) localStorage.setItem("fi_gmail_ok", "1");
+        else localStorage.removeItem("fi_gmail_ok");
 
         // Handle post-payment return
         if (params.get("upgraded") === "1") {
           setPlanId("pro"); setCredits(p.credits || 1000);
-          setTimeout(() => msg("✓ Pro activated — 1,000 monthly contacts unlocked"), 500);
+          setTimeout(() => msg("✓ Pro activated, 1,000 monthly contacts unlocked"), 500);
         }
         if (params.get("topup") === "1") {
           setTimeout(() => msg("✓ Credits added to your account"), 500);
         }
 
-        setAppView("app");
+        // A profile row always exists (created on signup), so "onboarded" is judged by
+        // whether they actually finished onboarding, `interest` is only set there.
+        setAppView(p.interest ? "app" : "onboarding");
       } else {
         setAppView("onboarding");
       }
@@ -1946,9 +2161,14 @@ export default function App() {
     init()
       .catch((e) => { console.error("init failed:", e); setAppView("landing"); })
       .finally(() => setAppReady(true));
-    // Load firms from Supabase
-    api.listFirms({ limit: 20000 }).then(firms => {
-      if (firms?.length) setDbFirms(firms.map(normalizeFirm));
+    // Load the firm database ONLY for logged-in users. A logged-out landing visitor
+    // (e.g. from Product Hunt) doesn't need 11k rows, so we skip the big fetch and the
+    // page paints faster.
+    api.getSession().then(session => {
+      if (!session) return;
+      api.listFirms({ limit: 20000 }).then(firms => {
+        if (firms?.length) setDbFirms(firms.map(normalizeFirm));
+      }).catch(() => {});
     }).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1958,7 +2178,7 @@ export default function App() {
   //
   // PRODUCTION (see api/discover-firms.js): the browser POSTs the query; all keys
   // and work stay server-side. The pipeline uses a Gemini model with Google Search
-  // grounding (native web search — no separate search API), which:
+  // grounding (native web search, no separate search API), which:
   //   1. Reads the query, searches the live web via Google Search grounding, and
   //      returns real firms matching the criteria.
   //   2. Extracts a role-based email (careers@) plus, when present, one senior
@@ -1975,7 +2195,7 @@ export default function App() {
       setTimeout(()=>setModal("paywall"), 400);
       return;
     }
-    // Monthly discovery cap — each grounded search is billed per query, so cap
+    // Monthly discovery cap, each grounded search is billed per query, so cap
     // usage to protect margin. Resets with the billing month.
     if (discoverUsed >= DISCOVERY_CAP) {
       setDiscoverErr(`You've used all ${DISCOVERY_CAP} AI discoveries this month. They reset at the start of next month.`);
@@ -1994,7 +2214,7 @@ export default function App() {
         setDiscovered(prev => [...prev, ...fresh]);
         msg(`✓ Added ${fresh.length} new firm${fresh.length>1?"s":""} to your database`);
       } else if (firms.length) {
-        setDiscoverErr("Those firms are already in your database — try more specific terms.");
+        setDiscoverErr("Those firms are already in your database, try more specific terms.");
       } else {
         setDiscoverErr(`No firms found for "${q}". Try different terms.`);
       }
@@ -2089,6 +2309,11 @@ export default function App() {
 
   function openDraft(company){
     if(!canSend){setModal("paywall");return;}
+    // Nudge people to connect Gmail BEFORE they write emails they can't send.
+    if(!gmailConnected && !gmailNudgeShown){
+      gmailNudgeShown = true;
+      msg("✉ Heads up: connect your Gmail so you can actually send these. It takes about 10 seconds, there's a button in the draft.");
+    }
     setFocus(company);setModal("draft");
   }
 
@@ -2108,6 +2333,24 @@ export default function App() {
     }}));
     track("status_change", { status });
     api.setStatus(companyId, status).catch(() => {});
+  }
+  async function reportBounce(companyId){
+    const dba = allFirms.find(c=>c.id===companyId)?.dba || "that contact";
+    try {
+      const r = await api.reportBounce(companyId);
+      setCredits(c => c + (r.refunded||0));
+      // drop it from the pipeline locally
+      setTracking(t => { const n={...t}; delete n[companyId]; return n; });
+      setSent(s => s.filter(id => id!==companyId));
+      track("bounce_reported", { firmId: companyId, refunded: r.refunded, removed: !!r.removed });
+      msg(`✓ Refunded ${r.refunded} credit${r.refunded!==1?"s":""}. Thanks, flagging ${dba} helps everyone.`);
+    } catch(e) {
+      const m=String(e.message||"");
+      if(/already_reported/.test(m)) msg("You already reported this one.");
+      else if(/daily_limit/.test(m)) msg("You've hit today's bounce-report limit, try again tomorrow.");
+      else if(/not_sent/.test(m)) msg("You can only report a bounce on a contact you've emailed.");
+      else msg("Couldn't report that right now, try again.");
+    }
   }
   function saveToList(companyId, listId){
     setListOf(m => { const n={...m}; if(listId) n[companyId]=listId; else delete n[companyId]; return n; });
@@ -2160,29 +2403,52 @@ export default function App() {
       });
       setTracking(tk); setSent(sent);
       if (ls?.length) setLists(ls);
-      if (rv) setResume({ name:rv.file_name, text:rv.text, updatedAt:rv.updated_at });
-      setGmailConnected(localStorage.getItem("fi_gmail_ok") === "1");
-      setAppView("app");
+      if (rv) setResume({ name:rv.file_name, text:rv.text, storagePath:rv.storage_path, updatedAt:rv.updated_at });
+      { const gs = await api.gmailStatus(); setGmailConnected(gs.connected);
+        if (gs.connected) localStorage.setItem("fi_gmail_ok","1"); else localStorage.removeItem("fi_gmail_ok"); }
+      // Send them to onboarding if they never completed it (interest is only set there).
+      setAppView(p.interest ? "app" : "onboarding");
     } else {
       setAppView("onboarding");
     }
   }
+  // Build the full profile patch from onboarding answers. Kept in one place so the
+  // "Start sending" path and the "Connect Gmail" path persist the exact same fields
+  // (grad year / city / LinkedIn / country / phone were previously collected but dropped).
+  function onboardingPatch(sp){
+    return {
+      name: sp.name, school: sp.school,
+      major: sp.major === "Other" ? sp.customMajor : sp.major,
+      experience: sp.experience, interest: sp.interest,
+      grad_year: sp.gradYear || null,
+      country: sp.country || null,
+      city: sp.location || null,
+      phone: sp.phone || null,
+      linkedin_url: sp.linkedin || null,
+      account_type: sp.accountType || "gmail",
+      talent_opt_in: !!sp.talentOptIn,
+      talent_opt_in_at: sp.talentOptIn ? new Date().toISOString() : null,
+    };
+  }
   async function handleOnboardingDone(p){
     const safeProfile = stripToken(p);
-    const profilePatch = {
-      name: safeProfile.name, school: safeProfile.school,
-      major: safeProfile.major === "Other" ? safeProfile.customMajor : safeProfile.major,
-      experience: safeProfile.experience, interest: safeProfile.interest,
-      account_type: safeProfile.accountType || "gmail",
-    };
-    await api.saveProfile(profilePatch).catch(() => {});
+    await api.saveProfile(onboardingPatch(safeProfile)).catch(() => {});
     setProfile(safeProfile);
     const freshProfile = await api.getProfile().catch(() => null);
     if (freshProfile) { setPlanId(freshProfile.plan || "free"); setCredits(freshProfile.credits ?? 5); }
     if (safeProfile.gmailToken && safeProfile.gmailToken !== "skip") {
-      localStorage.setItem("fi_gmail_ok", "1"); setGmailConnected(true);
+      const gs = await api.gmailStatus();
+      setGmailConnected(gs.connected);
+      if (gs.connected) localStorage.setItem("fi_gmail_ok", "1");
     }
     setAppView("app");
+  }
+  // From onboarding's Gmail step: persist the profile FIRST, then redirect to Google.
+  // On return (?gmail=connected) the profile is complete, so init routes to the app.
+  async function handleOnboardingConnectGmail(p){
+    const safeProfile = stripToken(p);
+    await api.saveProfile(onboardingPatch(safeProfile)).catch(() => {});
+    if (user?.id) api.connectGmail().catch(() => {});   // redirects the browser to Google OAuth
   }
   async function signOut(){
     await api.signOut().catch(() => {});
@@ -2196,22 +2462,22 @@ export default function App() {
   // ── ROUTING ────────────────────────────────────────────────────────────────
   if (!appReady) return <><style>{CSS}</style><div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center" }}><span className="spb" /></div></>;
   if(appView==="landing") return <><style>{CSS}</style><div className="page-in"><Landing
-    onGetStarted={()=>{ if(user&&profile) setAppView("app"); else setAppView("onboarding"); }}
+    onGetStarted={()=>{ if(user&&profile&&profile.interest) setAppView("app"); else setAppView("onboarding"); }}
     onAuthSuccess={(u, tab)=>{
-      // tab is "signin" or "signup" — both go through handleSignIn
+      // tab is "signin" or "signup", both go through handleSignIn
       // PRODUCTION: for "signup", Supabase creates the account; for "signin" it logs in.
       // Both cases return a user object and we redirect appropriately.
       handleSignIn(u);
     }}
   /></div></>;
-  if(appView==="onboarding") return <><style>{CSS}</style><div className="page-in"><Onboarding user={user} onDone={handleOnboardingDone}/></div></>;
+  if(appView==="onboarding") return <><style>{CSS}</style><div className="page-in"><Onboarding user={user} onDone={handleOnboardingDone} onConnectGmail={handleOnboardingConnectGmail}/></div></>;
   if(appView==="checkout") return <><style>{CSS}</style><div className="page-in"><CheckoutPage onBack={()=>setAppView("app")}/></div></>;
 
   // ── APP TABS ───────────────────────────────────────────────────────────────
   const contactedList = allFirms.filter(c=>sentList.includes(c.id));
   const lowCredits    = credits<=2;
 
-  // Pipeline / outcome stats derived from tracking. (Plain computation — this runs
+  // Pipeline / outcome stats derived from tracking. (Plain computation, this runs
   // after early returns, so it must not be a hook.)
   const stats = (() => {
     const ids = Object.keys(tracking);
@@ -2229,7 +2495,7 @@ export default function App() {
 
   // ── DELIVERABILITY GATING ──────────────────────────────────────────────────
   // Protects the user's own inbox reputation with a warm-up daily send cap that
-  // rises as the account ages. (Plain consts — after early returns.)
+  // rises as the account ages. (Plain consts, after early returns.)
   const todayStart = (() => { const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); })();
   const firstSendAt = (() => { const ts=Object.values(tracking).map(t=>t.sentAt).filter(Boolean); return ts.length?Math.min(...ts):null; })();
   const sentToday    = Object.values(tracking).filter(t=>t.sentAt && t.sentAt>=todayStart).length;
@@ -2279,7 +2545,7 @@ export default function App() {
           ))}
       </div>
 
-      {/* Inbox health — warm-up send cap surfaced for the user */}
+      {/* Inbox health, warm-up send cap surfaced for the user */}
       {(() => {
         const pct = sendLimit>0 ? Math.min((sentToday/sendLimit)*100,100) : 0;
         const warmDays = firstSendAt ? Math.floor((Date.now()-firstSendAt)/864e5) : 0;
@@ -2321,7 +2587,7 @@ export default function App() {
         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8, flexWrap:"wrap" }}>
           <span style={{ fontSize:13 }} aria-hidden="true">✨</span>
           <span style={{ fontSize:13, fontWeight:700, color:K.ink }}>Find firms &amp; emails with AI</span>
-          <span style={{ fontSize:11, color:K.ink4 }}>— can't find a firm? Describe it and we'll search for it, pull a careers email, and add it to your database</span>
+          <span style={{ fontSize:11, color:K.ink4 }}>Can't find a firm? Describe it and we'll search for it, pull a careers email, and add it to your database.</span>
           {planId!=="pro"
             ? <span style={{ fontSize:10, color:K.bl, marginLeft:"auto", background:"#eef2ff", border:`1px solid #c7d2fe`, borderRadius:4, padding:"1px 7px", fontWeight:600 }}>🔒 Pro feature</span>
             : <span style={{ fontSize:10, color: (DISCOVERY_CAP-discoverUsed)<=20?K.amb:K.ink4, marginLeft:"auto", background:K.surf, border:`1px solid ${K.b}`, borderRadius:4, padding:"1px 7px", fontWeight:600 }}>{Math.max(0,DISCOVERY_CAP-discoverUsed)} discoveries left this month</span>}
@@ -2524,7 +2790,10 @@ export default function App() {
                     {STATUSES.map(s=><option key={s.id} value={s.id} style={{color:K.ink}}>{s.label}</option>)}
                   </select>
                 </td>
-                <td style={{ padding:"10px 16px", textAlign:"right" }}><button style={G("ghost",{fontSize:12,padding:"5px 11px"})} onClick={()=>openDraft(company)}>Follow up</button></td>
+                <td style={{ padding:"10px 16px", textAlign:"right", whiteSpace:"nowrap" }}>
+                  <button style={G("ghost",{fontSize:12,padding:"5px 10px",color:K.red,borderColor:K.redB,marginRight:6})} title="Got a bounce-back? We'll refund your credit." onClick={()=>{ if(window.confirm(`Report that your email to ${company.dba} bounced (came back undeliverable)?\n\nWe'll refund the credit you spent and flag it so it gets cleaned up.`)) reportBounce(company.id); }}>↩ Bounced</button>
+                  <button style={G("ghost",{fontSize:12,padding:"5px 11px"})} onClick={()=>openDraft(company)}>Follow up</button>
+                </td>
               </tr>
             );})}
           </tbody>
@@ -2533,12 +2802,24 @@ export default function App() {
     </div>
   );
 
+  // Talent-profile field editors: update local state on change, persist on blur so
+  // we don't write to the DB on every keystroke. Only these vetted columns are sent.
+  const setPr = (field, value) => setProfile(pr => ({ ...(pr||{}), [field]: value }));
+  const persistPr = (field, value) => api.saveProfile({ [field]: (value ?? "") === "" ? null : value }).catch(()=>{});
+  const TF = (field, label, ph, opt={}) => (
+    <div style={opt.full?{ gridColumn:"1 / -1" }:undefined}>
+      <label className="lbl" htmlFor={"tf-"+field}>{label} <span style={{color:K.ink4,fontWeight:400}}>(optional)</span></label>
+      <input id={"tf-"+field} style={F({fontSize:13})} placeholder={ph} inputMode={opt.mode}
+        value={(profile||{})[field]||""} onChange={e=>setPr(field,e.target.value)} onBlur={e=>persistPr(field,e.target.value)} />
+    </div>
+  );
+
   const SettingsTab = (
     <div style={{ padding:24, maxWidth:480 }}>
       <h2 style={{ fontSize:17, fontWeight:800, letterSpacing:-.5, marginBottom:4 }}>Settings</h2>
       <p style={{ color:K.ink3, fontSize:13, marginBottom:22 }}>Profile, Gmail, credits, and subscription.</p>
 
-      {/* Refer friends — growth loop */}
+      {/* Refer friends, growth loop */}
       {(() => {
         const code = profile?.referral_code || "";
         const link = `${typeof window!=="undefined"?window.location.origin:"https://firstinternships.com"}/?ref=${code}`;
@@ -2549,12 +2830,12 @@ export default function App() {
             <div style={{ fontSize:12, color:"#c7c7d2" }}>{profile?.referral_count||0} joined · +{profile?.referral_bonus||0}/day bonus</div>
           </div>
           <p style={{ fontSize:12.5, color:"#c7c7d2", lineHeight:1.6, marginBottom:12 }}>
-            Give a friend <strong style={{color:"#fff"}}>5 free credits</strong> — and for every friend who signs up, you get <strong style={{color:"#fff"}}>5 credits + a permanent +5 daily unlocks</strong> boost (up to +25/day).
+            Give a friend <strong style={{color:"#fff"}}>5 free credits</strong>, and for every friend who signs up, you get <strong style={{color:"#fff"}}>5 credits + a permanent +5 daily unlocks</strong> boost (up to +25/day).
           </p>
           <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
             <input readOnly value={link} onFocus={e=>e.target.select()} style={{ flex:"1 1 200px", minWidth:180, fontFamily:"inherit", fontSize:12.5, color:K.ink, background:"#fff", border:"none", borderRadius:7, padding:"9px 12px", outline:"none" }} aria-label="Your referral link" />
             <button className="btn-lift" style={G("green",{fontSize:12,padding:"9px 16px",background:"#fff",color:K.ink,border:"none"})}
-              onClick={()=>{ try{ navigator.clipboard.writeText(link); }catch{} msg("✓ Referral link copied — share it anywhere"); track("referral_copied"); }}>Copy link</button>
+              onClick={()=>{ try{ navigator.clipboard.writeText(link); }catch{} msg("✓ Referral link copied, share it anywhere"); track("referral_copied"); }}>Copy link</button>
           </div>
         </div>
         );
@@ -2570,9 +2851,69 @@ export default function App() {
           <button style={G(gmailConnected?"ghost":"dark",{fontSize:12,padding:"5px 12px"})} onClick={()=>setModal("profileEdit")}>{gmailConnected?"Manage":"Connect Gmail"}</button>
         </div>
       </div>
+      {/* Talent-matching opt-in, off by default, revocable. When ON, and only then,
+          may the student's profile/resume be shared with employers for matching. */}
+      <div style={{ border:`1px solid ${K.b}`, borderRadius:10, padding:"14px 16px", marginBottom:14 }}>
+        <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+          <div style={{ flex:1 }}>
+            <div style={{ fontWeight:600, fontSize:14 }}>Let employers find me</div>
+            <div style={{ fontSize:12, color:K.ink3, marginTop:3, lineHeight:1.55 }}>Share your profile and resume with companies looking for interns, so they can reach out about roles. Off by default, turn it off anytime.</div>
+          </div>
+          <label style={{ position:"relative", display:"inline-block", width:44, height:24, flexShrink:0, cursor:"pointer" }}>
+            <input type="checkbox" checked={!!profile?.talent_opt_in} onChange={e=>{
+              const on=e.target.checked, at=on?new Date().toISOString():null;
+              setProfile(pr=>({ ...(pr||{}), talent_opt_in:on, talent_opt_in_at:at }));
+              api.saveProfile({ talent_opt_in:on, talent_opt_in_at:at }).catch(()=>{});
+              track("talent_opt_in", { on });
+              msg(on ? "✓ You're now visible to employers looking for interns." : "You're no longer shared with employers.");
+            }} style={{ opacity:0, width:0, height:0 }} aria-label="Let employers find me" />
+            <span style={{ position:"absolute", inset:0, borderRadius:24, background: profile?.talent_opt_in?K.grn:K.b3||K.b, transition:".2s" }} />
+            <span style={{ position:"absolute", top:3, left: profile?.talent_opt_in?23:3, width:18, height:18, borderRadius:"50%", background:"#fff", transition:".2s", boxShadow:"0 1px 3px rgba(0,0,0,.3)" }} />
+          </label>
+        </div>
+      </div>
+      {/* Talent profile — the details employers see when the opt-in above is ON.
+          Everything here is optional and nothing is shared unless "Let employers find
+          me" is enabled. Deliberately no demographic/special-category fields. */}
+      <div style={{ border:`1px solid ${K.b}`, borderRadius:10, padding:"14px 16px", marginBottom:14 }}>
+        <div style={{ fontWeight:600, fontSize:14 }}>Talent profile</div>
+        <div style={{ fontSize:12, color:K.ink3, marginTop:3, marginBottom:13, lineHeight:1.55 }}>
+          A fuller profile means better matches. {profile?.talent_opt_in
+            ? <>Shared with hiring companies because <strong>Let employers find me</strong> is on.</>
+            : <>Nothing here is shared until you turn on <strong>Let employers find me</strong> above.</>}
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:11 }}>
+          {TF("country","Country","United States")}
+          {TF("phone","Phone","+1 555 123 4567",{mode:"tel"})}
+          {TF("city","City","Austin, TX")}
+          {TF("gpa","GPA","3.8",{mode:"decimal"})}
+          {TF("linkedin_url","LinkedIn","linkedin.com/in/you")}
+          {TF("portfolio_url","Portfolio / GitHub","github.com/you")}
+          {TF("availability","Available from","Summer 2026")}
+          <div>
+            <label className="lbl" htmlFor="tf-workauth">Work authorization <span style={{color:K.ink4,fontWeight:400}}>(optional)</span></label>
+            <select id="tf-workauth" style={F({fontSize:13})} value={profile?.work_authorization||""}
+              onChange={e=>{ setPr("work_authorization",e.target.value); persistPr("work_authorization",e.target.value); }}>
+              <option value="">Prefer not to say</option>
+              <option>Authorized, no sponsorship needed</option>
+              <option>U.S. citizen</option>
+              <option>Permanent resident</option>
+              <option>Will need visa sponsorship</option>
+              <option>Based outside the U.S.</option>
+            </select>
+          </div>
+          {TF("desired_roles","Roles you want","Software Engineering Intern, PM Intern",{full:true})}
+          {TF("skills","Skills","Python, React, Figma, Excel, copywriting",{full:true})}
+          <label style={{ gridColumn:"1 / -1", display:"flex", alignItems:"center", gap:10, cursor:"pointer", userSelect:"none", fontSize:13, color:K.ink2 }}>
+            <input type="checkbox" className="cb" checked={!!profile?.open_to_relocate}
+              onChange={e=>{ setPr("open_to_relocate",e.target.checked); persistPr("open_to_relocate",e.target.checked); }} style={{ flexShrink:0 }} />
+            I'm open to relocating for the right role
+          </label>
+        </div>
+      </div>
       <div style={{ border:`1px solid ${K.b}`, borderRadius:10, overflow:"hidden", marginBottom:14 }}>
         <div style={{ padding:"13px 16px", borderBottom:`1px solid ${K.b}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div><div style={{ fontWeight:600, fontSize:14 }}>Plan</div><div style={{ fontSize:12, marginTop:2, color:planId==="pro"?K.grn:K.ink3 }}>{planId==="pro"?"Pro — 1,000 contacts / month + AI discovery":"Free — 5 contacts / day"}</div></div>
+          <div><div style={{ fontWeight:600, fontSize:14 }}>Plan</div><div style={{ fontSize:12, marginTop:2, color:planId==="pro"?K.grn:K.ink3 }}>{planId==="pro"?"Pro, 1,000 contacts / month + AI discovery":"Free, 5 contacts / day"}</div></div>
           {planId!=="pro"?<button style={G("dark",{fontSize:12,padding:"5px 14px"})} onClick={()=>setAppView("checkout")}>Upgrade · $20/mo</button>:<button style={G("ghost",{fontSize:12,color:K.red,borderColor:K.redB})} onClick={()=>api.manageSubscription().catch(()=>msg("Visit billing.stripe.com to manage your subscription."))}>Manage subscription</button>}
         </div>
         <div style={{ padding:"13px 16px" }}>
@@ -2581,7 +2922,7 @@ export default function App() {
             <span style={{ fontWeight:700, color:lowCredits?K.red:K.ink }}>{credits} / {planId==="pro"?1000:5}</span>
           </div>
           <div className="pb"><div className="pf" style={{ width:`${Math.min((credits/(planId==="pro"?1000:5))*100,100)}%`, background:lowCredits?K.red:K.ink }}/></div>
-          <p style={{ fontSize:11, color:K.ink4, marginTop:10, lineHeight:1.6 }}>1 credit unlocks a database contact · 2 credits unlock an AI-discovered contact. Writing emails and follow-ups is always free. Resets {planId==="pro"?"monthly":"daily"}.</p>
+          <p style={{ fontSize:11, color:K.ink4, marginTop:10, lineHeight:1.6 }}>2 credits unlock a verified contact (mailbox confirmed) · 1 credit for an unverified one (live domain, not confirmed). Writing emails and follow-ups is always free. Resets {planId==="pro"?"monthly":"daily"}.</p>
         </div>
         {planId==="pro"&&(
           <div style={{ padding:"13px 16px", borderTop:`1px solid ${K.b}`, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
@@ -2591,7 +2932,7 @@ export default function App() {
         )}
       </div>
       <div style={{ border:`1px solid ${K.b}`, borderRadius:10, padding:"13px 16px", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <div style={{ minWidth:0 }}><div style={{ fontWeight:600, fontSize:14 }}>Resume</div><div style={{ fontSize:12, color: resume?K.grn:K.ink3, marginTop:2 }}>{resume? `📎 ${resume.name} — attached to your emails`:"None — attach one to boost replies"}</div></div>
+        <div style={{ minWidth:0 }}><div style={{ fontWeight:600, fontSize:14 }}>Resume</div><div style={{ fontSize:12, color: resume?K.grn:K.ink3, marginTop:2 }}>{resume? `📎 ${resume.name}, attached to your emails`:"None, attach one to boost replies"}</div></div>
         <button style={G("ghost",{fontSize:12,padding:"5px 12px"})} onClick={()=>setModal("resume")}>{resume?"Replace":"Add resume"}</button>
       </div>
       <div style={{ border:`1px solid ${K.b}`, borderRadius:10, padding:"13px 16px", marginBottom:14, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
@@ -2630,7 +2971,7 @@ export default function App() {
         {!gmailConnected&&(
           <div style={{ marginTop:10, padding:"11px 14px", background:K.ink, border:`1px solid ${K.ink}`, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:13, flexWrap:"wrap", gap:8 }} role="alert">
             <span style={{ color:"#fff", fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
-              <span aria-hidden="true">✉️</span> Connect your Gmail to send emails — nothing sends until you do.
+              <span aria-hidden="true">✉️</span> Connect your Gmail to send emails, nothing sends until you do.
             </span>
             <button className="btn-lift" style={G("green",{fontSize:12,padding:"6px 14px",background:"#fff",color:K.ink,border:"none"})} onClick={()=>setModal("profileEdit")}>Connect Gmail →</button>
           </div>
@@ -2667,9 +3008,9 @@ export default function App() {
       {modal==="profileEdit" && <ProfileEditModal profile={profile} user={user} onSave={p=>{setProfile(p);msg("✓ Profile saved");}} onClose={()=>{setModal(null);setGmailConnected(localStorage.getItem("fi_gmail_ok")==="1");}}/>}
       {modal==="paywall"     && <Paywall credits={credits} onClose={()=>setModal(null)} onUpgrade={()=>setAppView("checkout")}/>}
       {modal==="topup"       && <TopupModal onClose={()=>setModal(null)} onTopup={n=>{setCredits(c=>c+n);msg(`✓ ${n} credits added`);}}/>}
-      {modal==="draft"       && focus && <DraftModal company={focus} profile={profile} isSent={sentList.includes(focus.id)} credits={credits} resume={resume} canSendNow={canSendNow} sendBlockReason={sendBlockReason} onClose={()=>{setModal(null);setFocus(null);}} onSend={recordSend}/>}
+      {modal==="draft"       && focus && <DraftModal company={focus} profile={profile} isSent={sentList.includes(focus.id)} credits={credits} resume={resume} canSendNow={canSendNow} sendBlockReason={sendBlockReason} gmailConnected={gmailConnected} uid={user?.id} onClose={()=>{setModal(null);setFocus(null);}} onSend={recordSend}/>}
       {modal==="resume"      && <ResumeModal resume={resume} onSave={(r)=>{setResume(r); track("resume_upload"); msg("✓ Resume saved");}} onClose={()=>setModal(null)}/>}
-      {modal==="bulk"        && <BulkModal companies={allFirms.filter(c=>selected.includes(c.id))} profile={profile} resume={resume} sentList={sentList} credits={credits} remainingSends={remainingSends} sendLimit={sendLimit} onClose={()=>setModal(null)} onDone={recordBulkSend}/>}
+      {modal==="bulk"        && <BulkModal companies={allFirms.filter(c=>selected.includes(c.id))} profile={profile} resume={resume} sentList={sentList} credits={credits} remainingSends={remainingSends} sendLimit={sendLimit} gmailConnected={gmailConnected} uid={user?.id} onClose={()=>setModal(null)} onDone={recordBulkSend}/>}
       {modal==="detail"      && focus && <CompanyDetail company={focus} score={scores[focus.id]} isSent={sentList.includes(focus.id)} lists={lists} currentList={listOf[focus.id]} onSaveList={(lid)=>saveToList(focus.id,lid)} onClose={()=>{setModal(null);setFocus(null);}} onDraft={()=>{const f=focus;setTimeout(()=>{setFocus(f);setModal("draft");},50);}}/>}
 
       {toast && <Toast msg={toast} onDone={()=>setToast(null)}/>}

@@ -10,14 +10,17 @@
 //     &state=<supabase user id, signed>
 
 import { createClient } from "@supabase/supabase-js";
+import { verifyState } from "../lib/oauthstate.js";
 
 export default async function handler(req, res) {
   const { code, state } = req.query;
   if (!code || !state) return res.status(400).send("missing_code_or_state");
 
-  // `state` must be a signed/verified reference to the Supabase user (verify your
-  // signature here; shown unwrapped for brevity).
-  const userId = state;
+  // `state` is HMAC-signed and short-lived (minted by /api/gmail-oauth-url from the
+  // authenticated session). Verify it before trusting the user id inside — a raw,
+  // forgeable state would let an attacker bind a Gmail account to someone else's user.
+  const userId = verifyState(state);
+  if (!userId) return res.status(400).send("invalid_or_expired_state");
 
   // Exchange the authorization code for tokens.
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {

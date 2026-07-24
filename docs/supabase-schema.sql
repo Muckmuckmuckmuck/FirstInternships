@@ -199,11 +199,33 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function handle_new_user();
 
--- ── Atomic credit increment (used by Stripe top-ups + queue refunds) ────────
+-- ── Atomic credit increment (used by Stripe top-ups + queue/bounce refunds) ──
+-- SECURITY-CRITICAL: this hands out credits with no auth check, so it MUST be
+-- callable ONLY by the service role (server functions). If anon/authenticated can
+-- execute it, anyone with the public anon key can POST /rest/v1/rpc/increment_credits
+-- and mint themselves unlimited credits, bypassing the paywall entirely.
 create or replace function increment_credits(uid uuid, delta integer)
 returns void language sql security definer as $$
   update profiles set credits = credits + delta where id = uid;
 $$;
+revoke execute on function increment_credits(uuid, integer) from public, anon, authenticated;
+grant  execute on function increment_credits(uuid, integer) to service_role;
+
+-- ── Atomic guarded charge (used by send-email to reserve credits) ────────────
+-- Deducts `amt` only if the balance covers it; returns whether it did. Being a
+-- single guarded UPDATE, concurrent sends can't both read the same balance and
+-- overspend. Same service-role-only lockdown as increment_credits.
+create or replace function charge_credits(uid uuid, amt integer)
+returns boolean language plpgsql security definer set search_path = public as $$
+declare n integer;
+begin
+  if amt <= 0 then return true; end if;
+  update public.profiles set credits = credits - amt where id = uid and credits >= amt;
+  get diagnostics n = row_count;
+  return n > 0;
+end; $$;
+revoke execute on function charge_credits(uuid, integer) from public, anon, authenticated;
+grant  execute on function charge_credits(uuid, integer) to service_role;
 
 -- ── CREDIT SECURITY (do not weaken) ─────────────────────────────────────────
 -- Credits/plan MUST NOT be client-writable, or users can grant themselves

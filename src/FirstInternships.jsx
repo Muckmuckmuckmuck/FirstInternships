@@ -988,10 +988,69 @@ function GmailConnectButton({ userId, onSuccess }) {
     </div>
   );
 }
+// ─── EMAIL REMOVAL (public opt-out) ───────────────────────────────────────────
+// A recruiter who wants out shouldn't have to make an account to get out. One address
+// per submit (the input is a single email field and the server rejects anything with a
+// separator), so this can't be used to bulk-wipe the directory. The server replies the
+// same way whether or not the address was found, so it can't be used to probe the list.
+function RemoveEmailForm({ compact = false, onDone }) {
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState("idle");   // idle | busy | done | error
+  const [msg,   setMsg]   = useState("");
+  const valid = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/.test(email.trim());
+
+  async function submit(e) {
+    e?.preventDefault?.();
+    if (!valid || state === "busy") return;
+    setState("busy"); setMsg("");
+    try {
+      const r = await api.removeEmail(email.trim());
+      setState("done");
+      setMsg(r?.message || "If that address is in our database, it has been removed.");
+      setEmail("");
+      onDone?.();
+    } catch (err) {
+      setState("error");
+      setMsg(String(err?.message || "Something went wrong. Please try again in a moment."));
+    }
+  }
+
+  if (state === "done") {
+    return (
+      <div style={{ background:K.grnT, border:`1px solid ${K.grnB||K.grn}`, borderRadius:9, padding:"12px 14px", fontSize:13, color:K.grn, lineHeight:1.6 }} role="status">
+        ✓ {msg}
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} style={{ display:"flex", flexDirection:"column", gap:8 }}>
+      <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+        <input
+          type="email" value={email} onChange={e=>{ setEmail(e.target.value); if(state==="error") setState("idle"); }}
+          placeholder="your.name@company.com"
+          aria-label="Your email address to remove from the database"
+          autoComplete="email"
+          style={F({ flex:"1 1 220px", minWidth:0, fontSize:13, padding:compact?"9px 12px":"10px 13px" })}
+        />
+        <button type="submit" disabled={!valid || state==="busy"}
+          style={G(compact?"dark":"ghost",{ fontSize:13, padding:compact?"9px 18px":"10px 18px", opacity:(!valid||state==="busy")?0.55:1, whiteSpace:"nowrap" })}>
+          {state==="busy" ? <><SpB/>Removing…</> : "Remove me"}
+        </button>
+      </div>
+      {state==="error" && <p style={{ fontSize:12, color:K.red, margin:0 }}>{msg}</p>}
+      <p style={{ fontSize:11, color:K.ink4, margin:0, lineHeight:1.6 }}>
+        One address at a time. We remove it from our outreach database permanently, and future
+        imports can't add it back. This doesn't affect any FirstInternships account.
+      </p>
+    </form>
+  );
+}
+
 function Landing({ onGetStarted, onAuthSuccess }) {
   const [scrolled,   setScrolled]   = useState(false);
   const [faqOpen,    setFaqOpen]    = useState(null);
-  const [modal,      setModal]      = useState(null); // "signin" | "signup" | null
+  const [modal,      setModal]      = useState(null); // "signin" | "signup" | "removeEmail" | null
 
   useEffect(() => {
     injectSEO();
@@ -1016,6 +1075,13 @@ function Landing({ onGetStarted, onAuthSuccess }) {
           <div style={{ maxWidth:1100, margin:"0 auto", padding:"0 20px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
             <a href="/" style={{ fontWeight:800, fontSize:16, letterSpacing:-.6, color:K.ink }}>firstinternships</a>
             <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              {/* Opt-out: present and findable, but styled as quiet text so it never
+                  competes with the primary actions. Hidden on very small screens,
+                  where the footer form is the path. */}
+              <button className="hm2" style={{ background:"none", border:"none", fontFamily:"inherit", fontSize:12.5, color:K.ink4, cursor:"pointer", padding:"6px 10px" }}
+                onClick={()=>setModal("removeEmail")} title="Remove your email from our database">
+                Remove my email
+              </button>
               <button style={G("ghost",{fontSize:13,padding:"6px 14px"})} onClick={()=>setModal("signin")}>Sign in</button>
               <button style={G("dark",{fontSize:13,padding:"7px 16px"})} onClick={()=>setModal("signup")}>Get started →</button>
             </div>
@@ -1191,7 +1257,7 @@ function Landing({ onGetStarted, onAuthSuccess }) {
       </section>
 
       {/* AUTH MODAL */}
-      {modal && (
+      {(modal==="signin"||modal==="signup") && (
         <AuthModal
           defaultTab={modal}
           onClose={() => setModal(null)}
@@ -1199,19 +1265,43 @@ function Landing({ onGetStarted, onAuthSuccess }) {
         />
       )}
 
+      {/* REMOVE-EMAIL MODAL (from the nav) */}
+      {modal==="removeEmail" && (
+        <div className="ov" role="dialog" aria-modal="true" aria-labelledby="rm-title" onClick={e=>{ if(e.target===e.currentTarget) setModal(null); }}>
+          <div className="mo" style={{ maxWidth:440 }}>
+            <div className="mhd">
+              <h2 id="rm-title" style={{ fontWeight:700, fontSize:14 }}>Remove my email</h2>
+              <button className="mcl" onClick={()=>setModal(null)} aria-label="Close">×</button>
+            </div>
+            <div style={{ padding:20, display:"flex", flexDirection:"column", gap:14 }}>
+              <p style={{ fontSize:13, color:K.ink3, lineHeight:1.65 }}>
+                If you're a recruiter or hiring contact and you don't want students emailing you
+                through FirstInternships, enter your address and we'll remove it. No account needed.
+              </p>
+              <RemoveEmailForm compact />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* OPT-OUT, B2B contacts only; CAN-SPAM § 7704(b)(1) does not require
            opt-out for transactional/non-commercial messages, but we offer it anyway */}
-      <section aria-label="Contact opt-out" style={{ borderTop:`1px solid ${K.b}`, background:K.surf, padding:"18px 24px" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto", textAlign:"center" }}>
-          <p style={{ fontSize:11, color:K.ink4, lineHeight:1.8, maxWidth:560, margin:"0 auto" }}>
-            <strong style={{ fontWeight:600, color:K.ink3 }}>Hiring contact opt-out:</strong>{" "}
-            If you are a company recruiter or HR contact and would like to be removed from our database,
-            email{" "}
+      <section id="remove-email" aria-label="Remove your email from our database" style={{ borderTop:`1px solid ${K.b}`, background:K.surf, padding:"26px 24px" }}>
+        <div style={{ maxWidth:560, margin:"0 auto" }}>
+          <div style={{ fontSize:13.5, fontWeight:700, color:K.ink2, marginBottom:4 }}>
+            Remove your email from our database
+          </div>
+          <p style={{ fontSize:12, color:K.ink4, lineHeight:1.7, marginBottom:12 }}>
+            Are you a recruiter or hiring contact and don't want students emailing you through
+            FirstInternships? Enter your address below and we'll take it out. No account needed,
+            and it takes effect immediately.
+          </p>
+          <RemoveEmailForm />
+          <p style={{ fontSize:11, color:K.ink4, lineHeight:1.7, marginTop:12 }}>
+            Prefer email? Write to{" "}
             <a href="mailto:contactfirstinternships@gmail.com" style={{ color:K.ink3, textDecoration:"underline" }}>
               contactfirstinternships@gmail.com
-            </a>
-            {" "}with the subject line <em>"Remove listing"</em> and your company name.
-            We process all requests within 5 business days.
+            </a>{" "}and we'll handle it manually.
           </p>
         </div>
       </section>

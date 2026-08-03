@@ -93,7 +93,14 @@ def main():
                "state=excluded.state, source=excluded.source, "
                "contact_type=excluded.contact_type, source_url=excluded.source_url, "
                "context_snippet=excluded.context_snippet, "
-               "collected_at=excluded.collected_at, active=excluded.active;")
+               "collected_at=excluded.collected_at, "
+               # NEVER resurrect someone who opted out. Without this guard, the next
+               # import batch would silently undo their removal and start emailing
+               # them again, which is the exact failure a suppression list exists to
+               # prevent.
+               "active = case when firms.suppressed_at is not null then false "
+               "             else excluded.active end "
+               " where firms.suppressed_at is null;")
         runsql(sql)
         total += len(chunk)
         print(f'  imported {total}/{len(rows)}')

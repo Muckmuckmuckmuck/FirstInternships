@@ -2295,16 +2295,22 @@ export default function App() {
     init()
       .catch((e) => { console.error("init failed:", e); setAppView("landing"); })
       .finally(() => setAppReady(true));
-    // Load the firm database ONLY for logged-in users. A logged-out landing visitor
-    // (e.g. from Product Hunt) doesn't need 11k rows, so we skip the big fetch and the
-    // page paints faster.
-    api.getSession().then(session => {
-      if (!session) return;
-      api.listFirms({ limit: 20000 }).then(firms => {
-        if (firms?.length) setDbFirms(firms.map(normalizeFirm));
-      }).catch(() => {});
-    }).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Load the firm database for logged-in users. A logged-out landing visitor (e.g. from
+  // Product Hunt) doesn't need 11k rows, so we skip the big fetch and the page paints
+  // faster. This keys off `user` rather than running once on mount: signing in does NOT
+  // remount the app, so a mount-only fetch silently left every fresh sign-in and every
+  // new signup on the small inline fallback list instead of the real database.
+  const firmsLoadedFor = useRef(null);
+  useEffect(() => {
+    const uid = user?.id;
+    if (!uid || firmsLoadedFor.current === uid) return;
+    firmsLoadedFor.current = uid;
+    api.listFirms({ limit: 20000 })
+      .then(firms => { if (firms?.length) setDbFirms(firms.map(normalizeFirm)); })
+      .catch(() => { firmsLoadedFor.current = null; });   // allow a retry on failure
+  }, [user?.id]);
 
   // Auto-update, especially on mobile. A loaded SPA keeps running its OLD JS after a
   // new deploy (Safari holds the tab in memory + back/forward cache), so the phone

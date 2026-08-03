@@ -7,7 +7,7 @@
 // Auth: Supabase access token in the Authorization header.
 
 import { createClient } from "@supabase/supabase-js";
-import { costOfFirm, RECRUITER_DAILY, isRecruiter } from "../lib/credits.js";
+import { costOfFirm, isRecruiter } from "../lib/credits.js";
 
 // Warm-up: as the account ages (days since first send), the safe daily cap rises.
 const WARMUP = {
@@ -62,45 +62,17 @@ export default async function handler(req, res) {
     return res.status(409).json({ error: "daily_limit_reached", limit });
 
   // Only accept up to the remaining allowance; hold the rest (client re-submits later).
-  let accepted = items.slice(0, remaining);
-  let held = items.length - accepted.length;
+  const accepted = items.slice(0, remaining);
+  const held = items.length - accepted.length;
 
-  // Charge credits up front (reserve). 1 per DB contact / 2 per discovered — the
-  // caller passes firmId; look up source to price it.
+  // Charge credits up front (reserve). The caller passes firmId; look up the row to
+  // price it. Named direct contacts are the premium tier at a flat 2 credits; company
+  // inboxes are priced by deliverability confidence (verified 2, unconfirmed 1) and
+  // AI-discovered are 2 to cover the discovery cost. See lib/credits.js.
   const firmIds = accepted.map(i => i.firmId);
-  // Price by deliverability confidence: verified mailbox = 2 (premium, guaranteed to land),
-  // discovered = 2 (covers discovery), everything else = 1 (break-even for might-bounce).
   const { data: firms } = await admin
     .from("firms").select("id,source,verification_status,contact_type").in("id", firmIds);
   const firmById = id => firms?.find(x => x.id === id);
-
-  // ── Named-recruiter daily allowance (server-enforced; the client can't skip it) ──
-  // Direct contacts are rationed separately from company inboxes: free accounts get a
-  // few per day, so the tier stays valuable and the sender's reputation stays safe.
-  // Overflow is HELD (same as the warm-up cap) rather than failing the whole batch,
-  // which matters because bulk send is the primary flow.
-  const recruiterCap = RECRUITER_DAILY[profile.plan === "pro" ? "pro" : "free"];
-  const wantsRecruiter = accepted.some(i => isRecruiter(firmById(i.firmId)));
-  if (wantsRecruiter) {
-    const { count: recruiterUsed } = await admin.from("send_queue")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id).eq("contact_type", "recruiter")
-      .in("status", ["queued", "sending", "sent"])
-      .gte("created_at", since.toISOString());
-    let budget = Math.max(0, recruiterCap - (recruiterUsed || 0));
-    const before = accepted.length;
-    accepted = accepted.filter(i => {
-      if (!isRecruiter(firmById(i.firmId))) return true;   // company sends unaffected
-      if (budget > 0) { budget--; return true; }
-      return false;
-    });
-    held += before - accepted.length;
-    if (accepted.length === 0)
-      return res.status(409).json({
-        error: "recruiter_daily_limit", cap: recruiterCap,
-        message: `You've used today's ${recruiterCap} direct contact sends. Company inboxes are still available, and this resets tomorrow.`,
-      });
-  }
 
   const costOf = id => costOfFirm(firmById(id));
   const totalCost = accepted.reduce((s, i) => s + costOf(i.firmId), 0);

@@ -90,10 +90,15 @@ def source_year(url):
     return max(yrs) if yrs else None
 
 def load_rows():
-    """Read every file, tagging each row with which file it came from."""
+    """Read every file, tagging each row with which file it came from.
+
+    Any extra CSV paths passed on the command line are read too, so new batches can be
+    processed alongside the originals and deduped against them in one pass.
+    """
     rows, seen_hashes, file_report = [], {}, []
-    for fn in FILES:
-        path = os.path.join(SRC, fn)
+    paths = [os.path.join(SRC, f) for f in FILES] + sys.argv[1:]
+    for path in paths:
+        fn = os.path.basename(path)
         if not os.path.exists(path):
             file_report.append((fn, "MISSING", 0))
             continue

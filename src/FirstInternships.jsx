@@ -110,18 +110,16 @@ const PLANS = {
 //   • Unverified contact (live domain, deliverability not confirmed) → 1 credit (break-even)
 //   • AI-discovered contact → 2 credits (covers Gemini grounded-search cost)
 // After unlocking, writing emails and follow-ups to that contact is unlimited & free.
-const VERIFIED_COST = 2;   // SMTP-confirmed the mailbox exists, premium, guaranteed to land
-const UNLOCK_COST   = 1;   // live domain but unconfirmed (catch-all / probe-blocked), cheap
-const DISCOVER_COST = 2;   // newly AI-discovered email (covers discovery cost)
+const VERIFIED_COST  = 2;  // SMTP-confirmed the mailbox exists, premium, guaranteed to land
+const UNLOCK_COST    = 1;  // live domain but unconfirmed (catch-all / probe-blocked), cheap
+const DISCOVER_COST  = 2;  // newly AI-discovered email (covers discovery cost)
+const RECRUITER_COST = 2;  // a named person's direct inbox, premium (must match lib/credits.js)
 const contactCost = (company) =>
-  company?.discovered ? DISCOVER_COST
+  company?.contactType === "recruiter" ? RECRUITER_COST
+  : company?.discovered ? DISCOVER_COST
   : company?.verification_status === "valid" ? VERIFIED_COST
   : UNLOCK_COST;
 const isVerified = (company) => company?.verification_status === "valid";
-// Named direct contacts price the SAME as company inboxes, but are rationed per day.
-// Must stay in sync with RECRUITER_DAILY in lib/credits.js (server enforces the real cap).
-const RECRUITER_DAILY_FREE = 3;
-const RECRUITER_DAILY_PRO  = 40;
 const isRecruiterContact = (company) => company?.contactType === "recruiter";
 
 // ─── COMPANY DATABASE ─────────────────────────────────────────────────────────
@@ -1867,7 +1865,7 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
             : isVerified(company)
               ? <InfoBox color="green" icon="✓"><strong>Verified inbox.</strong> We SMTP-checked this address and confirmed it exists, so your email will land. Unlocks for <strong>{VERIFIED_COST} credits</strong>. After that, every email and follow-up is free.</InfoBox>
               : isRecruiterContact(company)
-                ? <InfoBox color="neutral" icon="👤"><strong>Direct contact.</strong> {company.cname||"This person"} published this work email {company.ctitle?<>as {company.ctitle}</>:null} so students could reach out. Unlocks for <strong>{contactCost(company)} credit{contactCost(company)!==1?"s":""}</strong>, and direct contacts are capped at <strong>{planId==="pro"?RECRUITER_DAILY_PRO:RECRUITER_DAILY_FREE} per day</strong> to protect your inbox reputation. After that, every email and follow-up to them is free.</InfoBox>
+                ? <InfoBox color="neutral" icon="👤"><strong>Direct contact.</strong> {company.cname||"This person"} published this work email {company.ctitle?<>as {company.ctitle}</>:null} so students could reach out. A real person replies far more often than a careers@ inbox, so it unlocks for <strong>{RECRUITER_COST} credits</strong>. After that, every email and follow-up to them is free.</InfoBox>
                 : <InfoBox color="neutral" icon="🔓">{company.discovered
                     ? <>This is an AI-discovered contact, sending unlocks it for <strong>{DISCOVER_COST} credits</strong> (covers the discovery). </>
                     : <>This inbox is on a live domain but we couldn't confirm the exact mailbox, so it's cheap, unlocks for <strong>{UNLOCK_COST} credit</strong>. </>}
@@ -2770,21 +2768,6 @@ export default function App() {
 
   const CompaniesTab = (
     <div>
-      {/* CONTACTS TIER HEADER — a named person's inbox, so it's explained and rationed. */}
-      {activeTier==="recruiter" && (
-        <div style={{ padding:"14px 16px", borderBottom:`1px solid ${K.b}`, background:"#f0fdf4" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:6 }}>
-            <span style={{ fontSize:13 }} aria-hidden="true">👤</span>
-            <span style={{ fontSize:13, fontWeight:700, color:K.ink }}>Direct contacts, real people</span>
-            <span style={{ fontSize:10, color:K.grn, background:"#dcfce7", border:`1px solid ${K.grn}`, borderRadius:4, padding:"1px 7px", fontWeight:700, marginLeft:"auto" }}>
-              {planId==="pro" ? `${RECRUITER_DAILY_PRO}/day` : `${RECRUITER_DAILY_FREE} free/day`}
-            </span>
-          </div>
-          <p style={{ fontSize:11.5, color:K.ink3, lineHeight:1.6, margin:0 }}>
-            These are recruiters, internship coordinators, and hiring managers who <strong>published their own work email</strong> so students could contact them. A real person replies far more often than a careers@ inbox, so they're limited to <strong>{planId==="pro"?RECRUITER_DAILY_PRO:RECRUITER_DAILY_FREE} per day</strong> to keep your Gmail reputation safe. Same credit cost as a company contact.
-          </p>
-        </div>
-      )}
       {/* AI FIRM DISCOVERY — companies only (it finds careers@ inboxes, not people). */}
       {activeTier!=="recruiter" && (
       <div style={{ padding:"14px 16px", borderBottom:`1px solid ${K.b}`, background:K.blT }}>

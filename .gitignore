@@ -6,3 +6,7 @@ dist/
 .vercel
 *.log
 .DS_Store
+
+# ETL output: contains real people's names and emails (personal data).
+# The database is the source of truth; this never belongs in git.
+scripts/out/

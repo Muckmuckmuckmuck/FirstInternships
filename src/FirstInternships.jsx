@@ -118,6 +118,11 @@ const contactCost = (company) =>
   : company?.verification_status === "valid" ? VERIFIED_COST
   : UNLOCK_COST;
 const isVerified = (company) => company?.verification_status === "valid";
+// Named direct contacts price the SAME as company inboxes, but are rationed per day.
+// Must stay in sync with RECRUITER_DAILY in lib/credits.js (server enforces the real cap).
+const RECRUITER_DAILY_FREE = 3;
+const RECRUITER_DAILY_PRO  = 40;
+const isRecruiterContact = (company) => company?.contactType === "recruiter";
 
 // ─── COMPANY DATABASE ─────────────────────────────────────────────────────────
 // ─── FIRM DATABASE ────────────────────────────────────────────────────────────
@@ -221,6 +226,10 @@ function normalizeFirm(f) {
     knownFor: f.type || "", discovered: f.source === "discovered",
     domain: f.domain, source: f.source,
     verification_status: f.verification_status || null,   // valid | catch_all | unknown | null
+    // "company" = role inbox (careers@…), "recruiter" = a named person's direct inbox.
+    contactType: f.contact_type || "company",
+    sourceUrl: f.source_url || "",     // provenance: where this contact was published
+    collectedAt: f.collected_at || "",
   };
 }
 
@@ -1702,7 +1711,7 @@ function ResumeModal({ resume, onSave, onClose }) {
 }
 
 // ─── DRAFT MODAL ──────────────────────────────────────────────────────────────
-function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sendBlockReason, gmailConnected, uid, onClose, onSend }) {
+function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sendBlockReason, gmailConnected, uid, planId, onClose, onSend }) {
   const [draft,   setDraft]   = useState("");
   const [level,   setLevel]   = useState(() => prefLevel.get());
   const [genLevel,setGenLevel]= useState(null);  // level the current draft was generated at
@@ -1857,10 +1866,12 @@ function DraftModal({ company, profile, isSent, credits, resume, canSendNow, sen
             ? <InfoBox color="green" icon="✓">You've already unlocked this contact, this follow-up and any future emails to them are free.</InfoBox>
             : isVerified(company)
               ? <InfoBox color="green" icon="✓"><strong>Verified inbox.</strong> We SMTP-checked this address and confirmed it exists, so your email will land. Unlocks for <strong>{VERIFIED_COST} credits</strong>. After that, every email and follow-up is free.</InfoBox>
-              : <InfoBox color="neutral" icon="🔓">{company.discovered
-                  ? <>This is an AI-discovered contact, sending unlocks it for <strong>{DISCOVER_COST} credits</strong> (covers the discovery). </>
-                  : <>This inbox is on a live domain but we couldn't confirm the exact mailbox, so it's cheap, unlocks for <strong>{UNLOCK_COST} credit</strong>. </>}
-                  After that, every email and follow-up to them is free. Writing and regenerating are always free.</InfoBox>}
+              : isRecruiterContact(company)
+                ? <InfoBox color="neutral" icon="👤"><strong>Direct contact.</strong> {company.cname||"This person"} published this work email {company.ctitle?<>as {company.ctitle}</>:null} so students could reach out. Unlocks for <strong>{contactCost(company)} credit{contactCost(company)!==1?"s":""}</strong>, and direct contacts are capped at <strong>{planId==="pro"?RECRUITER_DAILY_PRO:RECRUITER_DAILY_FREE} per day</strong> to protect your inbox reputation. After that, every email and follow-up to them is free.</InfoBox>
+                : <InfoBox color="neutral" icon="🔓">{company.discovered
+                    ? <>This is an AI-discovered contact, sending unlocks it for <strong>{DISCOVER_COST} credits</strong> (covers the discovery). </>
+                    : <>This inbox is on a live domain but we couldn't confirm the exact mailbox, so it's cheap, unlocks for <strong>{UNLOCK_COST} credit</strong>. </>}
+                    After that, every email and follow-up to them is free. Writing and regenerating are always free.</InfoBox>}
           {/* Sticky action bar: Send stays reachable no matter how far you scroll the
               draft, so you never have to scroll back up to send. */}
           <div style={{ position:"sticky", bottom:0, zIndex:5, display:"flex", gap:8, justifyContent:"flex-end", alignItems:"center", background:"#fff", borderTop:`1px solid ${K.b}`, padding:"11px 0 6px", marginTop:2 }}>
@@ -2389,6 +2400,15 @@ export default function App() {
     return [...base, ...discovered];
   }, [dbFirms, discovered]);
 
+  // The Companies tab and the Contacts tab are the same table over two different
+  // slices of the data. AI-discovered firms have no contactType, so they default to
+  // "company" and stay in the Companies tab where they belong.
+  const activeTier = tab === "contacts" ? "recruiter" : "company";
+  const tierFirms = useMemo(
+    () => allFirms.filter(c => (c.contactType || "company") === activeTier),
+    [allFirms, activeTier]
+  );
+
   const scores = useMemo(() => {
     const m = {};
     allFirms.forEach(c => { m[c.id] = calcFit(c, profile); });
@@ -2400,7 +2420,7 @@ export default function App() {
   const facets = useMemo(() => {
     const counts = {};
     let remoteT=false, remoteF=false, paidT=false, paidF=false, internT=false, internF=false;
-    allFirms.forEach(c => {
+    tierFirms.forEach(c => {
       const s = (c.industry || "").toLowerCase();
       INDUSTRY_GROUPS.forEach(g => { if (g.match.some(m => s.includes(m))) counts[g.label] = (counts[g.label]||0)+1; });
       if (c.remote) remoteT=true; else remoteF=true;
@@ -2414,7 +2434,7 @@ export default function App() {
       showPaid:   paidT && paidF,
       showIntern: internT && internF,
     };
-  }, [allFirms]);
+  }, [tierFirms]);
 
   function onSort(col) {
     if(sortCol===col) setSortDir(d=>d==="asc"?"desc":"asc");
@@ -2422,7 +2442,7 @@ export default function App() {
   }
 
   const visible = useMemo(() => {
-    let list = allFirms.map(c=>({...c,score:scores[c.id]}));
+    let list = tierFirms.map(c=>({...c,score:scores[c.id]}));
     if(fInd!=="All")          list=list.filter(c=>industryMatch(c.industry, fInd));
     if(fAccess==="Remote")    list=list.filter(c=>c.remote);
     if(fAccess==="On-site")   list=list.filter(c=>!c.remote);
@@ -2445,10 +2465,13 @@ export default function App() {
       return sortDir==="asc"?av-bv:bv-av;
     });
     return list;
-  }, [fInd,fType,fAccess,fPaid,fIntern,search,sortCol,sortDir,scores,allFirms]);
+  }, [fInd,fType,fAccess,fPaid,fIntern,search,sortCol,sortDir,scores,tierFirms]);
 
   // Reset pagination whenever the filtered set changes
   useEffect(() => { setShown(50); }, [fInd,fType,fAccess,fPaid,fIntern,search,sortCol,sortDir]);
+  // Switching between Companies and Contacts clears the selection, so a bulk send can
+  // never silently mix tiers (they price and ration differently).
+  useEffect(() => { setSel([]); setShown(50); }, [activeTier]);
   const shownRows = visible.slice(0, shown);
 
   const allSel  = shownRows.length>0&&shownRows.every(c=>selected.includes(c.id));
@@ -2741,7 +2764,23 @@ export default function App() {
 
   const CompaniesTab = (
     <div>
-      {/* AI FIRM DISCOVERY */}
+      {/* CONTACTS TIER HEADER — a named person's inbox, so it's explained and rationed. */}
+      {activeTier==="recruiter" && (
+        <div style={{ padding:"14px 16px", borderBottom:`1px solid ${K.b}`, background:"#f0fdf4" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:6 }}>
+            <span style={{ fontSize:13 }} aria-hidden="true">👤</span>
+            <span style={{ fontSize:13, fontWeight:700, color:K.ink }}>Direct contacts, real people</span>
+            <span style={{ fontSize:10, color:K.grn, background:"#dcfce7", border:`1px solid ${K.grn}`, borderRadius:4, padding:"1px 7px", fontWeight:700, marginLeft:"auto" }}>
+              {planId==="pro" ? `${RECRUITER_DAILY_PRO}/day` : `${RECRUITER_DAILY_FREE} free/day`}
+            </span>
+          </div>
+          <p style={{ fontSize:11.5, color:K.ink3, lineHeight:1.6, margin:0 }}>
+            These are recruiters, internship coordinators, and hiring managers who <strong>published their own work email</strong> so students could contact them. A real person replies far more often than a careers@ inbox, so they're limited to <strong>{planId==="pro"?RECRUITER_DAILY_PRO:RECRUITER_DAILY_FREE} per day</strong> to keep your Gmail reputation safe. Same credit cost as a company contact.
+          </p>
+        </div>
+      )}
+      {/* AI FIRM DISCOVERY — companies only (it finds careers@ inboxes, not people). */}
+      {activeTier!=="recruiter" && (
       <div style={{ padding:"14px 16px", borderBottom:`1px solid ${K.b}`, background:K.blT }}>
         <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8, flexWrap:"wrap" }}>
           <span style={{ fontSize:13 }} aria-hidden="true">✨</span>
@@ -2778,6 +2817,7 @@ export default function App() {
           </p>
         )}
       </div>
+      )}
       {/* Filters */}
       <div style={{ padding:"12px 16px", borderBottom:`1px solid ${K.b}`, display:"flex", flexDirection:"column", gap:10 }}>
         <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
@@ -3119,7 +3159,7 @@ export default function App() {
         <div className="appnav-inner">
           <span className="appnav-logo">firstinternships</span>
           <div className="navtabs" role="tablist">
-            {[["dashboard","Home"],["companies","Companies"],["pipeline",`Pipeline${stats.dueIds.length>0?` (${stats.dueIds.length})`:""}`],["settings","Settings"]].map(([id,lbl])=>(
+            {[["dashboard","Home"],["companies","Companies"],["contacts","Contacts"],["pipeline",`Pipeline${stats.dueIds.length>0?` (${stats.dueIds.length})`:""}`],["settings","Settings"]].map(([id,lbl])=>(
               <button key={id} className={`ntab${tab===id?" on":""}`} onClick={()=>setTab(id)} role="tab" aria-selected={tab===id}>{lbl}</button>
             ))}
           </div>
@@ -3163,7 +3203,7 @@ export default function App() {
       <main style={{ maxWidth:1200, margin:"0 auto", padding:"14px 16px 80px" }}>
         <div style={{ background:"#fff", border:`1px solid ${K.b}`, borderRadius:10, overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
           {tab==="dashboard" && DashTab}
-          {tab==="companies" && CompaniesTab}
+          {(tab==="companies"||tab==="contacts") && CompaniesTab}
           {tab==="pipeline"  && PipelineTab}
           {tab==="settings"  && SettingsTab}
         </div>
@@ -3172,7 +3212,7 @@ export default function App() {
       {modal==="profileEdit" && <ProfileEditModal profile={profile} user={user} onSave={p=>{setProfile(p);msg("✓ Profile saved");}} onClose={()=>{setModal(null);setGmailConnected(localStorage.getItem("fi_gmail_ok")==="1");}}/>}
       {modal==="paywall"     && <Paywall credits={credits} onClose={()=>setModal(null)} onUpgrade={()=>setAppView("checkout")}/>}
       {modal==="topup"       && <TopupModal onClose={()=>setModal(null)} onTopup={n=>{setCredits(c=>c+n);msg(`✓ ${n} credits added`);}}/>}
-      {modal==="draft"       && focus && <DraftModal company={focus} profile={profile} isSent={sentList.includes(focus.id)} credits={credits} resume={resume} canSendNow={canSendNow} sendBlockReason={sendBlockReason} gmailConnected={gmailConnected} uid={user?.id} onClose={()=>{setModal(null);setFocus(null);}} onSend={recordSend}/>}
+      {modal==="draft"       && focus && <DraftModal company={focus} profile={profile} isSent={sentList.includes(focus.id)} credits={credits} resume={resume} canSendNow={canSendNow} sendBlockReason={sendBlockReason} gmailConnected={gmailConnected} uid={user?.id} planId={planId} onClose={()=>{setModal(null);setFocus(null);}} onSend={recordSend}/>}
       {modal==="resume"      && <ResumeModal resume={resume} onSave={(r)=>{setResume(r); track("resume_upload"); msg("✓ Resume saved");}} onClose={()=>setModal(null)}/>}
       {modal==="bulk"        && <BulkModal companies={allFirms.filter(c=>selected.includes(c.id))} profile={profile} resume={resume} sentList={sentList} credits={credits} remainingSends={remainingSends} sendLimit={sendLimit} gmailConnected={gmailConnected} uid={user?.id} onClose={()=>setModal(null)} onDone={recordBulkSend}/>}
       {modal==="detail"      && focus && <CompanyDetail company={focus} score={scores[focus.id]} isSent={sentList.includes(focus.id)} lists={lists} currentList={listOf[focus.id]} onSaveList={(lid)=>saveToList(focus.id,lid)} onClose={()=>{setModal(null);setFocus(null);}} onDraft={()=>{const f=focus;setTimeout(()=>{setFocus(f);setModal("draft");},50);}}/>}

@@ -171,6 +171,31 @@ alter table firms         enable row level security;
 -- writes (writes happen via service role only).
 create policy "firms readable by authed" on firms for select to authenticated using (true);
 
+-- ── Two contact tiers in one table ──────────────────────────────────────────
+-- contact_type='company'   -> role inbox (careers@…), id = domain
+-- contact_type='recruiter' -> a NAMED person's direct inbox, id = their email
+-- Emails always contain '@' and domains never do, so the two id spaces can't collide.
+-- Keeping both in `firms` means send_queue/contacts FKs, credits, bounce refunds and
+-- pipeline tracking all work for both tiers with zero duplicated logic.
+alter table firms
+  add column if not exists contact_type text not null default 'company',
+  -- PROVENANCE. Named individuals are personal data; these answer "where did you get
+  -- my email" and are required before a recruiter row may be shown.
+  add column if not exists source_url text,
+  add column if not exists context_snippet text,
+  add column if not exists collected_at date,
+  -- Suppression gate. Opt-out requests and known-stale sources set active=false; the
+  -- row is retained so it can never be silently re-imported, but is never served.
+  add column if not exists active boolean not null default true;
+create index if not exists firms_contact_type_idx on firms(contact_type) where active;
+
+-- Denormalized onto the queue so the per-day recruiter allowance is a cheap count
+-- rather than a join back to firms on every send. send-email.js is the only writer.
+alter table send_queue
+  add column if not exists contact_type text not null default 'company';
+create index if not exists send_queue_user_type_day_idx
+  on send_queue(user_id, contact_type, created_at);
+
 -- Per-user owner policies (select/insert/update/delete on own rows).
 create policy "own profile"  on profiles      for all using (auth.uid() = id)       with check (auth.uid() = id);
 create policy "own lists"    on lists         for all using (auth.uid() = user_id)  with check (auth.uid() = user_id);

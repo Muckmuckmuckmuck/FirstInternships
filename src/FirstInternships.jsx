@@ -949,6 +949,10 @@ function GmailConnectButton({ userId, onSuccess }) {
   function handle() {
     if (userId) {
       setLoad(true);
+      // Fired BEFORE the redirect, so comparing this against the gmail_accounts row
+      // separates "never tried to connect" from "tried and the OAuth round-trip failed".
+      // Those are completely different problems with completely different fixes.
+      track("gmail_connect_clicked");
       api.connectGmail().catch(() => setLoad(false)); // redirects browser to Google OAuth
     } else {
       // Fallback for onboarding before user id is known
@@ -1363,6 +1367,9 @@ const MAJORS = [
 ];
 
 // ─── ONBOARDING ───────────────────────────────────────────────────────────────
+// Human-readable names so the funnel query reads as screens, not indexes.
+const ONBOARDING_STEPS = ["name", "education", "work_interests", "employer_optin", "connect_gmail"];
+
 function Onboarding({ user, onDone, onConnectGmail }) {
   const [step, setStep]         = useState(0);
   const [ageAgreed, setAgeAgreed] = useState(false);
@@ -1385,6 +1392,14 @@ function Onboarding({ user, onDone, onConnectGmail }) {
   });
   const set = (k, v) => setP(prev => ({ ...prev, [k]:v }));
   const needsSchool = !["High School","Military","Career","Self-Taught"].some(x => p.eduLevel.startsWith(x));
+
+  // FUNNEL: fire once per step the user actually reaches. Onboarding is where most
+  // signups are lost, and arrival counts are what pinpoint the screen they abandon
+  // (drop-off at step N = reached N minus reached N+1). Completion alone can only say
+  // "finished or didn't", never which screen did the damage.
+  useEffect(() => {
+    track("onboarding_step", { step: step + 1, of: ONBOARDING_STEPS.length, name: ONBOARDING_STEPS[step] || `step_${step + 1}` });
+  }, [step]);
 
   const steps = [
     {
@@ -2704,6 +2719,7 @@ export default function App() {
   }
   async function handleOnboardingDone(p){
     const safeProfile = stripToken(p);
+    track("onboarding_complete", { gmail: !!(p.gmailToken && p.gmailToken !== "skip") });
     await api.saveProfile(onboardingPatch(safeProfile)).catch(() => {});
     // Re-read the canonical profile (snake_case DB shape) and use THAT for state, so
     // Settings reads the same keys it writes (talent_opt_in / city / linkedin_url).

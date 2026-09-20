@@ -49,6 +49,12 @@ function usePlanner() {
   return { ...planner, toggle, update, clear, restore, loaded, storageError };
 }
 
+// Vercel Web Analytics: first-party path, cookieless, no personal identifiers.
+// Page-level counts only. Planner notes, saved programs, and filter text stay in
+// the browser and are never sent anywhere — see docs/CLAUDE_CODE_PLAYBOOK.md §13.
+// Like the AdSense flag, this is a launch gate: off until deliberately enabled.
+const analyticsEnabled = () => import.meta.env.VITE_ANALYTICS_ENABLED === "true";
+
 const adsEnabled = () => import.meta.env.VITE_ADSENSE_ENABLED === "true" && /^ca-pub-\d{16}$/.test(import.meta.env.VITE_ADSENSE_CLIENT || "");
 function AdSlot({ slot }) {
   const [ready, setReady] = useState(false);
@@ -281,6 +287,13 @@ function SiteContent({ pathname = "/" }) {
   const page = resolvePage(pathname);
   const planner = usePlanner();
   const [stale, setStale] = useState(false);
+  useEffect(() => {
+    // Client-only so the first server render and first hydration render match.
+    if (!analyticsEnabled() || document.querySelector("script[data-fi-analytics]")) return;
+    const script = document.createElement("script"); script.defer = true; script.dataset.fiAnalytics = "true";
+    script.src = "/_vercel/insights/script.js";
+    document.head.appendChild(script);
+  }, []);
   useEffect(() => {
     document.title = `${page.title} | FirstInternships`;
     setStale(Date.now() - new Date(VERIFIED).getTime() > 60 * 86400000);

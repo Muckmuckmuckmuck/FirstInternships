@@ -71,3 +71,24 @@ const deployment = JSON.parse(await readFile(join(root, "vercel.json"), "utf8"))
 const expected = Object.entries(LEGACY_REDIRECTS);
 for (const [from, to] of expected) if (!deployment.redirects?.some(r => r.source === from && r.destination === to)) throw new Error(`Missing deployment redirect: ${from} → ${to}`);
 console.log(`Prerendered ${ROUTES.length} pages; ${crawlable.length + 2} sitemap URLs. Legacy marketing pages excluded from output.`);
+
+// IndexNow tells Bing/Yandex which URLs changed instead of waiting to be crawled.
+// Opt-in (INDEXNOW_SUBMIT=true) because it is an outward-facing notification, and
+// it runs only after the redirect check above, so a failing build never submits.
+// Google does not use IndexNow; its coverage still comes from Search Console.
+if (process.env.INDEXNOW_SUBMIT === "true") {
+  const host = new URL(SITE).host;
+  const keyFiles = (await readdir(join(root, "public"))).filter(name => /^[0-9a-f]{32}\.txt$/.test(name));
+  const key = process.env.INDEXNOW_KEY || keyFiles[0]?.replace(/\.txt$/, "");
+  if (!key) console.warn("IndexNow: no key file in public/ and no INDEXNOW_KEY set; skipped.");
+  else {
+    const body = { host, key, keyLocation: `${SITE}/${key}.txt`, urlList: [...crawlable, "/privacy", "/terms"].map(route => `${SITE}${route}`) };
+    try {
+      const response = await fetch("https://api.indexnow.org/indexnow", { method: "POST", headers: { "Content-Type": "application/json; charset=utf-8" }, body: JSON.stringify(body) });
+      console.log(`IndexNow: submitted ${body.urlList.length} URLs — ${response.status} ${response.statusText}`);
+    } catch (error) {
+      // A search-engine ping is never worth failing a deployment over.
+      console.warn(`IndexNow: submission failed (${error.message}); build continues.`);
+    }
+  }
+}

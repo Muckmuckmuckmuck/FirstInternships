@@ -1,201 +1,60 @@
-# FirstInternships — Project Context for Claude Code
+# FirstInternships — Project Context
 
-This file is the single source of truth for the project. Read it fully before touching anything.
+## Product
 
----
+An independent, free internship directory for current undergraduate college students. Organize confirmed pathways by earliest accepted college year, and use exact accepted-year sets. First-year/sophomore-only programs do not automatically accept juniors or seniors. Unknown minimums must stay unknown; never manufacture four full year buckets from employer brand names.
 
-## What this is
+The directory includes 89 sourced program application guides, four college-year hubs, 16 field hubs, four focused opportunity collections, 12 original preparation guides, editorial/contact pages, and a browser-local planner. These are curated pathways, not a real-time vacancies feed. Applications take place on official employer sites.
 
-**FirstInternships** (firstinternships.com) is an AI-powered internship cold-outreach SaaS for students. Users browse a curated database of ~4,800 company recruiting inboxes, get a personalized cold email written by AI (Gemini), and send it from their own Gmail via OAuth. The app tracks replies, interviews, and offers in a pipeline.
+## Code and content
 
-**Current state:** The frontend is a complete, polished, production-ready React SPA living in a single file (`src/FirstInternships.jsx`). The backend is fully scaffolded but **not yet wired in** — the app still runs on localStorage + mocked functions. **The primary task for Claude Code is to migrate the app off mocks and wire it into the real backend.**
+- `src/content.js`: program facts, official sources, verification dates, original editorial guides, route definitions, filtering.
+- `src/expanded-content.js`: additional verified pathways, field hubs, focused collections, substantive original playbooks and copyable examples. `src/inventory-expansion.js` holds the research-heavy 2026–2027 expansion; `src/variety-expansion.js` adds technology, finance, media, retail, and federal pathways; `src/organic-expansion.js` adds broad employer, sports, civil-rights, and humanitarian routes; `src/content-expansion-2.js` and `src/content-expansion-3.js` add consulting, aerospace, life-sciences, logistics, consumer, hospitality, manufacturing, and energy coverage. Keep all program/guide references valid.
+- `src/FirstInternships.jsx`: route-driven React UI, browser-local planner state, preparation checklist, synchronous persistence and storage synchronization.
+- `src/SavedPlanner.jsx` and `src/planner.js`: saved-application dashboard, local note/program search, stage/action-date filters, personal action calendar, safe CSV and versioned JSON backups with local preview/restore. Add-only restores preserve already-saved records; replacement requires a separate warning/confirmation. Never send backup files or notes to a server.
+- `src/styles.css` and `src/polish.css`: responsive visual system and editorial visual refresh.
+- `src/DirectoryTools.jsx`: deadline/calendar hub, comparison selection/page, and hydration-safe clock.
+- `src/directory-tools.js`: filter URL validation, nonmutating sorts, comparison validation, and RFC 5545 calendar exports.
+- `src/ApplicationTimeline.jsx` and `src/timeline.js`: private-on-page preparation builder, source-time-zone date conversion, compressed workback checkpoints, and personal all-day .ics/text downloads. Keep suggested dates separate from published cutoffs. Read native date input values on submit and sync input/change/blur; don't trust one widget event across browsers.
+- `src/index.jsx`: hydrate built HTML; ordinary client render in development.
+- `src/entry-server.jsx`: build-time server rendering.
+- `scripts/build.mjs`: client build + SSR bundle + prerender every supported route, unique SEO metadata, Article/Breadcrumb/ItemList data, sitemap, robots, and conditional ads.txt.
+- `scripts/serve.mjs`: production-like clean-URL preview, permanent legacy redirects, genuine 404 responses.
+- `src/legacy.js`: retired outreach-era URL mapping; `vercel.json` must contain both clean and .html aliases. Build fails if redirects drift.
+- `tests/product.test.mjs`, `tests/timeline.test.mjs`, and `tests/planner.test.mjs`: content, filter, storage-data, export-safety, render, SEO, crawl-graph, internal-link, sitemap, redirect, timeline date/zone/limit/export, backup round-trips/validation/merge, private action calendars, and legacy-output checks.
 
----
+## Content rules
 
-## Stack
+Use official publisher sources for eligibility, compensation, deadlines, arrangements, and application routes. Show source links and actual review dates. Separate original preparation suggestions from employer requirements. Closed programs can remain useful future-cycle guides, but must not appear open. Do not promise offers, referrals, search ranking, response rates, or revenue.
 
-| Layer | Tech |
-|---|---|
-| Frontend | React 18 + Vite, single JSX file |
-| Auth + DB | Supabase (Postgres + Auth + Storage) |
-| Hosting | Vercel (frontend + serverless API functions) |
-| Payments | Stripe (subscriptions + one-time top-ups) |
-| AI | Google Gemini (`gemini-2.5-flash-lite` for email writing, `gemini-3.1-flash-lite` for discovery) |
-| Email sending | Gmail API via user OAuth (`gmail.send` scope) |
+Program overview pages are Article/WebPage content, not individual live jobs. Do not add JobPosting markup without a real current opening and compliant job data. Avoid unsupported FAQ-rich-result claims or scaled near-duplicate pages. Add a field/location page only when there is useful distinct content and verified inventory behind it. Focused collections have original guidance and a selected inventory; they are not query-string permutations. Keep paid eligibility separate from current availability, label past-cohort awards, and never invent a cutoff time for a date-only announcement.
 
----
+Retired HTML can be recovered from repository history but is excluded from production builds except the maintained privacy/terms pages. Asset files and verification tokens are copied. Do not expose obsolete paid-outreach promises again. The previous email-processing deployment cron has been removed.
 
-## File structure
+## Planner
+
+Uses `fi_planner_v1` localStorage. Validate stored records; saves/checks/stages are personal planning records, never employer status. Persist edits synchronously before full-page navigation. Show a warning if storage is blocked. CSV export quotes values and neutralizes spreadsheet formulas. No account, resume uploads, newsletter signup, or application-submission service is currently offered.
+
+Planner JSON backups are versioned, capped at 256 KB on import, and read locally before any mutation. Store checked prompt text in backups so a reordered checklist does not change its meaning; warn when prompts no longer match. Default restore adds missing programs and keeps all already-saved entries unchanged; full replacement removes absent programs only after explicit confirmation. Replacement and clear actions must use the on-page modal dialog with a required acknowledgement checkbox, never `window.confirm` (the in-app browser can auto-accept native confirms). CSV is not a restorable backup. Personal-action calendars include today's/future all-day dates for non-Closed programs, intentionally omit notes, and are static files without alarms. Do not overwrite unreadable local storage merely because the planner mounted. Initial date-sensitive UI must stay identical between SSR and hydration.
+
+Comparison is separate from the planner: `fi_compare_v1` tab-session storage, maximum three known program IDs, no private notes in shared URLs. `/compare` is noindex and excluded from the sitemap. The deadline hub is indexable original editorial content. Preserve source time zones and UTC cutoff instants; calendar exports are static files, not live subscriptions. Never roll a past date into a guessed future cycle. SSR starts the date clock at `VERIFIED` and updates after hydration.
+
+## Advertising
+
+AdSense is off unless `VITE_ADSENSE_ENABLED=true` and a valid client ID are configured. Individual placements also need numeric slot IDs. The script and units load only after activation, and units wait for script readiness. Ads are labeled Advertisement and do not mimic program cards. Build generates ads.txt from the configured publisher ID.
+
+Do not enable before publisher/site approval, policy review, and the applicable Google-certified CMP / AdSense Privacy & messaging setup. The enable flag is a launch gate, not a consent implementation. No secret may be exposed through VITE variables. Publisher and slot IDs are public identifiers, not server credentials.
+
+## Development and deployment
 
 ```
-/
-├── CLAUDE.md                   ← you are here
-├── package.json
-├── vite.config.js
-├── vercel.json                 ← cron config (process-queue every 3 min)
-├── .env.example                ← every required env var
-│
-├── src/
-│   ├── index.jsx               ← React entry point
-│   ├── FirstInternships.jsx    ← THE ENTIRE FRONTEND (2,600+ lines, single component)
-│   └── firmsData.js            ← inline firm database (used as fallback / prototype)
-│
-├── api/                        ← Vercel serverless functions (all need default export)
-│   ├── generate-email.js       ← Gemini email writing (DONE — gemini-2.5-flash-lite)
-│   ├── discover-firms.js       ← Gemini grounded discovery (DONE — gemini-3.1-flash-lite)
-│   ├── send-email.js           ← validates, charges credits, enqueues sends (DONE)
-│   ├── process-queue.js        ← CRON WORKER: delivers queued mail via Gmail (DONE)
-│   ├── auth-google.js          ← Google OAuth callback, stores refresh token (DONE)
-│   ├── stripe-checkout.js      ← create Pro subscription session (DONE)
-│   ├── stripe-topup.js         ← create top-up payment session (DONE)
-│   └── stripe-webhook.js       ← fulfill Stripe events, grant Pro (DONE)
-│
-├── lib/
-│   ├── api.js                  ← DATA LAYER: the abstraction the frontend calls
-│   │                             (localStorage now → Supabase when VITE_SUPABASE_URL is set)
-│   └── gmail.js                ← Gmail send helper (refresh token → RFC822 send)
-│
-├── public/
-│   ├── index.html              ← SEO landing page (static, full meta/OG/JSON-LD)
-│   ├── terms.html              ← Terms of service
-│   ├── privacy.html            ← Privacy policy
-│   ├── robots.txt
-│   └── sitemap.xml
-│
-└── docs/
-    ├── supabase-schema.sql     ← ALL tables, RLS, triggers, RPCs — run this in Supabase
-    ├── firms-seed.csv          ← 4,668 firms to import into Supabase `firms` table
-    ├── DEPLOYMENT.md           ← Technical wiring guide (mock→method table)
-    ├── FirstInternships-Deployment-Runbook.md   ← Full step-by-step deployment checklist
-    ├── FirstInternships-Build-Execution-Plan.md ← Who does what (Code vs Cowork vs human)
-    └── FirstInternships-Brand-Brief.md          ← Complete brand/creative brief for ads
-```
-
----
-
-## The migration task (primary objective)
-
-`src/FirstInternships.jsx` currently reads/writes localStorage via a `db` helper and
-calls mocked functions for auth, Gmail, Stripe, discovery, and AI. **Migrate every
-mock call to the matching method in `lib/api.js`.**
-
-`lib/api.js` already has every method needed. Setting `VITE_SUPABASE_URL` flips it
-from localStorage to Supabase — no UI changes.
-
-### Mock → real replacement table
-
-| In `FirstInternships.jsx` (mock) | Replace with (`lib/api.js`) | Notes |
-|---|---|---|
-| `db.get/set(SK.user)` + AuthModal simulated login | `api.signUp` / `api.signIn` | Supabase Auth |
-| `GmailConnectButton` (sets a local flag) | `api.connectGmail(userId)` | Redirects to Google OAuth |
-| `db.get/set(SK.profile / SK.plan / SK.credits / SK.daily / SK.cycle)` | `api.getProfile()` / `api.saveProfile(patch)` | All credit + plan state lives in `profiles` table |
-| `initCredits()` (client-side clock logic) | On-read from `profiles.credits` / `profiles.daily_date` / `profiles.cycle_start` | Move reset logic to server (or on-read from Supabase) |
-| Inline `COMPANIES` array + `allFirms` | `api.listFirms({ search, industry })` | Reads `firms` table; `firmsData.js` stays as local fallback only |
-| `simulateDiscovery(query)` | `api.discoverFirms(query)` | Calls `/api/discover-firms`; Pro-gated server-side |
-| `buildDraft(company, profile, level, opts)` | `api.generateEmail({ firm, profile, level, resume })` | Calls `/api/generate-email` |
-| `recordSend(companyId, cost)` | `api.sendEmails([{ firmId, toEmail, subject, body }], resumePath)` | Enqueues; cron delivers |
-| `recordBulkSend(results)` | `api.sendEmails(items, resumePath)` (same, array) | Same enqueue |
-| `setTracking(...)` / `setStatus(id, status)` | `api.setStatus(firmId, status)` | Writes `contacts` table |
-| `saveToList(firmId, listId)` | `api.saveToList(firmId, listId)` | Writes `contacts.list_id` |
-| `setLists(...)` / `addList(name)` | `api.listLists()` / `api.createList(name, color)` | Reads/writes `lists` table |
-| `setResume(...)` / `db.set(SK.resume)` | `api.saveResume({ file, text })` | Writes `resumes` + Supabase Storage |
-| `track(event, props)` | `api.track(event, props)` | Writes `events` table or PostHog |
-| TopupModal `onTopup` + checkout (stubbed) | `api.upgradeToPro()` / `api.buyTopup(qty)` | Redirects to Stripe Checkout |
-| `signOut()` localStorage clear | `api.signOut()` | Supabase signOut |
-
-### Credit reset (move server-side)
-
-The current `initCredits()` uses the client clock. In production:
-- **Free:** compare `profiles.daily_date` to today; if different, set `credits = 5` and update `daily_date`.
-- **Pro:** compare `profiles.cycle_start` to current month; if new month, set `credits = 1000` and update `cycle_start`.
-- Do this in `api.getProfile()` (read-then-reset pattern) or a Supabase database function.
-
----
-
-## Key design decisions (do not change these)
-
-- **Single JSX file.** `FirstInternships.jsx` is intentionally one file. Do not split it into components or add a router. Keep it exactly as structured.
-- **No UI changes.** The UI is done. This migration is plumbing only.
-- **`lib/api.js` is the only data layer.** The JSX should never import Supabase directly — only through `lib/api.js`.
-- **Server functions never expose secrets to the client.** `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`, and Gmail `refresh_token` are server-only. Never put them in `VITE_*` vars.
-- **`send_queue` and `gmail_accounts` have no RLS policy = no client access.** By design. Deliverability and token security require server-only access.
-
----
-
-## Pricing model
-
-| Plan | Price | Credits | Discovery |
-|---|---|---|---|
-| Free | $0 | 5 unlocks/day (resets daily) | None |
-| Pro | $20/month | 1,000 unlocks/month | 200 AI discoveries/month |
-
-- 1 credit = unlock a database contact (writing + follow-ups always free)
-- 2 credits = unlock an AI-discovered contact
-- Top-up: $5 for 100 credits
-- Discovery cap: 200/month on Pro (enforced in `/api/discover-firms` against `profiles.discovery_used`)
-
----
-
-## Deliverability system (do not bypass)
-
-The warm-up / pacing / bounce-pause system is a core product feature that protects users' personal Gmail accounts from spam flags. It is enforced in TWO places:
-1. **Client-side** (`FirstInternships.jsx`) — shows warnings, caps the UI, holds bulk overflow.
-2. **Server-side** (`api/send-email.js` + `api/process-queue.js`) — the real enforcement. Sends are enqueued; the cron worker releases them at a staggered pace.
-
-Never let the client bypass the server check. The server re-validates at every send.
-
----
-
-## Environment variables
-
-See `.env.example` for the full list. The split is:
-
-**Client (`VITE_*` — safe to ship in browser bundle):**
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_GOOGLE_CLIENT_ID`
-- `VITE_GOOGLE_REDIRECT_URI`
-
-**Server-only (never `VITE_*`):**
-- `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`
-- `GEMINI_API_KEY`
-- `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` + price IDs
-- `GOOGLE_CLIENT_SECRET`
-- `CRON_SECRET` (guards `/api/process-queue`)
-- `APP_URL`
-
----
-
-## How to run locally
-
-```bash
 npm install
-cp .env.example .env.local   # fill in your values
-npm run dev                  # starts Vite dev server
+npm run dev
+npm run build
+npm test
+npm run preview
 ```
 
-For local API testing, Vercel CLI is the cleanest option:
-```bash
-npm i -g vercel
-vercel dev   # runs both Vite frontend and /api/* functions locally
-```
+Tests require the build's SSR bundle and generated pages; build first. Vercel uses the npm build command, `dist`, and clean URLs. No SPA catch-all rewrite: unsupported URLs should return 404. See `docs/DIRECTORY_LAUNCH.md` for release and AdSense requirements.
 
----
-
-## Database
-
-Run `docs/supabase-schema.sql` in the Supabase SQL editor to create all tables.
-Import `docs/firms-seed.csv` into the `firms` table (~4,668 rows).
-Create a private Storage bucket named `resumes`.
-
-Full schema details and RLS notes are in `docs/supabase-schema.sql`.
-Full wiring and deployment steps are in `docs/DEPLOYMENT.md` and `docs/FirstInternships-Deployment-Runbook.md`.
-
----
-
-## What is NOT in this repo
-
-- **Videos** — three marketing demo videos (`firstinternships_demo_45s.mp4`, `firstinternships_demo2_scale.mp4`, `firstinternships_edit.mp4`) exist separately. Not needed for the build.
-- **The firms JS bundle** (`firmsData.js` in `src/` is the inline version; `firms-seed.csv` in `docs/` is for Supabase seeding — they're the same data in different formats).
-- **LLC / legal entity** — not formed yet; needed before public launch with real payments.
-- **Google `gmail.send` OAuth verification** — not yet submitted; takes 4–6 weeks. The app works for up to 100 test users before verification clears.
+The `api/`, `lib/`, and older docs retain the earlier outreach SaaS backend but are not integrated with the directory. Do not activate paid billing, Gmail sending, or outreach automation as part of routine directory work.

@@ -1,18 +1,792 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "cleanUrls": true,
   "functions": {
-    "api/process-queue.js": { "maxDuration": 60 },
-    "api/generate-email.js": { "maxDuration": 30 },
-    "api/discover-firms.js": { "maxDuration": 60 },
-    "api/grade.js": { "maxDuration": 30 }
+    "api/process-queue.js": {
+      "maxDuration": 60
+    },
+    "api/generate-email.js": {
+      "maxDuration": 30
+    },
+    "api/discover-firms.js": {
+      "maxDuration": 60
+    },
+    "api/grade.js": {
+      "maxDuration": 30
+    }
   },
-  "crons": [
-    { "path": "/api/process-queue", "schedule": "0 8 * * *" }
+  "redirects": [
+    {
+      "source": "/internships/computer-science",
+      "destination": "/internships/technology",
+      "permanent": true
+    },
+    {
+      "source": "/internships/computer-science.html",
+      "destination": "/internships/technology",
+      "permanent": true
+    },
+    {
+      "source": "/internships/data-science",
+      "destination": "/internships/technology",
+      "permanent": true
+    },
+    {
+      "source": "/internships/data-science.html",
+      "destination": "/internships/technology",
+      "permanent": true
+    },
+    {
+      "source": "/ai-internships",
+      "destination": "/internships/technology",
+      "permanent": true
+    },
+    {
+      "source": "/ai-internships.html",
+      "destination": "/internships/technology",
+      "permanent": true
+    },
+    {
+      "source": "/cybersecurity-internships",
+      "destination": "/internships/technology",
+      "permanent": true
+    },
+    {
+      "source": "/cybersecurity-internships.html",
+      "destination": "/internships/technology",
+      "permanent": true
+    },
+    {
+      "source": "/internships/aerospace-and-defense",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/internships/aerospace-and-defense.html",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/internships/manufacturing-and-industrial",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/internships/manufacturing-and-industrial.html",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/internships/energy",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/internships/energy.html",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/mechanical-engineering-internships",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/mechanical-engineering-internships.html",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/architecture-internships",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/architecture-internships.html",
+      "destination": "/internships/engineering",
+      "permanent": true
+    },
+    {
+      "source": "/internships/finance-and-fintech",
+      "destination": "/internships/finance",
+      "permanent": true
+    },
+    {
+      "source": "/internships/finance-and-fintech.html",
+      "destination": "/internships/finance",
+      "permanent": true
+    },
+    {
+      "source": "/accounting-internships",
+      "destination": "/internships/finance",
+      "permanent": true
+    },
+    {
+      "source": "/accounting-internships.html",
+      "destination": "/internships/finance",
+      "permanent": true
+    },
+    {
+      "source": "/internships/consulting-and-staffing",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/consulting-and-staffing.html",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/consumer-and-retail",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/consumer-and-retail.html",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/logistics-and-transportation",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/logistics-and-transportation.html",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/real-estate-and-construction",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/real-estate-and-construction.html",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/travel-and-hospitality",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/travel-and-hospitality.html",
+      "destination": "/internships/business",
+      "permanent": true
+    },
+    {
+      "source": "/internships/agriculture",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/internships/agriculture.html",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/internships/government-and-nonprofit",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/internships/government-and-nonprofit.html",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/internships/healthcare-and-biotech",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/internships/healthcare-and-biotech.html",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/psychology-internships",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/psychology-internships.html",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/medicine-internships",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/medicine-internships.html",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/nursing-internships",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/nursing-internships.html",
+      "destination": "/internships/research",
+      "permanent": true
+    },
+    {
+      "source": "/jay-reddy",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/jay-reddy.html",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/tools/resume-grader",
+      "destination": "/guides/internship-resume-with-no-experience",
+      "permanent": true
+    },
+    {
+      "source": "/tools/resume-grader.html",
+      "destination": "/guides/internship-resume-with-no-experience",
+      "permanent": true
+    },
+    {
+      "source": "/tools/cold-email-grader",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/tools/cold-email-grader.html",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/internship-resume-guide",
+      "destination": "/guides/internship-resume-with-no-experience",
+      "permanent": true
+    },
+    {
+      "source": "/guides/internship-resume-guide.html",
+      "destination": "/guides/internship-resume-with-no-experience",
+      "permanent": true
+    },
+    {
+      "source": "/guides/internship-with-no-experience",
+      "destination": "/guides/internship-resume-with-no-experience",
+      "permanent": true
+    },
+    {
+      "source": "/guides/internship-with-no-experience.html",
+      "destination": "/guides/internship-resume-with-no-experience",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-to-get-a-summer-internship",
+      "destination": "/guides/when-to-apply-for-summer-internships",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-to-get-a-summer-internship.html",
+      "destination": "/guides/when-to-apply-for-summer-internships",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-to-get-an-internship",
+      "destination": "/guides/how-to-apply-for-an-internship",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-to-get-an-internship.html",
+      "destination": "/guides/how-to-apply-for-an-internship",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-many-internships-should-you-apply-to",
+      "destination": "/guides/how-to-find-internships",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-many-internships-should-you-apply-to.html",
+      "destination": "/guides/how-to-find-internships",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-to-ask-for-an-internship",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-to-ask-for-an-internship.html",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-to-email-a-recruiter-about-an-internship",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/how-to-email-a-recruiter-about-an-internship.html",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/internship-email-templates",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/internship-email-templates.html",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/cold-email-vs-applying-online-for-internships",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/cold-email-vs-applying-online-for-internships.html",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/cold-email-for-internship",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/cold-email-for-internship.html",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/best-time-to-send-a-cold-email",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/guides/best-time-to-send-a-cold-email.html",
+      "destination": "/guides/how-to-follow-up-on-an-internship-email",
+      "permanent": true
+    },
+    {
+      "source": "/internships/washington-dc",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/washington-dc.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/chicago",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/chicago.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/los-angeles",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/los-angeles.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/san-francisco",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/san-francisco.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/boston",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/boston.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/new-york",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/new-york.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/education",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/education.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/marketing",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/marketing.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/communications",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/communications.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/legal",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/legal.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/design",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/design.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/media-and-marketing",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships/media-and-marketing.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/journalism-internships",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/journalism-internships.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/graphic-design-internships",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/graphic-design-internships.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/law-internships",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/law-internships.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/ux-design-internships",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/ux-design-internships.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-texas",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-texas.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-florida",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-florida.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-new-york-state",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-new-york-state.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-illinois",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-illinois.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-california",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-california.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-washington",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-washington.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-pennsylvania",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-pennsylvania.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-new-jersey",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-new-jersey.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-georgia",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-georgia.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-north-carolina",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-north-carolina.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-massachusetts",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-massachusetts.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-virginia",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/internships-in-virginia.html",
+      "destination": "/internships",
+      "permanent": true
+    },
+    {
+      "source": "/high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/paid-high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/paid-high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/summer-high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/summer-high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/remote-high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/remote-high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/stem-high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/stem-high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/business-high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/business-high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/finance-high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/finance-high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/software-engineering-high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/software-engineering-high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/marketing-high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/marketing-high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/medical-high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/medical-high-school-internships.html",
+      "destination": "/",
+      "permanent": true
+    }
   ],
   "headers": [
     {
       "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/saved",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/compare",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
     }
   ]
 }

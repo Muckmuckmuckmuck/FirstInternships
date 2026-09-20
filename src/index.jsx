@@ -1,9 +1,10 @@
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import App from "./FirstInternships.jsx";
+import "./styles.css";
+import "./polish.css";
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+const element = <StrictMode><App pathname={window.location.pathname} /></StrictMode>;
+const root = document.getElementById("root");
+if (root.hasChildNodes()) hydrateRoot(root, element);
+else createRoot(root).render(element);

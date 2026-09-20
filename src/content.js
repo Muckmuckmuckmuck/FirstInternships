@@ -5,6 +5,7 @@ import { ORGANIC_EXPANSION_PROGRAMS } from "./organic-expansion.js";
 import { CONTENT_EXPANSION_2_PROGRAMS } from "./content-expansion-2.js";
 import { CONTENT_EXPANSION_3_PROGRAMS } from "./content-expansion-3.js";
 import { CONTENT_EXPANSION_4_PROGRAMS } from "./content-expansion-4.js";
+import { GUIDE_EXPANSION } from "./guide-expansion.js";
 export { TOPICS } from "./expanded-content.js";
 export const SITE = "https://firstinternships.com";
 export const VERIFIED = "2026-09-19";
@@ -194,6 +195,7 @@ export const FIELDS = [
 ];
 
 export const GUIDES = [
+  ...GUIDE_EXPANSION,
   ...ADDITIONAL_GUIDES,
   { slug: "how-to-apply-for-an-internship", title: "How to Apply for a College Internship", description: "A practical internship application process: verify eligibility, prepare evidence, submit through the official portal, and track the next step.", intro: "Start by checking whether you can actually participate. A polished application cannot fix an incompatible graduation date, required credit count, citizenship restriction, or work schedule.", sections: [
     ["1. Turn the listing into a checklist", "Record the employer, role identifier, term, location, work arrangement, deadline and time zone. Separate required qualifications from preferred ones. Check whether class year is evaluated when you apply or when the internship begins. If a mandatory rule is unclear, use the employer's published contact route rather than guessing."],

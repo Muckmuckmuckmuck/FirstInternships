@@ -9,6 +9,8 @@ import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstin
 
 test("content has unique routes and real official-source records", () => {
   assert.ok(PROGRAMS.length >= 101, "the college directory should not regress to a thin inventory");
+  assert.ok(GUIDES.length >= 15, "the preparation library should not regress");
+  assert.equal(new Set(GUIDES.map(g => g.slug)).size, GUIDES.length, "guide slugs must be unique");
   assert.equal(new Set(ROUTES).size, ROUTES.length);
   assert.deepEqual(ROUTES.filter(route => LEGACY_REDIRECTS[route]), [], "maintained pages must not be intercepted by legacy redirects");
   assert.equal(new Set(PROGRAMS.map(p => p.id)).size, PROGRAMS.length);
@@ -249,6 +251,9 @@ test("focused collections have substantive original content and valid crosslinks
   }
   for (const guide of GUIDES) {
     for (const id of guide.programIds || []) assert.ok(PROGRAMS.some(p => p.id === id), id);
+    // A guide exists to help with a real application task. This floor is a guard
+    // against a thin keyword page, not a target: several guides are well above it.
+    assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 150, `${guide.slug}: too thin to be useful`);
     if (guide.example) {
       const html = render(guidePath(guide));
       assert.ok(html.includes('id="example"'));

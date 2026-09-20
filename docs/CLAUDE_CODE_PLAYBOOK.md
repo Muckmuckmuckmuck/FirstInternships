@@ -40,7 +40,7 @@ FirstInternships is not:
 - A reason to invent dates, pay, remote status, class years, or future cycles.
 - A license to create hundreds of near-duplicate keyword pages.
 
-As of September 20, 2026, the maintained baseline is 101 sourced program guides, 147 prerendered React routes, and 146 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
+As of September 20, 2026, the maintained baseline is 101 sourced program guides, 15 original preparation guides, 150 prerendered React routes, and 149 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
 
 ## 3. Non-negotiable invariants
 
@@ -66,6 +66,7 @@ The following rules override convenience and growth pressure:
 - `src/content.js` is the composition root for programs, fields, years, guides, routes, filters, and route resolution.
 - `src/expanded-content.js` owns added fields, focused collections, and several editorial guides.
 - `src/inventory-expansion.js`, `src/variety-expansion.js`, `src/organic-expansion.js`, and `src/content-expansion-*.js` contain sourced program batches.
+- `src/guide-expansion.js` contains original preparation guides that are not tied to one employer.
 - `src/legacy.js` is the single source of truth for retired URL aliases.
 
 Prefer a new, clearly named expansion module for a substantial researched batch. Do not turn `content.js` into an unreviewable wall of records, and do not scatter one batch across unrelated files.
@@ -92,7 +93,8 @@ Keep logic that can be tested without a browser in these pure modules. Do not bu
 
 - `scripts/build.mjs` creates the client build, SSR bundle, prerendered HTML, metadata, structured data, sitemap, robots file, `llms.txt`, and conditional `ads.txt`.
 - `scripts/serve.mjs` provides a production-like clean-URL preview with real redirects and 404s.
-- `vercel.json` defines the production build, output directory, clean URLs, functions, and redirects.
+- `vercel.json` defines the production build, output directory, clean URLs, and redirects.
+- `.vercelignore` keeps the quarantined `api/`/`lib/` backend out of the deployment. Vercel turns any file under `api/` into a serverless function on its own, so removing a `functions` entry is not enough to stop one being served.
 - `public/sitemap.xml` and `public/llms.txt` are generated and tracked. A build may update them.
 - `dist/` is generated and ignored. Do not commit it.
 

@@ -48,7 +48,7 @@ export default function SavedPlanner({ planner, SaveButton, GuideCards }) {
     setPreview(null); setImportError(""); setNotice(""); setRestoreMode("add");
     if (!file) return;
     try {
-      if (file.size > BACKUP_LIMIT) throw new Error("Choose a planner backup smaller than 256 KB.");
+      if (file.size > BACKUP_LIMIT) throw new Error("Choose a planner backup smaller than 512 KB.");
       const result = parsePlannerBackup(await file.text());
       if (request === fileRequest.current) setPreview({ ...result, filename: file.name.slice(0, 150) });
     } catch (error) { if (request === fileRequest.current) setImportError(error.message || "The file could not be read. Your planner is unchanged."); }
@@ -88,7 +88,7 @@ export default function SavedPlanner({ planner, SaveButton, GuideCards }) {
       <div className="planner-backup-body">
         <div><h2>A backup you can bring back.</h2><p>Private browsing, clearing site data, or switching devices can lose your list. A JSON backup preserves your saved programs, notes, stages, dates, and checked preparation prompts. CSV is for spreadsheets; it is not a restorable backup.</p><button className="button secondary small" disabled={!planner.loaded || !summary.saved} onClick={() => download("backup")}><Download size={15} /> Download planner backup</button><p className="small-note">The file is not encrypted. Keep it private. Clearing your planner does not delete downloaded files.</p></div>
         <div>
-          <label className="backup-file-label" htmlFor="planner-backup-file">Choose a FirstInternships backup (.json)</label><input id="planner-backup-file" type="file" accept=".json,application/json" onChange={readBackup} disabled={!planner.loaded} /><p className="small-note">Maximum 256 KB. The file is read locally in this page, not uploaded. Nothing changes until you confirm a restore.</p>
+          <label className="backup-file-label" htmlFor="planner-backup-file">Choose a FirstInternships backup (.json)</label><input id="planner-backup-file" type="file" accept=".json,application/json" onChange={readBackup} disabled={!planner.loaded} /><p className="small-note">Maximum 512 KB. The file is read locally in this page, not uploaded. Nothing changes until you confirm a restore.</p>
           {importError && <p className="backup-error" role="alert">{importError}</p>}
           {preview && <div className="backup-preview">
             <h3>Review before restoring</h3><p className="backup-filename">{preview.filename}</p><p>{preview.planner.saved.length} supported programs · {additions} new · {preview.planner.saved.length - additions} already saved.</p>

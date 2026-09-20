@@ -53,8 +53,14 @@ async function copyPublic(directory) {
 }
 await copyPublic(join(root, "public"));
 const crawlable = ROUTES.filter(route => !["/saved", "/compare", "/404"].includes(route));
+function lastmodForRoute(route) {
+  const page = resolvePage(route);
+  if (page.program?.verified) return page.program.verified;
+  const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : ["home", "directory"].includes(page.type) ? PROGRAMS : [];
+  return programs.reduce((latest, program) => program.verified > latest ? program.verified : latest, VERIFIED);
+}
 const generatedPublic = {
-  "sitemap.xml": `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...crawlable, "/privacy", "/terms"].map(route => `<url><loc>${SITE}${route}</loc><lastmod>${VERIFIED}</lastmod></url>`).join("")}</urlset>`,
+  "sitemap.xml": `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...crawlable, "/privacy", "/terms"].map(route => `<url><loc>${SITE}${route}</loc><lastmod>${lastmodForRoute(route)}</lastmod></url>`).join("")}</urlset>`,
   "robots.txt": `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE}/sitemap.xml\n`,
   "llms.txt": `# FirstInternships\n\nIndependent college internship directory. Program facts are reviewed against official sources; editorial preparation advice is separate. Not a live vacancies feed.\n\n${crawlable.map(route => `- [${resolvePage(route).title}](${SITE}${route})`).join("\n")}\n`,
 };

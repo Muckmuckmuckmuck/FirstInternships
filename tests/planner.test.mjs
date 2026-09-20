@@ -31,7 +31,9 @@ test("portable backup round-trips all saved stages, notes, dates, and prompt tex
   assert.deepEqual(parsePlannerBackup(text), { planner: sanitizePlanner(sample), skipped: 0, omittedChecks: 0 });
   assert.ok(Buffer.byteLength(text) < BACKUP_LIMIT);
   const all = { saved: PROGRAMS.map(p => p.id), entries: Object.fromEntries(PROGRAMS.map(p => [p.id, { note: "🧑".repeat(600), checks: p.materials.map((_, i) => i) }])) };
-  assert.ok(Buffer.byteLength(plannerBackup(all)) < BACKUP_LIMIT);
+  const allText = plannerBackup(all);
+  assert.ok(Buffer.byteLength(allText) < BACKUP_LIMIT);
+  assert.equal(parsePlannerBackup(allText).planner.saved.length, PROGRAMS.length);
 });
 
 test("backup parser refuses unsupported files, invalid records, and oversized data without partial import", () => {
@@ -39,7 +41,7 @@ test("backup parser refuses unsupported files, invalid records, and oversized da
   for (const value of [null, [], { ...valid, version: 2 }, { ...valid, format: "other" }, { ...valid, programs: "not-an-array" }, { ...valid, programs: [valid.programs[0], valid.programs[0]] }]) assert.throws(() => parsePlannerBackup(JSON.stringify(value)));
   for (const patch of [{ stage: "Employer accepted" }, { note: "x".repeat(1201) }, { date: "2027-02-29" }, { checkedMaterials: [12] }]) assert.throws(() => parsePlannerBackup(JSON.stringify({ ...valid, programs: [valid.programs[0], { ...valid.programs[1], ...patch }] })));
   assert.throws(() => parsePlannerBackup("invalid csv,text"), /not valid JSON/);
-  assert.throws(() => parsePlannerBackup(" ".repeat(BACKUP_LIMIT + 1)), /256 KB/);
+  assert.throws(() => parsePlannerBackup(" ".repeat(BACKUP_LIMIT + 1)), /512 KB/);
   assert.throws(() => parsePlannerBackup(JSON.stringify({ ...valid, programs: [{ id: "retired-program" }] })), /No programs/);
 });
 

@@ -8,7 +8,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 89, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 101, "the college directory should not regress to a thin inventory");
   assert.equal(new Set(ROUTES).size, ROUTES.length);
   assert.deepEqual(ROUTES.filter(route => LEGACY_REDIRECTS[route]), [], "maintained pages must not be intercepted by legacy redirects");
   assert.equal(new Set(PROGRAMS.map(p => p.id)).size, PROGRAMS.length);
@@ -104,6 +104,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
+  for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.verified}</lastmod>`));
   const deployment = JSON.parse(await readFile("vercel.json", "utf8"));
   assert.ok(!deployment.crons, "retired outreach cron must not run");
   assert.deepEqual(deployment.redirects.filter(redirect => ROUTES.includes(redirect.source.replace(/\.html$/, ""))), [], "deployment redirects must not intercept maintained pages");

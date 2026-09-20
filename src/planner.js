@@ -3,7 +3,7 @@ import { calendarText, foldCalendarLine } from "./directory-tools.js";
 import { addDays, dateInstant } from "./timeline.js";
 
 export const STAGES = ["Considering", "Preparing", "Applied", "Interviewing", "Offer", "Closed"];
-export const BACKUP_LIMIT = 256 * 1024;
+export const BACKUP_LIMIT = 512 * 1024;
 const FORMAT = "firstinternships-planner";
 const record = value => value && typeof value === "object" && !Array.isArray(value);
 const validActionDate = value => Number.isFinite(dateInstant(value)) && value >= "1900-01-01" && value <= "9998-12-31";
@@ -52,10 +52,10 @@ export function plannerBackup(value, now = Date.now()) {
 }
 
 export function parsePlannerBackup(text) {
-  if (typeof text !== "string" || new TextEncoder().encode(text).length > BACKUP_LIMIT) throw new Error("Choose a planner backup smaller than 256 KB.");
+  if (typeof text !== "string" || new TextEncoder().encode(text).length > BACKUP_LIMIT) throw new Error("Choose a planner backup smaller than 512 KB.");
   let value;
   try { value = JSON.parse(text); } catch { throw new Error("This file is not valid JSON. Choose a FirstInternships planner backup, not a CSV or calendar file."); }
-  if (!record(value) || value.format !== FORMAT || value.version !== 1 || !Array.isArray(value.programs) || value.programs.length > 100) throw new Error("This is not a supported FirstInternships planner backup (version 1).");
+  if (!record(value) || value.format !== FORMAT || value.version !== 1 || !Array.isArray(value.programs) || value.programs.length > 250) throw new Error("This is not a supported FirstInternships planner backup (version 1).");
   const planner = emptyPlanner();
   const seen = new Set();
   let skipped = 0;

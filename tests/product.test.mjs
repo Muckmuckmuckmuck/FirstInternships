@@ -252,8 +252,9 @@ test("focused collections have substantive original content and valid crosslinks
   for (const guide of GUIDES) {
     for (const id of guide.programIds || []) assert.ok(PROGRAMS.some(p => p.id === id), id);
     // A guide exists to help with a real application task. This floor is a guard
-    // against a thin keyword page, not a target: several guides are well above it.
-    assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 150, `${guide.slug}: too thin to be useful`);
+    // against a thin keyword page, not a target: the shortest guide is at 294
+    // words of section copy and most are well beyond it.
+    assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 250, `${guide.slug}: too thin to be useful`);
     if (guide.example) {
       const html = render(guidePath(guide));
       assert.ok(html.includes('id="example"'));

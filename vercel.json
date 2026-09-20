@@ -4,20 +4,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
-  "functions": {
-    "api/process-queue.js": {
-      "maxDuration": 60
-    },
-    "api/generate-email.js": {
-      "maxDuration": 30
-    },
-    "api/discover-firms.js": {
-      "maxDuration": 60
-    },
-    "api/grade.js": {
-      "maxDuration": 30
-    }
-  },
   "redirects": [
     {
       "source": "/internships/computer-science",

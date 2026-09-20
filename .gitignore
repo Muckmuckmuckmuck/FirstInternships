@@ -10,3 +10,8 @@ dist/
 # ETL output: contains real people's names and emails (personal data).
 # The database is the source of truth; this never belongs in git.
 scripts/out/
+
+# Legacy outreach seed/ETL data: real people's names and work email addresses.
+# Kept out of this public repository. See docs/CLAUDE_CODE_PLAYBOOK.md §5.
+src/firmsData.js
+docs/firms-seed*.csv

@@ -1,0 +1,17 @@
+# Vercel auto-detects any file under api/ as a serverless function, even with no
+# "functions" entry in vercel.json. The directory does not call these endpoints
+# (src/ contains no /api/ reference), and api/grade.js is unauthenticated by
+# design from the outreach era — it would keep an open Gemini-cost path live.
+# Keep the quarantined backend in the repository, but out of the deployment.
+api/
+lib/
+
+# Research and seed material the site build never reads.
+docs/
+tests/
+scripts/etl_recruiters.py
+scripts/funnel.py
+scripts/import_recruiters.py
+
+# Separate untracked working directory; never part of the site.
+partner-applications/

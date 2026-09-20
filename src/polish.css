@@ -661,3 +661,47 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
 .planner-confirmation .planner-actions { margin: 24px 0 0; }
 .planner-confirmation .planner-danger { background: #924a36; color: #fff; }
 @media(max-width:600px) { .planner-confirmation { padding: 22px; } .planner-confirmation h2 { font-size: 23px; } }
+
+/* Find-your-fit: the directory's primary narrowing step. Large targets, visible
+   state, and a live count, in place of the filter sidebar's hidden dropdowns. */
+.fit-finder { border: 1px solid var(--line); border-radius: 17px; background: #f1f3e9; padding: 30px 32px 26px; margin: 0 0 30px; }
+.fit-intro h2 { font-size: clamp(26px, 3vw, 33px); letter-spacing: -1px; margin: 4px 0 10px; line-height: 1.2; }
+.fit-intro p { margin: 0; font-size: 13px; line-height: 1.75; color: var(--muted); max-width: 640px; }
+.fit-step { margin-top: 26px; }
+.fit-step h3 { display: flex; align-items: center; gap: 10px; font-size: 15px; margin: 0 0 13px; letter-spacing: -.2px; }
+.fit-number { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: var(--forest); color: #fff; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+.fit-options { display: flex; flex-wrap: wrap; gap: 9px; }
+.fit-option { border: 1px solid var(--line); background: #fff; border-radius: 11px; cursor: pointer; text-align: left; color: var(--ink); font: inherit; transition: border-color .12s, background .12s; }
+.fit-option:hover { border-color: #a4b293; background: #fbfff6; }
+.fit-option:focus-visible { outline: 2px solid var(--forest); outline-offset: 2px; }
+.fit-years { display: grid; grid-template-columns: repeat(5, 1fr); }
+.fit-year { padding: 15px 16px; display: grid; gap: 3px; }
+.fit-year strong { font-family: 'Manrope', sans-serif; font-size: 15px; }
+.fit-year small { color: var(--muted); font-size: 10px; line-height: 1.45; }
+.fit-year.is-on { background: var(--fit-color, #e9eddf); border-color: #64745e; box-shadow: inset 0 0 0 1px #64745e; }
+.fit-year.is-on small { color: #3f5140; }
+.fit-any.is-on { background: #e9eddf; }
+.fit-chip { padding: 9px 15px; font-size: 12px; border-radius: 999px; }
+.fit-chip.is-on { background: var(--forest); border-color: var(--forest); color: #fff; }
+.fit-chip.is-on:hover { background: var(--forest); border-color: var(--forest); }
+.fit-result { margin: 24px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; color: #4f6054; line-height: 1.7; }
+.fit-result strong { color: var(--ink); }
+
+/* Programs the publisher never assigned a minimum year. Visually separated so a
+   confirmed match is never confused with an unconfirmed possibility. */
+.also-check { margin-top: 42px; padding-top: 30px; border-top: 1px dashed var(--line); }
+.also-note { margin: 0 0 18px; font-size: 12.5px; line-height: 1.8; color: #4f6054; max-width: 760px; }
+
+@media(max-width: 980px) { .fit-years { grid-template-columns: repeat(3, 1fr); } }
+@media(max-width: 760px) {
+  .fit-finder { padding: 24px 20px 22px; border-radius: 15px; }
+  .fit-years { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .fit-year { padding: 13px 13px; }
+  .fit-year strong { font-size: 14px; }
+  .fit-step h3 { font-size: 14px; }
+  .fit-chip { padding: 9px 13px; font-size: 11.5px; }
+  .fit-intro p { font-size: 12.5px; }
+}
+.fit-count { display: inline-block; margin-left: 5px; font-size: 10.5px; font-weight: 700; color: var(--muted); }
+.fit-chip.is-on .fit-count { color: #c9dcc0; }
+.fit-more { font-weight: 700; border-style: dashed; }

@@ -137,6 +137,53 @@ function GuideLibrary() {
 function FieldLinks() { return <div className="field-links">{FIELDS.map(f => <a key={f.id} href={fieldPath(f)}>{f.name}<ArrowUpRight size={14} /></a>)}</div>; }
 function YearLinks() { return <div className="year-grid">{YEARS.map(y => <a href={yearPath(y)} key={y.id} style={{ "--year-color": y.color }}><span className="year-number">0{y.id}</span><strong>{y.name}</strong><small>Eligibility & application guide</small><ArrowUpRight size={18} /></a>)}</div>; }
 
+// The primary way a student narrows the directory. It is deliberately not a form:
+// plain questions, large targets, visible state, and a live count, because the
+// previous sidebar of dropdowns hid the whole mechanism behind a disclosure on
+// mobile. Crawlable navigation to the year and field hubs lives above this in
+// the page; these controls only filter what is already rendered.
+const FIT_FIELDS_SHOWN = 8;
+// Most-covered fields first: an arbitrary source order made a student scroll past
+// nine-programme categories to reach the eighty-two-programme one.
+const FIT_FIELDS = [...FIELDS].sort((a, b) => programsForField(b.id).length - programsForField(a.id).length);
+function FitFinder({ year, setYear, field, setField, matching, also, total }) {
+  const [allFields, setAllFields] = useState(false);
+  const yearHint = { 1: "Early-college programs", 2: "Second-year routes", 3: "Penultimate-year recruiting", 4: "Final-year eligible" };
+  // Keep a chosen field visible even when it sits in the collapsed tail.
+  const shown = allFields ? FIT_FIELDS : FIT_FIELDS.slice(0, FIT_FIELDS_SHOWN);
+  const visible = shown.some(f => f.id === field) || field === "all" ? shown : [...shown, FIT_FIELDS.find(f => f.id === field)];
+  return <section className="fit-finder" aria-labelledby="fit-title">
+    <div className="fit-intro">
+      <p className="eyebrow">Start here</p>
+      <h2 id="fit-title">Find the ones that fit you.</h2>
+      <p>Two questions. The list below updates as you choose. Nothing is sent anywhere, and you can change your mind at any point.</p>
+    </div>
+    <div className="fit-step">
+      <h3><span className="fit-number">1</span> What year are you in?</h3>
+      <div className="fit-options fit-years" role="group" aria-label="Your college year">
+        {YEARS.map(y => <button key={y.id} type="button" className={`fit-option fit-year ${year === String(y.id) ? "is-on" : ""}`} aria-pressed={year === String(y.id)} style={{ "--fit-color": y.color }} onClick={() => setYear(year === String(y.id) ? "all" : String(y.id))}>
+          <strong>{y.name}</strong><small>{yearHint[y.id]}</small>
+        </button>)}
+        <button type="button" className={`fit-option fit-year fit-any ${year === "all" ? "is-on" : ""}`} aria-pressed={year === "all"} onClick={() => setYear("all")}>
+          <strong>Show every year</strong><small>Browse all {total} programs</small>
+        </button>
+      </div>
+    </div>
+    <div className="fit-step">
+      <h3><span className="fit-number">2</span> What kind of work interests you?</h3>
+      <div className="fit-options fit-fields" role="group" aria-label="Field of work">
+        <button type="button" className={`fit-option fit-chip ${field === "all" ? "is-on" : ""}`} aria-pressed={field === "all"} onClick={() => setField("all")}>Any field</button>
+        {visible.map(f => <button key={f.id} type="button" className={`fit-option fit-chip ${field === f.id ? "is-on" : ""}`} aria-pressed={field === f.id} onClick={() => setField(field === f.id ? "all" : f.id)}>{f.name} <span className="fit-count">{programsForField(f.id).length}</span></button>)}
+        {FIT_FIELDS.length > FIT_FIELDS_SHOWN && <button type="button" className="fit-option fit-chip fit-more" aria-expanded={allFields} onClick={() => setAllFields(!allFields)}>{allFields ? "Show fewer fields" : `+ ${FIT_FIELDS.length - FIT_FIELDS_SHOWN} more fields`}</button>}
+      </div>
+    </div>
+    <p className="fit-result" role="status">
+      {matching === 0 && also === 0
+        ? "No programs match this combination yet. Try a different field, or show every year."
+        : <><strong>{matching} {matching === 1 ? "program matches" : "programs match"}</strong>{year !== "all" && also > 0 && <span> · {also} more where the publisher never states a minimum year, listed below</span>}</>}
+    </p>
+  </section>;
+}
 function Board({ planner, initialYear = "all", initialField = "all" }) {
   const [query, setQuery] = useState("");
   const [year, setYear] = useState(String(initialYear));
@@ -171,6 +218,13 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
     return () => window.removeEventListener("popstate", restore);
   }, [initialYear, initialField]);
   const filtered = useMemo(() => sortPrograms(searchPrograms({ query, year, field, paid, ids: savedOnly ? planner.saved : null }).filter(p => !onlyPublishedDeadlines || Date.parse(p.deadline) > now), sort, now), [query, year, field, paid, savedOnly, planner.saved, onlyPublishedDeadlines, sort, now]);
+  // Choosing a year hides every program whose publisher never states a minimum
+  // college year — 58 of 101. The year hub pages already surface those in a
+  // separate labelled group; the board now does the same instead of silently
+  // dropping most of the catalogue the moment someone answers question one.
+  const alsoCheck = useMemo(() => year === "all" ? [] : sortPrograms(searchPrograms({ query, year: "all", field, paid, ids: savedOnly ? planner.saved : null })
+    .filter(p => !p.firstYear && !p.preferredYears?.includes(Number(year)))
+    .filter(p => !onlyPublishedDeadlines || Date.parse(p.deadline) > now), sort, now), [query, year, field, paid, savedOnly, planner.saved, onlyPublishedDeadlines, sort, now]);
   const reset = () => {
     setQuery(""); setYear(String(initialYear)); setField(initialField); setPaid(false); setSavedOnly(false); setOnlyPublishedDeadlines(false); setSort("year");
     window.history.replaceState(null, "", `${window.location.pathname}#internships`);
@@ -184,9 +238,10 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
   const activeFilters = [query && `Search: “${query}”`, year !== "all" && `College year ${year}`, field !== "all" && FIELDS.find(f => f.id === field)?.name, paid && "Confirmed paid", onlyPublishedDeadlines && "Future published cutoff", savedOnly && "Saved only"].filter(Boolean);
   return <section className="board-section" id="internships" aria-labelledby="board-title">
     <div className="section-heading"><div><p className="eyebrow">02 / The college directory</p><h2 id="board-title">Find your next move.</h2><p>{sort === "year" ? "Sorted by earliest program-level undergraduate entry. Unknown minimums stay visible." : sort === "deadline" ? "Future published cutoffs first. Passed and unconfirmed dates follow." : "Sorted alphabetically by employer. Eligibility still needs a closer look."}</p></div><span className="result-count" aria-live="polite">{filtered.length} {filtered.length === 1 ? "program" : "programs"}</span></div>
+    <FitFinder year={year} setYear={setYear} field={field} setField={setField} matching={filtered.length} also={alsoCheck.length} total={PROGRAMS.length} />
     {activeFilters.length > 0 && <div className="active-filter-summary"><p>{activeFilters.join(" · ")}</p><button className="quiet-button" onClick={reset}>Clear filters</button></div>}
-    <div className="board-layout"><aside className="filters"><details className="filter-disclosure" open={filtersOpen} onToggle={e => setFiltersOpen(e.currentTarget.open)}><summary><span>Filters & sort</span><small>Find your fit</small></summary><div className="filter-disclosure-body">
-      <div className="filter-heading"><strong>Make it your shortlist</strong><button onClick={reset}>Reset</button></div>
+    <div className="board-layout"><aside className="filters"><details className="filter-disclosure" open={filtersOpen} onToggle={e => setFiltersOpen(e.currentTarget.open)}><summary><span>More filters &amp; sorting</span><small>Keyword, pay, deadlines, order</small></summary><div className="filter-disclosure-body">
+      <div className="filter-heading"><strong>Refine further</strong><button onClick={reset}>Reset</button></div>
       <label className="search-label" htmlFor="board-query">Search programs</label><div className="filter-search"><Search size={16} /><input id="board-query" maxLength={200} value={query} onChange={e => setQuery(e.target.value)} placeholder="Company, field, keyword" /></div>
       <label className="search-label" htmlFor="year-filter">Your college year</label><select id="year-filter" value={year} onChange={e => setYear(e.target.value)}><option value="all">All years & unconfirmed</option>{YEARS.map(y => <option key={y.id} value={y.id}>{y.short} · {y.name}</option>)}</select>
       <label className="search-label" htmlFor="field-filter">Field</label><select id="field-filter" value={field} onChange={e => setField(e.target.value)}><option value="all">All fields</option>{FIELDS.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}</select>
@@ -198,7 +253,11 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
     </div></details></aside><div className="job-feed">{groups.length ? groups.map((group, i) => <section className="year-group" key={String(group.value)}>
       {group.value !== "sorted" && <div className="group-heading"><span className="group-number">{group.value ? `0${group.value}` : "?"}</span><div><p className="eyebrow">{group.value ? `Earliest undergraduate entry: year ${group.value}` : "No universal minimum confirmed"}</p><h3>{group.value ? "Start here. Check the details." : "Opening-specific pathways"}</h3></div></div>}
       <div className="cards">{group.programs.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>{i === 0 && <AdSlot slot="VITE_ADSENSE_SLOT_IN_FEED" />}
-    </section>) : <div className="empty-state"><Search size={26} /><h3>No programs match your filters.</h3><p>Try another keyword or reset your preferences. An empty year match is not a claim that no internships exist.</p><button className="button" onClick={reset}>Reset filters</button></div>}<p className="directory-note">These are sourced program pathways, not a live feed of individual job offers. Last editorial review: September 19, 2026. Verify today's availability on the official site.</p></div></div>
+    </section>) : alsoCheck.length ? null : <div className="empty-state"><Search size={26} /><h3>No programs match your filters.</h3><p>Try another keyword or reset your preferences. An empty year match is not a claim that no internships exist.</p><button className="button" onClick={reset}>Reset filters</button></div>}{alsoCheck.length > 0 && <section className="year-group also-check" aria-labelledby="also-title">
+      <div className="group-heading"><span className="group-number">?</span><div><p className="eyebrow">{alsoCheck.length} more worth checking</p><h3 id="also-title">No minimum year published</h3></div></div>
+      <p className="also-note">These publishers do not state one universal minimum college year, or they describe a preferred year rather than a hard rule. That is not the same as being closed to you — the individual opening decides. Open a guide to check credits, enrolment, authorisation and dates before ruling one in or out.</p>
+      <div className="cards">{alsoCheck.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>
+    </section>}<p className="directory-note">These are sourced program pathways, not a live feed of individual job offers. Last editorial review: September 19, 2026. Verify today's availability on the official site.</p></div></div>
   </section>;
 }
 function Home({ planner }) {

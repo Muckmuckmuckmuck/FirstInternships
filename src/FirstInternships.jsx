@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight, Bookmark, CalendarDays, GitCompareArrows, Gra
 import { CONTACT, FIELDS, GUIDES, PROGRAMS, TOPICS, VERIFIED, YEARS, fieldPath, guidePath, guidesForProgram, programPath, programsForField, programsForTopic, programsForYear, relatedPrograms, resolvePage, searchPrograms, topicPath, yearPath } from "./content.js";
 import { CalendarDownload, CompareButton, ComparisonPage, ComparisonProvider, DeadlineBadge, DeadlinesPage, useReviewClock } from "./DirectoryTools.jsx";
 import { filterQuery, readFilters, sortPrograms } from "./directory-tools.js";
+import { ABOUT_FAQS, ABOUT_SECTIONS, CONTACT_LIMITS, CONTACT_TOPICS } from "./editorial-pages.js";
 import ApplicationTimeline from "./ApplicationTimeline.jsx";
 import SavedPlanner from "./SavedPlanner.jsx";
 import { emptyPlanner, restorePlanner, sanitizePlanner } from "./planner.js";
@@ -277,11 +278,48 @@ function GuidePage({ guide }) {
     </article><aside className="article-sidebar"><div className="quick-check"><h2>In this guide</h2><nav aria-label="On this page">{guide.sections.map(([title], i) => <a href={`#section-${i + 1}`} key={title}>{title}</a>)}{guide.example && <a href="#example">Practical outline</a>}{examples.length > 0 && <a href="#programs">Program-specific guidance</a>}</nav><a className="button secondary" href="/saved">Open your planner <Bookmark size={15} /></a></div></aside></div>
     <section className="section"><h2>Your next useful read</h2><GuideCards items={nextGuides} /></section></div>;
 }
-function About() { return <div className="container"><Breadcrumbs items={[["About & editorial process", null]]} /><PageIntro eyebrow="Clarity earns the click" title="A useful directory, not a shortcut around the facts." description="FirstInternships helps current college students understand selected internship pathways before applying. We are an independent directory, not an employer, recruiter, or application service." /><div className="prose narrow"><section><h2>What we verify</h2><p>Program descriptions, eligibility, published dates, compensation statements, and application routes are checked against official publisher pages. Every program guide includes those links and a review date. We do not assert that a pathway is currently accepting applications unless its source establishes that status at review.</p></section><section><h2>How we handle college years</h2><p>Programs explicitly designed for first- and second-year students are labeled that way. Broad undergraduate programs are starting points, with credit, project, site, and student-status conditions explained. If a publisher does not state a universal minimum year, we say so. ‘Usually penultimate year’ is not converted into a mandatory junior-only rule.</p></section><section><h2>What is editorial advice</h2><p>Resume, preparation, and planning suggestions are original guidance from the FirstInternships editorial team. They are separated from employer requirements. We do not have inside access to selection decisions, guarantee interview questions, promise offers, or claim a particular response rate.</p></section><section><h2>Updates and corrections</h2><p>The latest inventory review was September 19, 2026. This is a curated directory, not an automatically refreshed vacancies feed. Dates and availability can change between reviews. Before each recruiting cycle, recheck the official application instructions; if you find an issue, send the page URL and the official correction source.</p><a className="text-link" href="/contact">Report a correction <ArrowRight size={15} /></a></section><section><h2>Advertising and independence</h2><p>We plan to fund the free directory with clearly labeled display advertising. AdSense placements remain disabled until an approved account and the required consent setup are configured. Ads do not change a program's stated eligibility or buy it a recommendation. No paid-placement or affiliate relationship is currently asserted for listed programs.</p></section><section><h2>Your data stays small</h2><p>The planner uses local browser storage. We do not ask for resumes, transcripts, identification documents, or employer passwords. There is no account or email-alert subscription currently offered. Contact messages are sent using your own email app. Read the <a href="/privacy">privacy policy</a> for more.</p></section></div><section className="section"><h2>Find your starting point</h2><YearLinks /></section></div>; }
+function About() {
+  return <div className="container"><Breadcrumbs items={[["About & editorial process", null]]} />
+    <PageIntro eyebrow="Clarity earns the click" title="A useful directory, not a shortcut around the facts." description="FirstInternships helps current college students understand selected internship pathways before applying. We are an independent directory, not an employer, recruiter, or application service." />
+    <div className="review-line"><ShieldCheck size={15} /> Editorial standards · Inventory last reviewed <time dateTime={VERIFIED}>{reviewLabel(VERIFIED)}</time><a href="/contact">Report a correction</a></div>
+    <MobileContents items={ABOUT_SECTIONS.map(([id, heading]) => [heading, `#${id}`])} />
+    <div className="prose narrow">{ABOUT_SECTIONS.map(([id, heading, body]) => <section key={id} id={id}><h2>{heading}</h2><p>{body}</p></section>)}
+      <section><h2>Read the policies</h2><p>The <a href="/privacy">privacy policy</a> describes exactly what stays in your browser and what a hosting provider or advertising partner may process. The <a href="/terms">terms</a> describe what this directory is responsible for and what it is not. If something in either document does not match what you see on the site, that is a mistake worth telling us about.</p><a className="text-link" href="/contact">Get in touch <ArrowRight size={15} /></a></section>
+    </div>
+    <Questions items={ABOUT_FAQS} title="Questions about the directory" />
+    <section className="section"><h2>Find your starting point</h2><YearLinks /></section>
+  </div>;
+}
 function Contact() {
   const [kind, setKind] = useState("Program correction");
   const [message, setMessage] = useState("");
-  return <div className="container"><Breadcrumbs items={[["Contact", null]]} /><PageIntro eyebrow="Keep the directory useful" title="Found something we should know?" description="Send a correction, suggest an undergraduate internship, or ask about the directory. We do not handle employer applications or provide recruiting decisions." /><div className="contact-layout"><form className="contact-form" onSubmit={e => { e.preventDefault(); window.location.href = `mailto:${CONTACT}?subject=${encodeURIComponent(kind)}&body=${encodeURIComponent(message)}`; }}><label htmlFor="contact-kind">What is this about?</label><select id="contact-kind" value={kind} onChange={e => setKind(e.target.value)}><option>Program correction</option><option>Suggest a college internship</option><option>Advertising inquiry</option><option>Privacy or general question</option></select><label htmlFor="contact-message">Your message</label><textarea id="contact-message" required maxLength={3000} value={message} onChange={e => setMessage(e.target.value)} placeholder="For corrections, include our page URL and the official source with the updated details." /><button className="button" type="submit">Open email draft <ArrowUpRight size={16} /></button><p className="small-note">This opens your email app. Nothing is submitted here. If it does not open, email us directly using the address beside this form. Do not send resumes or sensitive documents.</p></form><aside className="quick-check"><h2>Email us directly</h2><a className="contact-email" href={`mailto:${CONTACT}`}>{CONTACT}</a><p>For opportunity suggestions, include the official employer URL, current-college eligibility, term, and any published compensation details. We review factual information before adding a program.</p><a className="text-link" href="/about">Our editorial standards <ArrowRight size={15} /></a></aside></div></div>;
+  return <div className="container"><Breadcrumbs items={[["Contact", null]]} />
+    <PageIntro eyebrow="Keep the directory useful" title="Found something we should know?" description="Send a correction, suggest an undergraduate internship, or ask about the directory. We do not handle employer applications or provide recruiting decisions." />
+    <div className="contact-layout">
+      <form className="contact-form" onSubmit={e => { e.preventDefault(); window.location.href = `mailto:${CONTACT}?subject=${encodeURIComponent(kind)}&body=${encodeURIComponent(message)}`; }}>
+        <label htmlFor="contact-kind">What is this about?</label>
+        <select id="contact-kind" value={kind} onChange={e => setKind(e.target.value)}>{CONTACT_TOPICS.map(([name]) => <option key={name}>{name}</option>)}</select>
+        <label htmlFor="contact-message">Your message</label>
+        <textarea id="contact-message" required maxLength={3000} value={message} onChange={e => setMessage(e.target.value)} placeholder="For corrections, include our page URL and the official source with the updated details." />
+        <button className="button" type="submit">Open email draft <ArrowUpRight size={16} /></button>
+        <p className="small-note">This opens your email app. Nothing is submitted here. If it does not open, email us directly using the address beside this form. Do not send resumes or sensitive documents.</p>
+      </form>
+      <aside className="quick-check"><h2>Email us directly</h2><a className="contact-email" href={`mailto:${CONTACT}`}>{CONTACT}</a>
+        <p>There is no ticket system behind this address and no account attached to it. We read what arrives and act on what we can verify, but we cannot commit to a reply or a timeframe, and an unanswered message is not a decision about your suggestion.</p>
+        <a className="text-link" href="/about">Our editorial standards <ArrowRight size={15} /></a>
+      </aside>
+    </div>
+    <div className="prose narrow">
+      <section id="what-to-include"><h2>What to include</h2><p>A message we can act on without a follow-up round is the one that gets acted on. Whatever you are writing about, the specifics below save the most time.</p>
+        <dl className="contact-topics">{CONTACT_TOPICS.map(([name, detail]) => <div key={name}><dt>{name}</dt><dd>{detail}</dd></div>)}</dl>
+      </section>
+      <section id="limits"><h2>What we cannot do</h2><p>This directory is independent of every organization it describes, which sets real limits on what a message here can achieve.</p>
+        <ul>{CONTACT_LIMITS.map(limit => <li key={limit}>{limit}</li>)}</ul>
+        <p>For anything about an application you have already submitted, the employer's own portal and applicant-support route are the only places with an authoritative answer. For questions about your enrollment, credits, or work authorization, your institution's advisers can answer for your specific situation in a way we cannot.</p>
+      </section>
+      <section id="privacy-note"><h2>What happens to your message</h2><p>Because the form opens a draft in your own email app, nothing reaches us until you send it, and we receive exactly what you chose to write plus the address you sent it from. We use it to answer you and to check the correction, and we may keep a record of an editorial change and what prompted it. You can ask us to delete an earlier exchange. Full detail is in the <a href="/privacy">privacy policy</a>.</p></section>
+    </div>
+  </div>;
 }
 function SiteContent({ pathname = "/" }) {
   const page = resolvePage(pathname);

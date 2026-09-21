@@ -148,7 +148,7 @@ export const CONTENT_EXPANSION_3_PROGRAMS = [
   {
     id: "state-farm-internships", company: "State Farm", title: "College Internships", initials: "SF", color: "#b13c3c",
     seoTitle: "State Farm College Internships: Apply Guide", seoDescription: "Explore paid State Farm internships in actuarial, finance, technology, data, claims, marketing and business with role-specific student eligibility.",
-    fields: ["finance", "technology", "business", "media", "research"], firstYear: null, years: [], yearLabel: "College students · opening-specific", pay: "Paid", location: "Atlanta, Bloomington, Dallas, Phoenix and role-specific", mode: "Hybrid and role-specific",
+    fields: ["insurance", "finance", "technology", "business", "media", "research"], firstYear: null, years: [], yearLabel: "College students · opening-specific", pay: "Paid", location: "Atlanta, Bloomington, Dallas, Phoenix and role-specific", mode: "Hybrid and role-specific",
     summary: "Paid college internships across actuarial work, technology, data, finance, claims, marketing, HR, legal, and business operations.",
     eligibility: ["State Farm presents internships as student work alongside professional teams, but the exact opening establishes enrollment and degree rules.", "Some roles require full-time enrollment throughout the internship and may add GPA, coursework, exam, location, or technical requirements.", "The broad internship page does not establish one minimum college year or one set of qualifications for every department."],
     timing: "State Farm maintains a live internship search and current roles publish their own dates. The general program page does not provide one universal application deadline.", status: "Search current internships",

@@ -8,7 +8,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 101, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 106, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 15, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -55,6 +55,7 @@ test("route resolution supports clean URLs and rejects unknown routes", () => {
   assert.equal(resolvePage("/guides/").type, "guides");
   assert.equal(resolvePage("/not-a-page").type, "404");
   assert.equal(YEARS.length, 4);
+  assert.ok(FIELDS.length >= 17, "field hubs should not regress");
   assert.ok(GUIDES.every(g => g.sections.length >= 4));
 });
 test("planner data is validated and deduplicated", () => {

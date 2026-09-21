@@ -32,7 +32,7 @@ export const ADDITIONAL_PROGRAMS = [
     prepare: ["Connect your interest to a research question, not a medical-school aspiration alone. A statistics project, biology lab, psychology course, or coding exercise can help explain the methods you want to learn. Describe your current level and distinguish class exercises from independent research.", "Build a practical participation budget before deciding a placement is workable. List rent, transport, food, and upfront deposits. When discussing a group, ask about supervision, project scope, start/end dates, and what an intern would be expected to learn. A research internship is not automatically clinical shadowing."],
     pitfall: "The application and reference-letter cutoffs differ. Completing your NIH profile does not submit your program application.",
     materials: ["NIH college eligibility check", "CV/resume and coursework", "Research personal statement", "Two references and separate letter cutoff"],
-    guideSlugs: ["research-internship-personal-statement", "ask-for-internship-recommendation-letter", "do-internships-pay"],
+    guideSlugs: ["email-templates-for-internships", "research-internship-personal-statement", "ask-for-internship-recommendation-letter", "do-internships-pay"],
     faqs: [["Can a community-college student investigate SIP?", "Yes: NIH's college enrollment route includes accredited community colleges. All other eligibility rules and the selected program's instructions still apply."], ["How do I know my NIH application is complete?", "NIH-AC distinguishes an Active submitted application from Complete, which also requires receipt of recommendation letters. Check the program application, not just the account or profile."]],
   },
   {

@@ -59,7 +59,7 @@ export const NEW_PROGRAMS = [
     steps: ["Confirm the Caltech-student or visiting-student eligibility route that applies to you.", "Contact potential mentors and develop an agreed project before writing the proposal.", "Submit the application, proposal, transcript, and two confidential references under the current instructions."],
     prepare: ["A useful mentor message names a specific research connection and a realistic question; it does not ask a professor to design an entire application for you.", "Write the proposal so a scientist outside the narrow specialty can follow the question, method, expected learning, and feasible ten-week scope."],
     pitfall: "Finding a willing mentor is part of this application process; applying without that project agreement is not the normal route.",
-    materials: ["Student-route eligibility", "Mentor agreement", "Research proposal", "Transcript and two references"], guideSlugs: researchGuides,
+    materials: ["Student-route eligibility", "Mentor agreement", "Research proposal", "Transcript and two references"], guideSlugs: ["email-templates-for-internships", ...researchGuides],
   },
   {
     id: "scripps-research-surf", company: "Scripps Research", title: "Summer Undergraduate Research Fellows", initials: "SR", color: "#266e7b",

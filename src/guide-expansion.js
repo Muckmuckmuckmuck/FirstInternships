@@ -73,7 +73,7 @@ export const GUIDE_EXPANSION = [
     title: "Internship Email Templates for College Students",
     description: "Internship email templates for following up on an application, asking about unposted roles, emailing a professor about research, thanking an interviewer, and answering an offer.",
     category: "Interviews & follow-ups",
-    programIds: ["nih-sip", "nsf-reu", "leadership-alliance-sreip"],
+    programIds: ["nih-sip", "caltech-surf", "nsf-reu", "leadership-alliance-sreip"],
     intro: "An internship email is a small, specific request to one person. These templates cover the messages college students most often need to write — following up, asking about a role that is not posted, contacting a professor, thanking an interviewer, and replying to an offer. Treat each one as a starting point to rewrite in your own words: an email that could have been sent to anyone reads exactly that way.",
     sections: [
       ["Decide whether an email is the right move at all", "Most internship applications happen inside an employer portal, and an email does not replace one. Email is the right tool when a posting names a contact, when a stated decision date has passed, when you are asking a professor about research, thanking an interviewer, answering an offer, or asking a small organization with no application system whether it takes interns. It is the wrong tool when the employer says not to contact recruiters, or when you would be sending the same message to dozens of addresses you found online. One specific email to the right person does more than fifty generic ones, and it is the only kind worth sending."],

@@ -144,7 +144,7 @@ function YearLinks() { return <div className="year-grid">{YEARS.map(y => <a href
 // the page; these controls only filter what is already rendered.
 const FIT_FIELDS_SHOWN = 8;
 // Most-covered fields first: an arbitrary source order made a student scroll past
-// nine-programme categories to reach the eighty-two-programme one.
+// nine-program categories to reach the eighty-two-program one.
 const FIT_FIELDS = [...FIELDS].sort((a, b) => programsForField(b.id).length - programsForField(a.id).length);
 function FitFinder({ year, setYear, field, setField, matching, also, total }) {
   const [allFields, setAllFields] = useState(false);
@@ -220,7 +220,7 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
   const filtered = useMemo(() => sortPrograms(searchPrograms({ query, year, field, paid, ids: savedOnly ? planner.saved : null }).filter(p => !onlyPublishedDeadlines || Date.parse(p.deadline) > now), sort, now), [query, year, field, paid, savedOnly, planner.saved, onlyPublishedDeadlines, sort, now]);
   // Choosing a year hides every program whose publisher never states a minimum
   // college year — 58 of 101. The year hub pages already surface those in a
-  // separate labelled group; the board now does the same instead of silently
+  // separate labeled group; the board now does the same instead of silently
   // dropping most of the catalogue the moment someone answers question one.
   const alsoCheck = useMemo(() => year === "all" ? [] : sortPrograms(searchPrograms({ query, year: "all", field, paid, ids: savedOnly ? planner.saved : null })
     .filter(p => !p.firstYear && !p.preferredYears)
@@ -255,7 +255,7 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
       <div className="cards">{group.programs.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>{i === 0 && <AdSlot slot="VITE_ADSENSE_SLOT_IN_FEED" />}
     </section>) : alsoCheck.length ? null : <div className="empty-state"><Search size={26} /><h3>No programs match your filters.</h3><p>Try another keyword or reset your preferences. An empty year match is not a claim that no internships exist.</p><button className="button" onClick={reset}>Reset filters</button></div>}{alsoCheck.length > 0 && <section className="year-group also-check" aria-labelledby="also-title">
       <div className="group-heading"><span className="group-number">?</span><div><p className="eyebrow">{alsoCheck.length} more worth checking</p><h3 id="also-title">No minimum year published</h3></div></div>
-      <p className="also-note">These publishers do not state one universal minimum college year, or they describe a preferred year rather than a hard rule. That is not the same as being closed to you — the individual opening decides. Open a guide to check credits, enrolment, authorisation and dates before ruling one in or out.</p>
+      <p className="also-note">These publishers do not state one universal minimum college year, or they describe a preferred year rather than a hard rule. That is not the same as being closed to you — the individual opening decides. Open a guide to check credits, enrollment, authorization and dates before ruling one in or out.</p>
       <div className="cards">{alsoCheck.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>
     </section>}<p className="directory-note">These are sourced program pathways, not a live feed of individual job offers. Last editorial review: September 19, 2026. Verify today's availability on the official site.</p></div></div>
   </section>;
@@ -286,7 +286,7 @@ function Home({ planner }) {
 }
 function EditorialSections({ sections }) { return <div className="prose">{sections.map(([heading, paragraph], i) => <section key={heading} id={`section-${i + 1}`}><h2>{heading}</h2><p>{paragraph}</p></section>)}</div>; }
 function PageIntro({ eyebrow, title, description }) { return <div className="page-intro"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p className="lead">{description}</p></div>; }
-// A year hub lists up to 96 programmes and a field hub up to 82, with no way to
+// A year hub lists up to 96 programs and a field hub up to 82, with no way to
 // narrow either. This adds the missing axis — field on a year page, year on a
 // field page — as a chip row that filters what is already rendered. The initial
 // render is unfiltered, so the server and first hydration renders still match
@@ -314,12 +314,15 @@ function Collection({ page, planner }) {
   const visibleCount = matches.length + roleSpecific.length;
   return <div className="container"><Breadcrumbs items={[["Internships", "/internships"], [item.name, null]]} /><PageIntro eyebrow={page.year ? `College year ${item.id}` : "Find your field"} title={item.title} description={item.intro} />
     <section className="collection-start" aria-labelledby="start-here"><div><p className="eyebrow">Start here · {visibleCount} options on this page</p><h2 id="start-here">Find a fit in three steps.</h2><p>Pick a promising program, check the exact eligibility, then apply on the employer's official site.</p></div><ol aria-label="How to use this page"><li><span>1</span><strong>Scan the matches</strong><small>Year, field, pay and location</small></li><li><span>2</span><strong>Open the guide</strong><small>Requirements and materials</small></li><li><span>3</span><strong>Apply officially</strong><small>We send you to the source</small></li></ol><a className="button" href="#program-list">See {visibleCount} options <ArrowRight size={16} /></a></section>
-    <details className="collection-guide"><summary><span><strong>Not sure what counts as a match?</strong><small>Open the two-minute eligibility guide</small></span><span className="guide-toggle" aria-hidden="true">+</span></summary><div className="collection-guide-body"><EditorialSections sections={item.sections} /><aside className="quick-check"><ShieldCheck size={23} /><h2>Four things to verify</h2><ul><li>Current enrollment and graduation date</li><li>Required credits, GPA, and coursework</li><li>Work authorization or citizenship</li><li>Term, location, schedule, and costs</li></ul><a className="text-link" href="/guides/how-to-apply-for-an-internship">Use the full application checklist <ArrowRight size={15} /></a></aside></div></details>
     <AdSlot slot="VITE_ADSENSE_SLOT_TOP" />
     {narrowOptions.length > 1 && <CollectionNarrow page={page} options={narrowOptions} value={narrow} setValue={setNarrow} label={page.year ? "Narrow by the kind of work" : "Narrow by your college year"} />}
-    {visibleCount === 0 && <div className="empty-state"><Search size={26} /><h2>Nothing in that combination yet.</h2><p>We have not reviewed a programme matching both of those in this directory. That is a gap in our coverage, not a statement that none exists.</p><button className="button" onClick={() => setNarrow("all")}>Show everything again</button></div>}
+    {visibleCount === 0 && <div className="empty-state"><Search size={26} /><h2>Nothing in that combination yet.</h2><p>We have not reviewed a program matching both of those in this directory. That is a gap in our coverage, not a statement that none exists.</p><button className="button" onClick={() => setNarrow("all")}>Show everything again</button></div>}
     {matches.length > 0 && <section className="collection-programs" id="program-list"><p className="eyebrow">{matches.length} confirmed program-level matches</p><h2>{page.year ? `Programs to check for ${item.name.toLowerCase()} students` : `${item.name} pathways`}</h2><p className="muted">{page.year ? "A program-level year match is a starting point. Open a guide to check credits, student status, dates, location and authorization." : "Some programs span several fields. Open a guide to match the exact role to your coursework, experience and availability."}</p><div className="cards">{matches.map(p => <ProgramCard key={p.id} program={p} planner={planner} />)}</div></section>}
     {page.year && roleSpecific.length > 0 && <section className="collection-programs role-specific"><p className="eyebrow">{roleSpecific.length} more possibilities</p><h2>Check the role before counting yourself in.</h2><p className="muted">These employers do not publish one universal minimum year, or they describe a preferred year rather than a hard rule. The individual opening decides.</p><div className="cards">{roleSpecific.map(p => <ProgramCard key={p.id} program={p} planner={planner} />)}</div></section>}
+    <section className="section collection-editorial"><h2>{page.year ? `Applying as a ${item.name.toLowerCase()} student` : `How to approach ${item.name.toLowerCase()} applications`}</h2>
+      <div className="collection-guide-body"><EditorialSections sections={item.sections} /><aside className="quick-check"><ShieldCheck size={23} /><h2>Four things to verify</h2><ul><li>Current enrollment and graduation date</li><li>Required credits, GPA, and coursework</li><li>Work authorization or citizenship</li><li>Term, location, schedule, and costs</li></ul><a className="text-link" href="/guides/how-to-apply-for-an-internship">Use the full application checklist <ArrowRight size={15} /></a></aside></div>
+    </section>
+    <Questions items={item.faqs} title={`${item.name}: questions before you apply`} />
     <section className="section"><h2>Explore another starting point</h2><YearLinks /><FieldLinks /></section><section className="section"><h2>Prepare your application</h2><GuideCards limit={3} /></section></div>;
 }
 function TopicPage({ topic, planner }) {

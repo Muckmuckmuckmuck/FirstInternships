@@ -7,6 +7,7 @@ import { CONTENT_EXPANSION_3_PROGRAMS } from "./content-expansion-3.js";
 import { CONTENT_EXPANSION_4_PROGRAMS } from "./content-expansion-4.js";
 import { GUIDE_EXPANSION } from "./guide-expansion.js";
 import { SECTOR_PROGRAMS, INSURANCE_FIELD } from "./sector-expansion.js";
+import { RESEARCH_PROGRAMS } from "./research-expansion.js";
 export { TOPICS } from "./expanded-content.js";
 export const SITE = "https://firstinternships.com";
 export const VERIFIED = "2026-09-19";
@@ -166,6 +167,7 @@ export const PROGRAMS = [
   ...CONTENT_EXPANSION_3_PROGRAMS,
   ...CONTENT_EXPANSION_4_PROGRAMS,
   ...SECTOR_PROGRAMS,
+  ...RESEARCH_PROGRAMS,
 ].map(program => ({ ...program, verified: program.verified || VERIFIED, seoTitle: program.seoTitle || PROGRAM_SEO[program.id][0], seoDescription: program.seoDescription || PROGRAM_SEO[program.id][1] }));
 
 export const YEARS = [

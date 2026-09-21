@@ -58,11 +58,11 @@ function usePlanner() {
 // page address only when a visitor submits the search form, and is recorded as
 // such. Like the AdSense flag, this is a launch gate: off until enabled.
 const analyticsEnabled = () => import.meta.env.VITE_ANALYTICS_ENABLED === "true";
-// A public site identifier that ships in every page, not a credential. This
-// domain's DNS records are not proxied through Cloudflare, so the dashboard's
-// "automatic" injection cannot work — Cloudflare never sees the request. The
-// beacon is installed here instead, and only reports from the real hostname so
-// preview deployments and local builds stay out of the numbers.
+// A public site identifier that ships in every page, not a credential. The
+// beacon is installed here rather than by Cloudflare's "automatic" injection,
+// which was unusable while DNS was unproxied. Now that the zone is proxied,
+// automatic mode must stay off in the Web Analytics settings or every visit is
+// counted twice. Only the real hostname reports, so previews stay out.
 const CF_BEACON_TOKEN = "fc6267440a7347e993e4af4ba8923369";
 const CF_BEACON_HOST = "firstinternships.com";
 
@@ -365,7 +365,7 @@ function GuidePage({ guide }) {
     catch { setCopyNotice("Copying was blocked. Select the text below to copy it manually."); }
   };
   return <div className="container"><Breadcrumbs items={[["Guides", "/guides"], [guide.title, null]]} /><PageIntro eyebrow={`${guideCategory(guide)} / ${readingMinutes(guide)} min read`} title={guide.title} description={guide.intro} />
-    <div className="review-line">By the FirstInternships editorial team · Updated <time dateTime={VERIFIED}>September 19, 2026</time><a href="/about">About our advice</a></div>
+    <div className="review-line">By the FirstInternships editorial team · Updated <time dateTime={guide.updated || VERIFIED}>{reviewLabel(guide.updated || VERIFIED)}</time><a href="/about">About our advice</a></div>
     <MobileContents items={[...guide.sections.map(([label], i) => [label, `#section-${i + 1}`]), ...(guide.example ? [["Practical outline", "#example"]] : []), ...(examples.length ? [["Program-specific guidance", "#programs"]] : [])]} />
     <div className="article-layout"><article><EditorialSections sections={guide.sections} />
       {guide.example && <section className="guide-example" id="example"><p className="eyebrow">A practical starting point</p><h2>{guide.example.title}</h2><pre>{guide.example.text}</pre><button className="button secondary small" onClick={copyExample}>Copy this outline</button><p className="small-note" role="status">{copyNotice}</p><p className="small-note">This is editorial guidance, not an employer-required format. Use true details, respect authorship rules, and follow the actual application prompt.</p></section>}

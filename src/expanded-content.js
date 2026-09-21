@@ -117,7 +117,7 @@ export const ADDITIONAL_FIELDS = [
 
 export const ADDITIONAL_GUIDES = [
   {
-    slug: "research-internship-personal-statement", title: "Write a Research Internship Personal Statement", description: "Build an undergraduate research statement around a real question, relevant coursework, your contribution, and the specific lab or site's learning opportunities.", category: "Research & references", programIds: ["nsf-reu", "nih-sip", "doe-suli", "amgen-scholars"],
+    slug: "research-internship-personal-statement", updated: "2026-09-20", title: "Write a Research Internship Personal Statement", description: "Build an undergraduate research statement around a real question, relevant coursework, your contribution, and the specific lab or site's learning opportunities.", category: "Research & references", programIds: ["nsf-reu", "nih-sip", "doe-suli", "amgen-scholars"],
     intro: "A useful research statement connects what you have explored to what you want to investigate next. It should help a reader understand your interests and current preparation, not pretend you already have a graduate research record.",
     sections: [
       ["1. Read the prompt before drafting", "Copy the actual questions, word limit, and formatting instructions into your private outline. Identify whether the program asks for research experience, future interests, career goals, or a particular project's fit. A general personal statement is not interchangeable with a response to a host's specific prompt. Do not let an impressive opening story crowd out the required answers."],
@@ -129,7 +129,7 @@ export const ADDITIONAL_GUIDES = [
     example: { title: "A short structure to adapt—not a statement to copy", text: "Question: What interested me?\nEvidence: What did I actually do to explore it?\nLearning: What did the result or limitation teach me?\nFit: Which current research theme connects to that interest?\nNext step: What would I like to learn with supervision?" },
   },
   {
-    slug: "ask-for-internship-recommendation-letter", title: "Ask for an Internship Recommendation Letter", description: "Choose a suitable college recommender, send a clear request, provide useful context, and track letter deadlines separately from your application.", category: "Research & references", programIds: ["doe-suli", "nih-sip", "smithsonian-asian-art"],
+    slug: "ask-for-internship-recommendation-letter", updated: "2026-09-20", title: "Ask for an Internship Recommendation Letter", description: "Choose a suitable college recommender, send a clear request, provide useful context, and track letter deadlines separately from your application.", category: "Research & references", programIds: ["doe-suli", "nih-sip", "smithsonian-asian-art"],
     intro: "A strong request makes it easy for someone who knows your work to decide whether they can recommend you. Ask for their agreement before entering their information into an application system.",
     sections: [
       ["Choose someone who has seen your work", "Read whether the program requires academic, professional, or other reference types. Within those rules, consider a professor, laboratory instructor, supervisor, or adviser who can describe your contribution. A famous person who barely knows you may have little useful evidence. Avoid assuming a family friend qualifies when an academic or professional recommendation is requested."],
@@ -141,7 +141,7 @@ export const ADDITIONAL_GUIDES = [
     example: { title: "A request you can adapt with true details", text: "Hello [name],\nI am applying to [program] because [specific reason]. Would you have time to write a supportive recommendation based on my work in [course/project/job]? The letter is due [date, time, time zone] through [submission method]. I can send my resume, the program instructions, and a short reminder of our work together. I understand if your schedule does not allow it.\nThank you,\n[your name]" },
   },
   {
-    slug: "internship-cover-letter", title: "Write a College Internship Cover Letter", description: "Write a specific internship cover letter using the team's work, one relevant example, your own contribution, and the employer's document instructions.", category: "Resumes & applications", programIds: ["federal-reserve-board", "smithsonian-asian-art", "ey-internships"],
+    slug: "internship-cover-letter", updated: "2026-09-20", title: "Write a College Internship Cover Letter", description: "Write a specific internship cover letter using the team's work, one relevant example, your own contribution, and the employer's document instructions.", category: "Resumes & applications", programIds: ["federal-reserve-board", "smithsonian-asian-art", "ey-internships"],
     intro: "A cover letter earns its space by explaining a connection that your resume alone does not make obvious. Follow the opening's instructions about whether a letter is required, optional, or not accepted.",
     sections: [
       ["Identify the role and the work", "Use the actual role title and identifier where useful. Start with the part of the team's work that interests you and a concrete reason. Avoid a paragraph of praise that would work for any employer. You do not need to know the hiring manager's name; use an appropriate general greeting rather than guessing or searching for personal contact details."],
@@ -153,7 +153,7 @@ export const ADDITIONAL_GUIDES = [
     example: { title: "An evidence paragraph, with placeholders", text: "In [course/job/project], I [specific action you personally took] to address [problem]. I used [method] and checked the result by [validation]. This connects to [task in the opening] because [clear explanation]. During the internship, I would like to learn [realistic supervised learning goal]." },
   },
   {
-    slug: "internship-project-portfolio", title: "Build an Internship Project Portfolio", description: "Turn class and personal projects into a clear internship portfolio with context, contribution, validation, accessible links, and privacy checks.", category: "Resumes & applications", programIds: ["microsoft-explore", "nvidia-ignite", "smithsonian-asian-art", "federal-reserve-board"],
+    slug: "internship-project-portfolio", updated: "2026-09-20", title: "Build an Internship Project Portfolio", description: "Turn class and personal projects into a clear internship portfolio with context, contribution, validation, accessible links, and privacy checks.", category: "Resumes & applications", programIds: ["microsoft-explore", "nvidia-ignite", "smithsonian-asian-art", "federal-reserve-board"],
     intro: "A useful portfolio helps someone understand your work quickly. It does not need dozens of projects or expensive hosting. A small set of explainable, shareable examples is a good place to start.",
     sections: [
       ["Select for relevance and permission", "Choose two or three examples connected to the role's work. They can be student, volunteer, job-related, or personal projects, but label the setting accurately. Check academic rules, ownership, licensing, and confidentiality before sharing. If a project includes private or restricted information, use a permitted alternative rather than assuming you can remove a name and publish everything else."],
@@ -165,7 +165,7 @@ export const ADDITIONAL_GUIDES = [
     example: { title: "A project-page checklist", text: "Title and context\nProblem and constraints\nMy contribution / team contributions\nApproach and permitted artifact\nValidation and result\nLimitations and next improvement\nAccessible link, permissions, and privacy check" },
   },
   {
-    slug: "internship-offer-checklist", title: "An Internship Offer Checklist for College Students", description: "Review a college internship offer for dates, compensation, costs, supervision, enrollment conditions, and the written terms before deciding.", category: "Planning & decisions", programIds: ["nasa-pathways", "doe-suli", "nih-sip", "federal-reserve-board"],
+    slug: "internship-offer-checklist", updated: "2026-09-20", title: "An Internship Offer Checklist for College Students", description: "Review a college internship offer for dates, compensation, costs, supervision, enrollment conditions, and the written terms before deciding.", category: "Planning & decisions", programIds: ["nasa-pathways", "doe-suli", "nih-sip", "federal-reserve-board"],
     intro: "An offer is a decision point, not the end of your research. Compare what is actually written with your school schedule, living costs, and learning goals before accepting.",
     sections: [
       ["Collect the written terms", "Read the offer and any appointment instructions together. Confirm the employer, role, location, work arrangement, full dates, hours, compensation, payment schedule, and response deadline. Ask the recruiter or program contact about unclear details. An overview page or an informal conversation is not a substitute for the terms of your specific placement."],

@@ -519,6 +519,7 @@ After pushing:
 ### Add a guide
 
 1. Choose a real application task.
+   Give the guide an `updated: "YYYY-MM-DD"` date, and change it whenever the guide's content materially changes. It drives the visible byline, the Article `dateModified` and the sitemap `lastmod`, and the test suite requires it.
 2. Write original, practical sections rather than employer-specific requirements.
 3. Add examples only when clearly labeled as examples.
 4. Link relevant programs and validate all references.

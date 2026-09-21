@@ -12,7 +12,7 @@
 
 export const GUIDE_EXPANSION = [
   {
-    slug: "internship-online-assessment",
+    slug: "internship-online-assessment", updated: "2026-09-20",
     title: "Prepare for an Internship Online Assessment",
     description: "Prepare for the automated stage of an internship application: timed skills tests, recorded one-way video questions, and situational judgment exercises.",
     category: "Interviews & assessments",
@@ -32,7 +32,7 @@ export const GUIDE_EXPANSION = [
     },
   },
   {
-    slug: "internship-application-file-format",
+    slug: "internship-application-file-format", updated: "2026-09-20",
     title: "Submit Internship Documents That Arrive Intact",
     description: "Stop an internship application failing on mechanics: file naming, PDF export, portal parsing, transcript uploads, and checking what the employer actually received.",
     category: "Resumes & applications",
@@ -48,7 +48,7 @@ export const GUIDE_EXPANSION = [
     ],
   },
   {
-    slug: "international-student-internship-questions",
+    slug: "international-student-internship-questions", updated: "2026-09-20",
     title: "Internship Questions for International Students",
     description: "The eligibility, timing, and authorization questions an international student should resolve — and who has the authority to answer each one — before applying.",
     category: "Planning & decisions",
@@ -69,7 +69,7 @@ export const GUIDE_EXPANSION = [
   // guide is the honest answer to that search: one message to one appropriate
   // person, no bulk sending, no promised response rates.
   {
-    slug: "email-templates-for-internships",
+    slug: "email-templates-for-internships", updated: "2026-09-21",
     title: "Internship Email Templates for College Students",
     description: "Internship email templates for following up on an application, asking about unposted roles, emailing a professor about research, thanking an interviewer, and answering an offer.",
     category: "Interviews & follow-ups",

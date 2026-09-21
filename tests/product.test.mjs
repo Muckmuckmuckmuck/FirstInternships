@@ -118,6 +118,12 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.verified}</lastmod>`));
+  // Guides carry their own date too, so a rewritten guide does not advertise the
+  // stale blanket date in its byline, Article dateModified or sitemap lastmod.
+  for (const guide of GUIDES) {
+    assert.match(guide.updated || "", /^\d{4}-\d{2}-\d{2}$/, `${guide.slug}: needs its own updated date`);
+    assert.ok(sitemap.includes(`<loc>${SITE}${guidePath(guide)}</loc><lastmod>${guide.updated}</lastmod>`), guide.slug);
+  }
   const deployment = JSON.parse(await readFile("vercel.json", "utf8"));
   assert.ok(!deployment.crons, "retired outreach cron must not run");
   assert.deepEqual(deployment.redirects.filter(redirect => ROUTES.includes(redirect.source.replace(/\.html$/, ""))), [], "deployment redirects must not intercept maintained pages");

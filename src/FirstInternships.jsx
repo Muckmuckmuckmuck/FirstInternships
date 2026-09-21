@@ -50,11 +50,21 @@ function usePlanner() {
   return { ...planner, toggle, update, clear, restore, loaded, storageError };
 }
 
-// Vercel Web Analytics: first-party path, cookieless, no personal identifiers.
-// Page-level counts only. Planner notes, saved programs, and filter text stay in
-// the browser and are never sent anywhere — see docs/CLAUDE_CODE_PLAYBOOK.md §13.
-// Like the AdSense flag, this is a launch gate: off until deliberately enabled.
+// Audience measurement: Vercel Web Analytics plus a Cloudflare Web Analytics
+// beacon, both cookieless with no personal identifiers. Each records the page
+// address and referrer. Planner notes, saved programs, checklist and comparison
+// state live only in browser storage and never enter a URL or an analytics
+// event — see docs/CLAUDE_CODE_PLAYBOOK.md §13. A search term is part of the
+// page address only when a visitor submits the search form, and is recorded as
+// such. Like the AdSense flag, this is a launch gate: off until enabled.
 const analyticsEnabled = () => import.meta.env.VITE_ANALYTICS_ENABLED === "true";
+// A public site identifier that ships in every page, not a credential. This
+// domain's DNS records are not proxied through Cloudflare, so the dashboard's
+// "automatic" injection cannot work — Cloudflare never sees the request. The
+// beacon is installed here instead, and only reports from the real hostname so
+// preview deployments and local builds stay out of the numbers.
+const CF_BEACON_TOKEN = "fc6267440a7347e993e4af4ba8923369";
+const CF_BEACON_HOST = "firstinternships.com";
 
 const adsEnabled = () => import.meta.env.VITE_ADSENSE_ENABLED === "true" && /^ca-pub-\d{16}$/.test(import.meta.env.VITE_ADSENSE_CLIENT || "");
 function AdSlot({ slot }) {
@@ -413,10 +423,18 @@ function SiteContent({ pathname = "/" }) {
   const [stale, setStale] = useState(false);
   useEffect(() => {
     // Client-only so the first server render and first hydration render match.
-    if (!analyticsEnabled() || document.querySelector("script[data-fi-analytics]")) return;
-    const script = document.createElement("script"); script.defer = true; script.dataset.fiAnalytics = "true";
-    script.src = "/_vercel/insights/script.js";
-    document.head.appendChild(script);
+    if (!analyticsEnabled()) return;
+    if (!document.querySelector("script[data-fi-analytics]")) {
+      const script = document.createElement("script"); script.defer = true; script.dataset.fiAnalytics = "true";
+      script.src = "/_vercel/insights/script.js";
+      document.head.appendChild(script);
+    }
+    if (window.location.hostname === CF_BEACON_HOST && !document.querySelector("script[data-cf-beacon]")) {
+      const beacon = document.createElement("script"); beacon.type = "module";
+      beacon.src = "https://static.cloudflareinsights.com/beacon.min.js";
+      beacon.dataset.cfBeacon = JSON.stringify({ token: CF_BEACON_TOKEN });
+      document.head.appendChild(beacon);
+    }
   }, []);
   useEffect(() => {
     document.title = `${page.title} | FirstInternships`;

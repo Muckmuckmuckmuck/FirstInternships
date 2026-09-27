@@ -95,6 +95,7 @@ Keep logic that can be tested without a browser in these pure modules. Do not bu
 
 - `scripts/build.mjs` creates the client build, SSR bundle, prerendered HTML, metadata, structured data, sitemap, robots file, `llms.txt`, and conditional `ads.txt`.
 - `scripts/serve.mjs` provides a production-like clean-URL preview with real redirects and 404s.
+- `vite.config.js` separates React, the route interface, and the growing directory/editorial data into browser chunks. Files named `*-expansion.js` enter the content chunk automatically; keep large non-UI content out of the interface bundle and investigate any renewed chunk-size warning instead of suppressing it.
 - `vercel.json` defines the production build, output directory, clean URLs, and redirects.
 - `.vercelignore` keeps the quarantined `api/`/`lib/` backend out of the deployment. Vercel turns any file under `api/` into a serverless function on its own, so removing a `functions` entry is not enough to stop one being served.
 - `public/sitemap.xml` and `public/llms.txt` are generated and tracked. A build may update them.
@@ -110,7 +111,7 @@ When changing an invariant, update or add the test that proves the intended beha
 
 ## 5. Quarantined legacy code
 
-The `api/`, `lib/`, old deployment documents, seed files, and some dependencies come from an earlier outreach SaaS. They are not part of the current directory experience.
+The `api/`, `lib/`, old deployment documents, and seed files come from an earlier outreach SaaS. They are not part of the current directory experience. The active package manifest deliberately does not install their Google GenAI, Supabase, or Stripe SDKs, because the source is quarantined from deployment and unused by the directory.
 
 Without an explicit, separately scoped migration plan, do not:
 
@@ -118,6 +119,7 @@ Without an explicit, separately scoped migration plan, do not:
 - Restore queue processing or scheduled email jobs.
 - Connect the directory planner to Supabase.
 - Add authentication, credits, billing, or Stripe flows.
+- Reinstall legacy backend SDKs merely to make quarantined files executable.
 - Import recruiter data into the public directory.
 - Expose names, email addresses, ETL output, or seed data.
 - Assume the existing Supabase project belongs to this production site.

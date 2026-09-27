@@ -25,6 +25,7 @@ The directory includes 109 sourced program application guides, four college-year
 - `src/index.jsx`: hydrate built HTML; ordinary client render in development.
 - `src/entry-server.jsx`: build-time server rendering.
 - `scripts/build.mjs`: client build + SSR bundle + prerender every supported route, unique SEO metadata, Article/Breadcrumb/ItemList data, sitemap, robots, and conditional ads.txt.
+- `vite.config.js`: keeps React and the growing editorial/data modules in separate browser chunks. New `*-expansion.js` content modules are included automatically; keep non-UI editorial data in that content chunk.
 - `scripts/serve.mjs`: production-like clean-URL preview, permanent legacy redirects, genuine 404 responses.
 - `src/legacy.js`: retired outreach-era URL mapping; `vercel.json` must contain both clean and .html aliases. Build fails if redirects drift.
 - `tests/product.test.mjs`, `tests/timeline.test.mjs`, and `tests/planner.test.mjs`: content, filter, storage-data, export-safety, render, SEO, crawl-graph, internal-link, sitemap, redirect, timeline date/zone/limit/export, backup round-trips/validation/merge, private action calendars, and legacy-output checks.
@@ -63,4 +64,4 @@ npm run preview
 
 Tests require the build's SSR bundle and generated pages; build first. Vercel uses the npm build command, `dist`, and clean URLs. No SPA catch-all rewrite: unsupported URLs should return 404. See `docs/DIRECTORY_LAUNCH.md` for release and AdSense requirements.
 
-The `api/`, `lib/`, and older docs retain the earlier outreach SaaS backend but are not integrated with the directory. Do not activate paid billing, Gmail sending, or outreach automation as part of routine directory work.
+The `api/`, `lib/`, and older docs retain the earlier outreach SaaS backend but are not integrated with the directory. Their Google, Supabase, and Stripe SDKs are intentionally absent from the active package manifest, and `.vercelignore` keeps the source out of production. Do not reinstall or activate that stack as part of routine directory work.

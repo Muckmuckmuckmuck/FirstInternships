@@ -421,16 +421,19 @@ function SiteContent({ pathname = "/" }) {
   const page = resolvePage(pathname);
   const planner = usePlanner();
   const [stale, setStale] = useState(false);
+  const pageReviewDate = page.program?.verified || null;
   useEffect(() => {
     // Client-only so the first server render and first hydration render match.
-    if (!analyticsEnabled()) return;
+    // Restrict both providers to the public hostname so local development and
+    // deployment previews never pollute production traffic.
+    if (!analyticsEnabled() || window.location.hostname !== CF_BEACON_HOST) return;
     if (!document.querySelector("script[data-fi-analytics]")) {
       const script = document.createElement("script"); script.defer = true; script.dataset.fiAnalytics = "true";
       script.src = "/_vercel/insights/script.js";
       document.head.appendChild(script);
     }
-    if (window.location.hostname === CF_BEACON_HOST && !document.querySelector("script[data-cf-beacon]")) {
-      const beacon = document.createElement("script"); beacon.type = "module";
+    if (!document.querySelector("script[data-cf-beacon]")) {
+      const beacon = document.createElement("script"); beacon.defer = true;
       beacon.src = "https://static.cloudflareinsights.com/beacon.min.js";
       beacon.dataset.cfBeacon = JSON.stringify({ token: CF_BEACON_TOKEN });
       document.head.appendChild(beacon);
@@ -438,17 +441,17 @@ function SiteContent({ pathname = "/" }) {
   }, []);
   useEffect(() => {
     document.title = `${page.title} | FirstInternships`;
-    setStale(Date.now() - new Date(VERIFIED).getTime() > 60 * 86400000);
+    setStale(Boolean(pageReviewDate && Date.now() - Date.parse(`${pageReviewDate}T00:00:00Z`) > 60 * 86400000));
     if (!adsEnabled() || document.querySelector("script[data-fi-adsense]")) return;
     // Launch only after approved AdSense Privacy & messaging/CMP is configured.
     const script = document.createElement("script"); script.async = true; script.crossOrigin = "anonymous"; script.dataset.fiAdsense = "true";
     script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${import.meta.env.VITE_ADSENSE_CLIENT}`;
     script.onload = () => { window.fiAdsLoaded = true; window.dispatchEvent(new Event("fi:ads-loaded")); };
     document.head.appendChild(script);
-  }, [page.title]);
+  }, [page.title, pageReviewDate]);
   return <div className="site-shell"><a className="skip-link" href="#main">Skip to content</a><Header planner={planner} />
     {planner.storageError && <p className="storage-warning" role="status">Your browser blocked saved-list storage. You can still browse and plan this session; export your list before leaving.</p>}
-    {stale && <p className="storage-warning">Program information was last reviewed on September 19, 2026. Check official sources for the current cycle.</p>}
+    {stale && <p className="storage-warning">This program was last reviewed on {reviewLabel(pageReviewDate)}. Check its official sources for the current cycle.</p>}
     <main id="main">
       {page.type === "home" && <Home planner={planner} />}
       {page.type === "directory" && <><div className="container"><Breadcrumbs items={[["Internship directory", null]]} /><PageIntro eyebrow="College only. Application-ready." title="Find the work. Understand the way in." description={page.description} /><YearLinks /><FieldLinks /></div><Board planner={planner} /></>}

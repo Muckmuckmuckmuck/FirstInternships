@@ -28,8 +28,12 @@ export default defineConfig(({ isSsrBuild }) => ({
     // in parallel and stay cached across deploys (faster first + repeat loads).
     rollupOptions: {
       output: {
-        manualChunks: isSsrBuild ? undefined : {
-          react: ["react", "react-dom"],
+        manualChunks: isSsrBuild ? undefined : id => {
+          if (id.includes("/node_modules/react/") || id.includes("/node_modules/react-dom/") || id.includes("/node_modules/scheduler/")) return "react";
+          // Editorial data changes far more often than the interface. Keep it in
+          // a parallel, independently parsed chunk as the directory grows.
+          if (/\/src\/(?:content|expanded-content|editorial-pages|[^/]+-expansion(?:-\d+)?)\.js$/.test(id)) return "directory-content";
+          return undefined;
         },
       },
     },

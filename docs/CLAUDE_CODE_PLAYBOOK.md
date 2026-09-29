@@ -287,6 +287,10 @@ Preserve:
 - `WebPage`, `Article`, `BreadcrumbList`, and visible-inventory `ItemList` structured data where appropriate.
 - Program-specific `dateModified` and citations.
 - Program-specific sitemap review dates; do not replace them with one fabricated blanket date.
+- Concise search titles without a blanket `| FirstInternships` suffix on every route. Google can show the WebSite name separately. Keep the homepage brand-led and keep program titles within the tested content limit.
+- Employer-aware program H1s from `programHeading()`. Do not revert to generic title-only H1s that collide across different employers.
+- A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 109-card inventory belongs on `/internships`, not on the homepage.
+- Exact-year cards on year hubs plus a compact sample of opening-specific pathways. Do not restore the same full unknown-minimum inventory to all four year pages.
 
 Do not add:
 
@@ -298,6 +302,8 @@ Do not add:
 - Canonicals that point to a different page merely to silence duplicate tests.
 
 `scripts/build.mjs` generates metadata, the sitemap, and `llms.txt`. New program routes should flow from the content model. After a build, review the generated public files and commit legitimate updates; never hand-edit them as a substitute for fixing the generator.
+
+The build injects one `VITE_RENDER_TIMESTAMP` into both client and SSR bundles. `RENDERED_AT` is a technical snapshot used to classify published cutoffs during prerendering and hydration; it is not an editorial review date. Keep it separate from `VERIFIED`, per-program `verified`, guide `updated`, and optional program `updated` values. When metadata or page copy changes without rechecking the source facts, set `updated` rather than falsifying `verified`.
 
 ## 12. Routes, redirects, and 404 behavior
 

@@ -76,8 +76,8 @@ export const NEW_PROGRAMS = [
     materials: ["Enrollment and 3.0 GPA check", "Research-interest statement", "Current transcript instructions", "Current reference instructions"], guideSlugs: researchGuides,
   },
   {
-    id: "scripps-ocean-jt-surf", company: "Scripps Institution of Oceanography", title: "JT-SURF", initials: "SO", color: "#17698b",
-    seoTitle: "Scripps Oceanography JT-SURF: Apply Guide", seoDescription: "Check JT-SURF undergraduate citizenship, graduation and prior-REU rules, stipend and housing from the published cycle, and application planning.",
+    id: "scripps-ocean-jt-surf", company: "Scripps Institution of Oceanography", title: "JT-SURF", initials: "SO", color: "#17698b", updated: "2026-09-28",
+    seoTitle: "Scripps Oceanography JT-SURF: Eligibility & Pay", seoDescription: "Check Scripps Oceanography JT-SURF eligibility, prior-REU rules, stipend, housing and travel from the last published cycle before planning an application.",
     fields: ["research", "engineering"], firstYear: null, years: [], yearLabel: "Current undergraduates · no universal minimum", pay: "Paid", location: "San Diego, California", mode: "Mostly on-campus research",
     summary: "A ten-week earth and ocean science research fellowship that does not require prior research or formal ocean-science coursework.",
     eligibility: ["Current undergraduate and US citizen or permanent resident; students graduating before the program begins are not eligible.", "No prior research experience or formal earth and ocean science coursework is required.", "Students who already completed an ocean-sciences REU are generally ineligible, with possible exceptions handled by the program."],

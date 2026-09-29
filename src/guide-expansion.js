@@ -69,12 +69,12 @@ export const GUIDE_EXPANSION = [
   // guide is the honest answer to that search: one message to one appropriate
   // person, no bulk sending, no promised response rates.
   {
-    slug: "email-templates-for-internships", updated: "2026-09-21",
-    title: "Internship Email Templates for College Students",
-    description: "Internship email templates for following up on an application, asking about unposted roles, emailing a professor about research, thanking an interviewer, and answering an offer.",
+    slug: "email-templates-for-internships", updated: "2026-09-28",
+    title: "Cold Email for an Internship: Templates & Examples",
+    description: "Use internship email templates for cold outreach, application follow-ups, research requests, interview thank-yous, recommendation requests, and offer replies.",
     category: "Interviews & follow-ups",
     programIds: ["nih-sip", "caltech-surf", "nsf-reu", "leadership-alliance-sreip"],
-    intro: "An internship email is a small, specific request to one person. These templates cover the messages college students most often need to write — following up, asking about a role that is not posted, contacting a professor, thanking an interviewer, and replying to an offer. Treat each one as a starting point to rewrite in your own words: an email that could have been sent to anyone reads exactly that way.",
+    intro: "A cold email for an internship is a small, specific request to one appropriate person—not a replacement for an official application. These templates cover the messages college students most often need to write: asking about an unposted role, following up, contacting a professor, thanking an interviewer, requesting a recommendation, and replying to an offer. Rewrite every example in your own words; an email that could have been sent to anyone reads exactly that way.",
     sections: [
       ["Decide whether an email is the right move at all", "Most internship applications happen inside an employer portal, and an email does not replace one. Email is the right tool when a posting names a contact, when a stated decision date has passed, when you are asking a professor about research, thanking an interviewer, answering an offer, or asking a small organization with no application system whether it takes interns. It is the wrong tool when the employer says not to contact recruiters, or when you would be sending the same message to dozens of addresses you found online. One specific email to the right person does more than fifty generic ones, and it is the only kind worth sending."],
       ["Following up after you applied", "Wait until the stated decision date has passed — or a few weeks if none was given — then write to the recruiter handling your application or the applicant contact the employer publishes. Template: ‘Subject: Application follow-up — [role title, requisition ID]. Hello [name], I applied for the [role title] internship ([ID]) on [date]. I remain very interested in the role and wanted to ask whether there is anything else you need from me. Thank you for your time. [Your name], [university], graduating [month and year].’ Send it once. If there is still no reply, put your effort into other applications; our follow-up guide covers the rest."],

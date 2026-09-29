@@ -11,6 +11,11 @@ import { RESEARCH_PROGRAMS } from "./research-expansion.js";
 export { TOPICS } from "./expanded-content.js";
 export const SITE = "https://firstinternships.com";
 export const VERIFIED = "2026-09-19";
+// Generated builds provide one shared timestamp to both the prerender and the
+// browser bundle. The fallback keeps direct Node imports deterministic in tests.
+// This clock decides whether a published cutoff is past; it is not an editorial
+// review date and must never be presented as one.
+export const RENDERED_AT = import.meta.env?.VITE_RENDER_TIMESTAMP || `${VERIFIED}T00:00:00.000Z`;
 export const CONTACT = "contactfirstinternships@gmail.com";
 const source = (name, url) => ({ name, url });
 const PROGRAM_SEO = {
@@ -234,13 +239,16 @@ export const GUIDES = [
     ["Check the practical details beforehand", "Confirm the time and time zone, the meeting link or the address, who you are meeting, and anything you were asked to bring or prepare. For a remote interview, test the platform, camera, microphone, and connection on the actual device you will use, and have a fallback — a phone number or a second network — in case something fails. Ask in advance if you need an accommodation. Arrive a few minutes early and treat everyone you meet as part of the process, because they are."],
     ["Close it out and learn from it", "Write down what you were asked and anything you learned about the role while it is fresh; it is the best preparation for the next round and for other interviews. A brief thank-you note is optional unless the employer says otherwise, and it should be short and specific rather than a second pitch. Then carry on with your other applications while you wait. If you are turned down, you can ask politely whether feedback is available — many employers cannot give it at internship volume, and that is not a reflection on your application."],
   ] },
-  { slug: "how-to-follow-up-on-an-internship-email", updated: "2026-09-20", title: "How to Follow Up on an Internship Application", description: "Check the official application status, respect employer timelines, and send a concise follow-up only through an appropriate contact route.", intro: "A follow-up should clarify a next step, not create pressure. The employer portal and any timeline you were given are the starting points.", sections: [
+  { slug: "how-to-follow-up-on-an-internship-email", updated: "2026-09-28", title: "Internship Follow-Up Email: Timing & Template", description: "Learn when to send an internship follow-up email, who to contact, what to include, and how to use a concise application-status template without being pushy.", intro: "A follow-up should clarify a next step, not create pressure. Check the employer portal and any timeline you were given first, then use the short template below only when an appropriate contact route exists.", sections: [
     ["Check before you send anything", "Most follow-up emails are answered by information the applicant already has. Look for a confirmation message, a status in the employer's portal, an assessment request, or a published decision timeline in the original posting. Check your spam and promotions folders, since automated recruiting mail lands there routinely. If the posting or the employer's careers FAQ says not to contact recruiters directly, or gives a specific support form, follow that instruction — it is part of the process, not a formality. Silence is not a rejection, and it is not an invitation to escalate."],
     ["Wait long enough to be worth answering", "If the employer gave a decision date, wait for it. If it gave none, a reasonable gap after applying is usually a few weeks rather than a few days, and longer around the busiest points of a recruiting cycle or a university term. A message sent too early signals that you did not read the process; one sent after a stated date has passed is entirely reasonable. Send one, and if it goes unanswered, let the next move be theirs."],
     ["Use the right contact, once", "Reply to the recruiter already handling your application, or use the applicant-support route the employer publishes. Do not look up individual employees' addresses, guess an address format, or send the same question to several people at the organization — it is easy to spot and it reliably works against you. Include the role title and its identifier so whoever opens the message can find your application without asking you for it."],
     ["Keep the note short and specific", "State when you applied, confirm you are still interested, and ask one clear question — usually whether there is a next step you should complete. Four sentences is enough. For example: 'I applied for [role and ID] on [date]. I remain interested in the opportunity and wanted to check whether any additional information is needed from me. Thank you for your time.' Replace the brackets with accurate details only. Do not attach your resume again unless it was asked for, and do not use the message to add new claims about your experience."],
     ["Accept the answer, including no answer", "If you are given a date, wait for it before asking again. If you get no response at all, treat that as information and put your effort into other applications rather than a sequence of increasingly urgent messages — the sequence is remembered, and not usefully. Keep your own record of what you sent and when. The employer's portal, not your inbox, remains the authoritative source for where your application stands."],
-  ] },
+  ], example: {
+    title: "A concise internship application follow-up",
+    text: "Subject: Application follow-up — [role title, requisition ID]\n\nHello [name],\n\nI applied for the [role title] internship ([ID]) on [date]. I remain interested in the opportunity and wanted to ask whether there is anything else you need from me.\n\nThank you for your time,\n[Your name]\n[University], graduating [month and year]",
+  } },
   { slug: "do-internships-pay", updated: "2026-09-20", title: "How to Compare Internship Pay and Costs", description: "Compare internship salary or stipends with housing, travel, schedule, and the employer's written terms before accepting.", intro: "‘Paid’ is a starting point, not a complete offer. An hourly salary, weekly stipend, and monthly research award can have very different practical implications.", sections: [
     ["Confirm the written amount and schedule", "Read the individual posting and the written offer for the amount, the payment cadence, the expected hours, the exact dates, and any conditions attached. A program overview often describes compensation in general terms without listing a figure for the role you would actually hold, and a range shown for a whole program is not a commitment to you. Distinguish an hourly wage from a weekly stipend and from a one-off research award: they behave differently when the term runs short, when you work extra hours, or when a holiday falls inside the placement. This directory never converts an unknown figure into an estimated salary."],
     ["Work out what the term actually costs you", "Build a simple budget before comparing offers: rent for the full term plus any deposit, travel to and from the site, daily transport, food, and anything you must buy to start. Then set the pay against it. A well-paid placement in an expensive city can leave you with less than a modest one you can do from home, and a deposit due in May is a real problem even when the total works out over the summer. Ask when the first payment actually arrives — a monthly cycle can mean several weeks of costs before any money does."],
@@ -263,6 +271,23 @@ export const yearPath = year => `/${year.slug}`;
 export const fieldPath = field => `/internships/${field.id}`;
 export const guidePath = guide => `/guides/${guide.slug}`;
 export const topicPath = topic => `/${topic.slug}`;
+export const FEATURED_PROGRAM_IDS = [
+  "capital-one-early-internship",
+  "paramount-internships",
+  "palantir-year-internship",
+  "met-museum-summer-2027",
+  "southwest-campus-reach",
+  "disney-industrial-engineering-2027",
+  "nasa-ostem",
+  "fedex-college-connections",
+];
+export const FEATURED_GUIDE_SLUGS = ["email-templates-for-internships", "how-to-follow-up-on-an-internship-email", "how-to-apply-for-an-internship"];
+export const featuredPrograms = () => FEATURED_PROGRAM_IDS.map(id => PROGRAMS.find(program => program.id === id)).filter(Boolean);
+export const featuredGuides = () => FEATURED_GUIDE_SLUGS.map(slug => GUIDES.find(guide => guide.slug === slug)).filter(Boolean);
+export function programHeading(program) {
+  const title = program.title.toLowerCase().includes(program.company.toLowerCase()) ? program.title : `${program.company} ${program.title}`;
+  return `${title}: Eligibility & How to Apply`;
+}
 export function programsForTopic(topic) { return topic.filter === "paid" ? PROGRAMS.filter(p => p.pay === "Paid") : topic.programIds.map(id => PROGRAMS.find(p => p.id === id)).filter(Boolean); }
 export function guidesForProgram(program) {
   const slugs = program.guideSlugs || (program.fields.includes("research") ? ["research-internship-personal-statement", "ask-for-internship-recommendation-letter", "when-to-apply-for-summer-internships"] : ["how-to-apply-for-an-internship", "internship-resume-with-no-experience", "internship-interview-guide"]);

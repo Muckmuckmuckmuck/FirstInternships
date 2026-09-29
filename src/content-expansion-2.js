@@ -33,8 +33,8 @@ export const CONTENT_EXPANSION_2_PROGRAMS = [
     materials: ["Program and graduation-window check", "Tailored resume", "Relevant project or analysis", "Assessment preparation"], guideSlugs: consultingGuides,
   },
   {
-    id: "capital-one-early-internship", company: "Capital One", title: "Early Internship Program", initials: "CE", color: "#5d7391",
-    seoTitle: "Capital One Early Internship: Sophomore Guide", seoDescription: "Review Capital One's paid ten-week Early Internship Program for second-year undergraduates, including McLean location, corporate housing and analyst work.",
+    id: "capital-one-early-internship", company: "Capital One", title: "Early Internship Program", initials: "CE", color: "#5d7391", updated: "2026-09-28",
+    seoTitle: "Capital One Early Internship Program: How to Apply", seoDescription: "See who the Capital One Early Internship Program is for, its paid 10-week McLean format and housing, and what to prepare before applications open.",
     fields: ["finance", "business", "technology", "consulting"], firstYear: 2, years: [2], yearLabel: "Second-year undergraduates", pay: "Paid", location: "McLean, Virginia", mode: "Full-time and in person",
     summary: "A paid ten-week sophomore program in McLean with hands-on analyst work, mentorship, and corporate housing.",
     eligibility: ["Capital One explicitly designs the program for second-year undergraduate students.", "The current Students and Grads overview identifies the graduation range for the active early-program cohort; verify your expected month and year before applying.", "The selected role controls authorization, degree, schedule, and any additional qualifications."],
@@ -89,8 +89,8 @@ export const CONTENT_EXPANSION_2_PROGRAMS = [
     materials: ["Active Tesla role", "Enrollment-through-end check", "Twelve-week availability", "Relevant resume or portfolio"], guideSlugs: portfolioGuides,
   },
   {
-    id: "delta-student-internships", company: "Delta Air Lines", title: "Student Internship Program", initials: "DL", color: "#365076",
-    seoTitle: "Delta Air Lines Internships: Student Guide", seoDescription: "Explore paid Delta student internships and co-ops in aviation, technology, analytics, finance, communications, engineering and operations, plus housing support.",
+    id: "delta-student-internships", company: "Delta Air Lines", title: "Student Internship Program", initials: "DL", color: "#365076", updated: "2026-09-28",
+    seoTitle: "Delta Air Lines Internships: Pay & How to Apply", seoDescription: "Explore paid Delta internships and co-ops for college students, including Atlanta roles, housing support, recruiting timing and application steps.",
     fields: ["aerospace", "business", "finance", "technology", "engineering", "media", "operations"], firstYear: null, years: [], yearLabel: "College students · role-specific", pay: "Paid", location: "Mostly Atlanta; opening-specific", mode: "Internship or multi-semester co-op",
     summary: "Paid airline internships and co-ops across corporate, customer, analytics, technology, engineering, operations, and commercial teams.",
     eligibility: ["Delta describes student internships and multi-semester co-ops, but the current role sets the minimum college year, degree, and schedule.", "The majority of student opportunities are based in Atlanta, while the opening controls location and work arrangement.", "Delta says all students and graduates in its programs are compensated; housing stipends are available to out-of-state students for each semester worked."],
@@ -131,8 +131,8 @@ export const CONTENT_EXPANSION_2_PROGRAMS = [
     materials: ["Active internship opening", "Degree and GPA check", "Citizenship or clearance review", "Technical resume"], guideSlugs: portfolioGuides,
   },
   {
-    id: "paramount-internships", company: "Paramount", title: "College Internship Program", initials: "PM", color: "#425a83",
-    seoTitle: "Paramount Internships: College Student Guide", seoDescription: "Explore Paramount internships in production, news, sports, marketing, publicity, research, finance, legal, technology and business for enrolled students.",
+    id: "paramount-internships", company: "Paramount", title: "College Internship Program", initials: "PM", color: "#425a83", updated: "2026-09-28",
+    seoTitle: "Paramount Internships: Dates & How to Apply", seoDescription: "Find Paramount internships for enrolled college students, then check current recruiting dates, eligibility, departments and official application steps.",
     fields: ["media", "arts", "sports", "business", "finance", "technology"], firstYear: null, years: [], yearLabel: "Currently enrolled college students", pay: "Check opening", location: "US and global media hubs", mode: "Role and location specific",
     summary: "Entertainment and media internships across production, news, sports, marketing, publicity, research, advertising, finance, legal, and technology.",
     eligibility: ["Paramount says interns must be currently enrolled at an accredited college or university; recent graduates use separate post-graduate routes.", "The program page does not publish one universal minimum college year or compensation rule.", "The current opening controls department, location, schedule, authorization, portfolio, and other qualifications."],

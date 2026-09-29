@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, CalendarDays, Check, Download, GitCompareArrows, X } from "lucide-react";
-import { PROGRAMS, VERIFIED, programPath } from "./content.js";
+import { PROGRAMS, RENDERED_AT, programPath } from "./content.js";
 import { COMPARE_LIMIT, comparisonPath, deadlineCalendar, deadlineState, downloadFile, sanitizeComparison, sortPrograms } from "./directory-tools.js";
 
 const ComparisonContext = createContext(null);
 const COMPARE_STORE = "fi_compare_v1";
 
 export function useReviewClock() {
-  const [now, setNow] = useState(Date.parse(VERIFIED));
+  const [now, setNow] = useState(Date.parse(RENDERED_AT));
   useEffect(() => {
     setNow(Date.now());
     const interval = setInterval(() => setNow(Date.now()), 60000);

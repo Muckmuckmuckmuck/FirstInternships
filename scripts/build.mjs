@@ -8,25 +8,26 @@ import { LEGACY_REDIRECTS } from "../src/legacy.js";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const out = resolve(root, "dist");
 const ssr = resolve(root, "node_modules/.cache/firstinternships-ssr");
+const buildEnv = { ...process.env, VITE_RENDER_TIMESTAMP: new Date().toISOString() };
 const run = args => {
-  const result = spawnSync(process.execPath, [resolve(root, "node_modules/vite/bin/vite.js"), ...args], { cwd: root, stdio: "inherit" });
+  const result = spawnSync(process.execPath, [resolve(root, "node_modules/vite/bin/vite.js"), ...args], { cwd: root, stdio: "inherit", env: buildEnv });
   if (result.status !== 0) process.exit(result.status || 1);
 };
 run(["build"]);
 run(["build", "--ssr", "src/entry-server.jsx", "--outDir", ssr]);
-const { render, ROUTES, SITE, VERIFIED, resolvePage, PROGRAMS, GUIDES, guidePath, programPath, programsForField, programsForTopic, programsForYear } = await import(pathToFileURL(join(ssr, "entry-server.js")));
+const { render, ROUTES, SITE, RENDERED_AT, VERIFIED, resolvePage, PROGRAMS, GUIDES, featuredPrograms, guidePath, programHeading, programPath, programsForField, programsForTopic, programsForYear } = await import(pathToFileURL(join(ssr, "entry-server.js")));
 const template = await readFile(join(out, "index.html"), "utf8");
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const organization = { "@type": "Organization", "@id": `${SITE}/#organization`, name: "FirstInternships", url: `${SITE}/` };
 function metadata(page) {
   const canonical = `${SITE}${page.path === "/" ? "/" : page.path}`;
-  const title = `${page.title} | FirstInternships`;
+  const title = page.path === "/" ? `FirstInternships: ${page.title}` : page.title;
   const noindex = ["saved", "compare", "404"].includes(page.type);
   const graph = [organization, { "@type": "WebSite", "@id": `${SITE}/#website`, name: "FirstInternships", url: `${SITE}/`, publisher: { "@id": organization["@id"] } }, { "@type": "WebPage", "@id": `${canonical}#page`, url: canonical, name: title, description: page.description, isPartOf: { "@id": `${SITE}/#website` }, ...( ["year", "field", "topic", "guides", "directory"].includes(page.type) ? { additionalType: "https://schema.org/CollectionPage" } : {}) }];
   const parents = page.type === "program" ? [["Programs", "/internships"]] : page.type === "guide" ? [["Guides", "/guides"]] : ["year", "field", "topic"].includes(page.type) ? [["Internships", "/internships"]] : [];
   if (page.path !== "/") graph.push({ "@type": "BreadcrumbList", itemListElement: [["Home", "/"], ...parents, [page.title, page.path]].map(([name, path], i) => ({ "@type": "ListItem", position: i + 1, name, item: `${SITE}${path}` })) });
-  if (["guide", "program"].includes(page.type)) graph.push({ "@type": "Article", headline: page.title, description: page.description, mainEntityOfPage: { "@id": `${canonical}#page` }, dateModified: page.program?.verified || page.guide?.updated || VERIFIED, author: { "@type": "Organization", name: "FirstInternships Editorial Team", url: `${SITE}/about` }, publisher: { "@id": organization["@id"] }, image: `${SITE}/og-image.png`, ...(page.program ? { citation: page.program.sources.map(s => s.url) } : {}) });
-  const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : page.type === "deadlines" ? PROGRAMS.filter(p => p.deadline).sort((a, b) => Number(Date.parse(a.deadline) <= Date.parse(VERIFIED)) - Number(Date.parse(b.deadline) <= Date.parse(VERIFIED)) || Date.parse(a.deadline) - Date.parse(b.deadline) || a.title.localeCompare(b.title)) : ["home", "directory"].includes(page.type) ? PROGRAMS : [];
+  if (["guide", "program"].includes(page.type)) graph.push({ "@type": "Article", headline: page.program ? programHeading(page.program) : page.title, description: page.description, mainEntityOfPage: { "@id": `${canonical}#page` }, dateModified: page.program?.updated || page.program?.verified || page.guide?.updated || VERIFIED, author: { "@type": "Organization", name: "FirstInternships Editorial Team", url: `${SITE}/about` }, publisher: { "@id": organization["@id"] }, image: `${SITE}/og-image.png`, ...(page.program ? { citation: page.program.sources.map(s => s.url) } : {}) });
+  const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : page.type === "deadlines" ? PROGRAMS.filter(p => p.deadline).sort((a, b) => Number(Date.parse(a.deadline) <= Date.parse(RENDERED_AT)) - Number(Date.parse(b.deadline) <= Date.parse(RENDERED_AT)) || Date.parse(a.deadline) - Date.parse(b.deadline) || a.title.localeCompare(b.title)) : page.type === "home" ? featuredPrograms() : page.type === "directory" ? PROGRAMS : [];
   if (programs.length) graph.push({ "@type": "ItemList", name: page.title, numberOfItems: programs.length, itemListElement: programs.map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.title, url: `${SITE}${programPath(p)}` })) });
   if (page.type === "guides") graph.push({ "@type": "ItemList", name: page.title, numberOfItems: GUIDES.length, itemListElement: GUIDES.map((guide, i) => ({ "@type": "ListItem", position: i + 1, name: guide.title, url: `${SITE}${guidePath(guide)}` })) });
   if (page.type === "timeline") graph.push({ "@type": "WebApplication", "@id": `${canonical}#tool`, name: "FirstInternships Application Timeline Builder", url: canonical, description: page.description, applicationCategory: "EducationalApplication", operatingSystem: "Any", browserRequirements: "JavaScript enabled for the interactive builder" });
@@ -55,10 +56,19 @@ await copyPublic(join(root, "public"));
 const crawlable = ROUTES.filter(route => !["/saved", "/compare", "/404"].includes(route));
 function lastmodForRoute(route) {
   const page = resolvePage(route);
-  if (page.program?.verified) return page.program.verified;
+  if (page.program?.verified) return page.program.updated || page.program.verified;
   if (page.guide?.updated) return page.guide.updated;
-  const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : ["home", "directory"].includes(page.type) ? PROGRAMS : [];
-  return programs.reduce((latest, program) => program.verified > latest ? program.verified : latest, VERIFIED);
+  if (page.type === "guides") return GUIDES.reduce((latest, guide) => guide.updated > latest ? guide.updated : latest, VERIFIED);
+  if (page.type === "deadlines") return PROGRAMS.filter(program => program.deadline).reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, VERIFIED);
+  const explicit = {
+    "/": "2026-09-28", "/internships": "2026-09-28",
+    "/freshman-internships": "2026-09-28", "/sophomore-internships": "2026-09-28", "/junior-internships": "2026-09-28", "/senior-internships": "2026-09-28",
+    "/undergraduate-research-internships": "2026-09-28", "/summer-2027-college-internships": "2026-09-28",
+    "/application-timeline": "2026-09-20", "/about": "2026-09-20", "/contact": "2026-09-20", "/privacy": "2026-09-21", "/terms": "2026-09-18",
+  }[route];
+  if (explicit) return explicit;
+  const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
+  return programs.reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, VERIFIED);
 }
 const generatedPublic = {
   "sitemap.xml": `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...crawlable, "/privacy", "/terms"].map(route => `<url><loc>${SITE}${route}</loc><lastmod>${lastmodForRoute(route)}</lastmod></url>`).join("")}</urlset>`,

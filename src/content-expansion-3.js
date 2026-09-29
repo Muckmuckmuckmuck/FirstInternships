@@ -62,8 +62,8 @@ export const CONTENT_EXPANSION_3_PROGRAMS = [
     materials: ["Current student opening", "Schedule and location check", "Tailored resume", "Process or project example"], guideSlugs: projectGuides,
   },
   {
-    id: "fedex-college-connections", company: "FedEx", title: "College Connections Internship", initials: "FX", color: "#69478d",
-    seoTitle: "FedEx College Connections Internship Guide", seoDescription: "Review FedEx's paid 10-week College Connections internships in logistics, IT, engineering, marketing, HR, operations and transportation.",
+    id: "fedex-college-connections", company: "FedEx", title: "College Connections Internship", initials: "FX", color: "#69478d", updated: "2026-09-28",
+    seoTitle: "FedEx College Connections: Dates & How to Apply", seoDescription: "Review FedEx College Connections internships, including the paid 10-week format, recruiting calendar, eligible functions and official application steps.",
     fields: ["operations", "aerospace", "technology", "engineering", "business", "finance", "media"], firstYear: null, years: [], yearLabel: "Undergraduates · opening-specific", pay: "Paid", location: "Locations across the United States", mode: "Full-time summer program",
     summary: "A paid ten-week summer internship with real projects, mentorship, facility exposure, and roles across transportation and corporate functions.",
     eligibility: ["FedEx describes College Connections as an internship route for undergraduate and graduate students; this guide covers undergraduates.", "The current opening controls degree, college year, graduation, authorization, location, and function-specific skills.", "FedEx's separate Summer Engineering Co-op requires at least one year of education and current enrollment; do not transfer that rule to every internship."],

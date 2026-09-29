@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, guidePath, guidesForProgram, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
+import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, featuredPrograms, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
 import { LEGACY_REDIRECTS } from "../src/legacy.js";
 import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
@@ -24,6 +24,7 @@ test("content has unique routes and real official-source records", () => {
   assert.equal(new Set(ROUTES).size, ROUTES.length);
   assert.deepEqual(ROUTES.filter(route => LEGACY_REDIRECTS[route]), [], "maintained pages must not be intercepted by legacy redirects");
   assert.equal(new Set(PROGRAMS.map(p => p.id)).size, PROGRAMS.length);
+  assert.equal(new Set(PROGRAMS.map(programHeading)).size, PROGRAMS.length, "program H1s must identify a unique employer and pathway");
   for (const p of PROGRAMS) {
     assert.ok(p.sources.length);
     assert.ok(p.seoTitle.length <= 52, p.id);
@@ -117,7 +118,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
-  for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.verified}</lastmod>`));
+  for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
   // Guides carry their own date too, so a rewritten guide does not advertise the
   // stale blanket date in its byline, Article dateModified or sitemap lastmod.
   for (const guide of GUIDES) {
@@ -282,6 +283,11 @@ test("focused collections have substantive original content and valid crosslinks
 });
 
 test("collection and guide-list structured data matches visible inventory", async () => {
+  const home = await readFile("dist/index.html", "utf8");
+  const homeGraph = JSON.parse(home.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])["@graph"];
+  const homeList = homeGraph.find(item => item["@type"] === "ItemList");
+  assert.equal(homeList.numberOfItems, featuredPrograms().length);
+  assert.deepEqual(homeList.itemListElement.map(item => item.url), featuredPrograms().map(program => `${SITE}${programPath(program)}`));
   for (const topic of TOPICS) {
     const html = await readFile(`dist/${topic.slug}.html`, "utf8");
     const graph = JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])["@graph"];

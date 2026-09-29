@@ -106,6 +106,7 @@ export const RESEARCH_PROGRAMS = [
     ],
     timing: "The page describes the 2026 cycle, which opened on November 1, 2025 and set a February 3, 2026 deadline for the complete package including two letters of recommendation and official transcripts. That date is given without a time of day, so no exact cutoff instant is recorded here. The 2027 cycle's dates are not yet published.",
     status: "Last published cycle closed",
+    deadlineDate: "2026-02-03", deadlineDateLabel: "Summer 2026 · Feb 3",
     url: "https://theleadershipalliance.org/summer-research-early-identification-program",
     sources: [
       { name: "Program length, funding, eligibility conditions and 2026 cycle dates", url: "https://theleadershipalliance.org/summer-research-early-identification-program" },

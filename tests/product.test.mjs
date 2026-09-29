@@ -4,7 +4,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, featuredPrograms, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
 import { LEGACY_REDIRECTS } from "../src/legacy.js";
-import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
+import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, hasPublishedCutoff, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
@@ -161,6 +161,34 @@ test("filters round-trip safely and reject unsupported URL values", () => {
   assert.equal(readFilters("?field=all", { field: "research" }).field, "all");
 });
 
+test("date-only cutoffs are published as dates, never as an invented time", () => {
+  const DAY = 86400000;
+  const base = { ...PROGRAMS[0], deadline: undefined, deadlineZone: undefined, deadlineLabel: undefined };
+  const probe = { ...base, id: "date-only-probe", deadlineDate: "2027-02-03", deadlineDateLabel: "Summer 2027 · Feb 3" };
+  const start = Date.parse("2027-02-03T00:00:00Z");
+  assert.ok(hasPublishedCutoff(probe));
+  assert.equal(deadlineState(probe, start).precision, "date");
+  assert.equal(deadlineState(probe, start - 30 * DAY).kind, "future");
+  assert.equal(deadlineState(probe, start - 3 * DAY).kind, "soon");
+  // The published date is still under way somewhere on Earth, so it has not passed.
+  assert.equal(deadlineState(probe, start + 20 * 3600000).kind, "soon");
+  assert.equal(deadlineState(probe, start + 36 * 3600000).kind, "passed");
+  assert.ok(!hasPublishedCutoff({ ...probe, deadlineDate: "Feb 3" }), "a malformed date is not a cutoff");
+  assert.equal(deadlineState({ ...probe, deadline: "2027-02-04T04:59:00Z" }, start).precision, "exact", "an exact instant wins");
+  const ics = deadlineCalendar([probe], start - 30 * DAY).replace(/\r\n /g, "");
+  assert.match(ics, /DTSTART;VALUE=DATE:20270203\r\n/);
+  assert.match(ics, /DTEND;VALUE=DATE:20270204\r\n/);
+  assert.ok(!/DTSTART:2027/.test(ics), "a date-only cutoff must not export a timed instant");
+  assert.match(ics, /without a time of day/);
+  const later = { ...base, id: "exact-later", deadline: "2027-03-01T05:00:00Z", deadlineZone: "America/New_York", deadlineLabel: "Summer 2027 · Mar 1" };
+  assert.deepEqual(sortPrograms([later, probe], "deadline", start - 30 * DAY).map(p => p.id), ["date-only-probe", "exact-later"]);
+  for (const p of PROGRAMS) {
+    if (p.deadlineDate === undefined) continue;
+    assert.match(p.deadlineDate, /^\d{4}-\d{2}-\d{2}$/, p.id);
+    assert.ok(p.deadlineDateLabel, `${p.id}: a date-only cutoff needs a label`);
+    assert.ok(!p.deadline, `${p.id}: carry either an exact deadline or a date, not both`);
+  }
+});
 test("cutoffs are time-aware and next-deadline sorting puts unknown/past dates last", () => {
   const now = Date.parse("2026-09-18T12:00:00Z");
   assert.equal(deadlineState(PROGRAMS.find(p => p.id === "doe-suli"), now).kind, "soon");
@@ -182,7 +210,10 @@ test("calendar files use UTC, safe text, stable event IDs, CRLF, and UTF-8 foldi
   const now = Date.parse("2026-09-18T12:00:00Z");
   const calendar = deadlineCalendar(PROGRAMS, now);
   const unfolded = calendar.replace(/\r\n /g, "");
-  assert.equal((unfolded.match(/BEGIN:VEVENT/g) || []).length, PROGRAMS.filter(p => p.deadline && Date.parse(p.deadline) > now).length);
+  // Every future published cutoff is exported: exact instants and date-only cutoffs alike.
+  assert.equal((unfolded.match(/BEGIN:VEVENT/g) || []).length, PROGRAMS.filter(p => ["soon", "future"].includes(deadlineState(p, now).kind)).length);
+  assert.ok(unfolded.includes("UID:noaa-hollings-20270131@firstinternships.com"));
+  assert.ok(unfolded.includes("DTSTART;VALUE=DATE:20270131"), "a date-only cutoff exports as an all-day event");
   assert.ok(unfolded.includes("DTSTART:20260930T210000Z"));
   assert.ok(unfolded.includes("DTSTART:20270227T045900Z"));
   assert.ok(unfolded.includes("DTSTART:20270126T170000Z"));

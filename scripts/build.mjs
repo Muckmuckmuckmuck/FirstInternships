@@ -15,7 +15,14 @@ const run = args => {
 };
 run(["build"]);
 run(["build", "--ssr", "src/entry-server.jsx", "--outDir", ssr]);
-const { render, ROUTES, SITE, RENDERED_AT, VERIFIED, resolvePage, PROGRAMS, GUIDES, featuredPrograms, guidePath, programHeading, programPath, programsForField, programsForTopic, programsForYear } = await import(pathToFileURL(join(ssr, "entry-server.js")));
+const { render, ROUTES, SITE, RENDERED_AT, VERIFIED, resolvePage, PROGRAMS, GUIDES, deadlineState, featuredPrograms, guidePath, hasPublishedCutoff, programHeading, programPath, programsForField, programsForTopic, programsForYear } = await import(pathToFileURL(join(ssr, "entry-server.js")));
+// Published cutoffs for the deadline hub's ItemList: still-open first, then passed,
+// each by date. Exact-instant and date-only cutoffs sort on the same scale.
+const renderedAt = Date.parse(RENDERED_AT);
+const cutoffOrder = (a, b) => {
+  const [sa, sb] = [deadlineState(a, renderedAt), deadlineState(b, renderedAt)];
+  return Number(sa.kind === "passed") - Number(sb.kind === "passed") || sa.cutoff - sb.cutoff || a.title.localeCompare(b.title);
+};
 const template = await readFile(join(out, "index.html"), "utf8");
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const organization = { "@type": "Organization", "@id": `${SITE}/#organization`, name: "FirstInternships", url: `${SITE}/` };
@@ -27,7 +34,7 @@ function metadata(page) {
   const parents = page.type === "program" ? [["Programs", "/internships"]] : page.type === "guide" ? [["Guides", "/guides"]] : ["year", "field", "topic"].includes(page.type) ? [["Internships", "/internships"]] : [];
   if (page.path !== "/") graph.push({ "@type": "BreadcrumbList", itemListElement: [["Home", "/"], ...parents, [page.title, page.path]].map(([name, path], i) => ({ "@type": "ListItem", position: i + 1, name, item: `${SITE}${path}` })) });
   if (["guide", "program"].includes(page.type)) graph.push({ "@type": "Article", headline: page.program ? programHeading(page.program) : page.title, description: page.description, mainEntityOfPage: { "@id": `${canonical}#page` }, dateModified: page.program?.updated || page.program?.verified || page.guide?.updated || VERIFIED, author: { "@type": "Organization", name: "FirstInternships Editorial Team", url: `${SITE}/about` }, publisher: { "@id": organization["@id"] }, image: `${SITE}/og-image.png`, ...(page.program ? { citation: page.program.sources.map(s => s.url) } : {}) });
-  const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : page.type === "deadlines" ? PROGRAMS.filter(p => p.deadline).sort((a, b) => Number(Date.parse(a.deadline) <= Date.parse(RENDERED_AT)) - Number(Date.parse(b.deadline) <= Date.parse(RENDERED_AT)) || Date.parse(a.deadline) - Date.parse(b.deadline) || a.title.localeCompare(b.title)) : page.type === "home" ? featuredPrograms() : page.type === "directory" ? PROGRAMS : [];
+  const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : page.type === "deadlines" ? PROGRAMS.filter(hasPublishedCutoff).sort(cutoffOrder) : page.type === "home" ? featuredPrograms() : page.type === "directory" ? PROGRAMS : [];
   if (programs.length) graph.push({ "@type": "ItemList", name: page.title, numberOfItems: programs.length, itemListElement: programs.map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.title, url: `${SITE}${programPath(p)}` })) });
   if (page.type === "guides") graph.push({ "@type": "ItemList", name: page.title, numberOfItems: GUIDES.length, itemListElement: GUIDES.map((guide, i) => ({ "@type": "ListItem", position: i + 1, name: guide.title, url: `${SITE}${guidePath(guide)}` })) });
   if (page.type === "timeline") graph.push({ "@type": "WebApplication", "@id": `${canonical}#tool`, name: "FirstInternships Application Timeline Builder", url: canonical, description: page.description, applicationCategory: "EducationalApplication", operatingSystem: "Any", browserRequirements: "JavaScript enabled for the interactive builder" });
@@ -59,7 +66,7 @@ function lastmodForRoute(route) {
   if (page.program?.verified) return page.program.updated || page.program.verified;
   if (page.guide?.updated) return page.guide.updated;
   if (page.type === "guides") return GUIDES.reduce((latest, guide) => guide.updated > latest ? guide.updated : latest, VERIFIED);
-  if (page.type === "deadlines") return PROGRAMS.filter(program => program.deadline).reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, VERIFIED);
+  if (page.type === "deadlines") return PROGRAMS.filter(hasPublishedCutoff).reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, VERIFIED);
   const explicit = {
     "/": "2026-09-28", "/internships": "2026-09-28",
     "/freshman-internships": "2026-09-28", "/sophomore-internships": "2026-09-28", "/junior-internships": "2026-09-28", "/senior-internships": "2026-09-28",

@@ -153,6 +153,8 @@ A program record normally contains:
   deadline: "2027-02-27T04:59:00Z", // optional; exact instant only
   deadlineZone: "America/New_York", // required with deadline
   deadlineLabel: "Summer 2027 · Feb 26, 11:59 p.m. ET", // required with deadline
+  deadlineDate: "2027-02-03", // optional; a date published without a time of day
+  deadlineDateLabel: "Summer 2027 · Feb 3", // required with deadlineDate
   url: "https://official.example/program",
   sources: [{ name: "What this source establishes", url: "https://official.example/program" }],
   steps: ["At least three application steps."],
@@ -233,7 +235,7 @@ For every new or refreshed record:
 1. Record what each source actually establishes.
 2. Check whether the page is a current cycle, an evergreen overview, or an expired posting.
 3. Preserve exact time zones and convert a deadline to UTC only when the source gives an exact time.
-4. Use a date-only description when the publisher provides only a date. Do not invent midnight, end of day, or a time zone.
+4. When the publisher provides only a date, record it as `deadlineDate` with `deadlineDateLabel`, never as `deadline`. Do not invent midnight, end of day, or a time zone. A record carries one or the other, not both. Date-only cutoffs appear on the deadline hub, sort by date, count as "passed" only once that date has ended in every time zone, and export as all-day calendar events.
 5. Distinguish an application opening date from a deadline.
 6. Distinguish a stipend from hourly pay and a past award from a future guarantee.
 7. Distinguish fully remote from occasional remote days or a hybrid arrangement.

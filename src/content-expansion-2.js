@@ -34,7 +34,7 @@ export const CONTENT_EXPANSION_2_PROGRAMS = [
   },
   {
     id: "capital-one-early-internship", company: "Capital One", title: "Early Internship Program", initials: "CE", color: "#5d7391", updated: "2026-09-28",
-    seoTitle: "Capital One Early Internship Program: How to Apply", seoDescription: "See who the Capital One Early Internship Program is for, its paid 10-week McLean format and housing, and what to prepare before applications open.",
+    seoTitle: "Capital One Early Internship Program for Sophomores", seoDescription: "Capital One's paid 10-week Early Internship Program is built for second-year (sophomore) undergraduates. See the McLean format, housing, and what to prepare before it opens.",
     fields: ["finance", "business", "technology", "consulting"], firstYear: 2, years: [2], yearLabel: "Second-year undergraduates", pay: "Paid", location: "McLean, Virginia", mode: "Full-time and in person",
     summary: "A paid ten-week sophomore program in McLean with hands-on analyst work, mentorship, and corporate housing.",
     eligibility: ["Capital One explicitly designs the program for second-year undergraduate students.", "The current Students and Grads overview identifies the graduation range for the active early-program cohort; verify your expected month and year before applying.", "The selected role controls authorization, degree, schedule, and any additional qualifications."],

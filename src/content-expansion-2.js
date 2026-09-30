@@ -90,7 +90,7 @@ export const CONTENT_EXPANSION_2_PROGRAMS = [
   },
   {
     id: "delta-student-internships", company: "Delta Air Lines", title: "Student Internship Program", initials: "DL", color: "#365076", updated: "2026-09-28",
-    seoTitle: "Delta Air Lines Internships: Pay & How to Apply", seoDescription: "Explore paid Delta internships and co-ops for college students, including Atlanta roles, housing support, recruiting timing and application steps.",
+    seoTitle: "Delta Air Lines Internships & Co-ops: How to Apply", seoDescription: "Explore paid Delta internships and co-ops for college students, including Atlanta roles, housing support, recruiting timing and application steps.",
     fields: ["aerospace", "business", "finance", "technology", "engineering", "media", "operations"], firstYear: null, years: [], yearLabel: "College students · role-specific", pay: "Paid", location: "Mostly Atlanta; opening-specific", mode: "Internship or multi-semester co-op",
     summary: "Paid airline internships and co-ops across corporate, customer, analytics, technology, engineering, operations, and commercial teams.",
     eligibility: ["Delta describes student internships and multi-semester co-ops, but the current role sets the minimum college year, degree, and schedule.", "The majority of student opportunities are based in Atlanta, while the opening controls location and work arrangement.", "Delta says all students and graduates in its programs are compensated; housing stipends are available to out-of-state students for each semester worked."],

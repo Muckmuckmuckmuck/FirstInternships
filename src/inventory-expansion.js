@@ -7,7 +7,7 @@ const projectGuides = ["internship-project-portfolio", "internship-resume-with-n
 export const NEW_PROGRAMS = [
   {
     id: "amazon-annapurna-2027", company: "Amazon / Annapurna Labs", title: "Software Development Engineer Intern 2027", initials: "AZ", color: "#9a5a14",
-    seoTitle: "Amazon Annapurna Labs Intern 2027: Apply", seoDescription: "Review Amazon Annapurna Labs' 2027 software internship, graduation-date rule, technical qualifications, locations, and application preparation.",
+    seoTitle: "Amazon Annapurna Labs SDE Internship 2027: Apply", seoDescription: "Review Amazon Annapurna Labs' 2027 software internship, graduation-date rule, technical qualifications, locations, and application preparation.",
     fields: ["technology", "engineering"], firstYear: null, years: [], yearLabel: "Bachelor's students · Dec 2027+ graduation", pay: "Paid", location: "Austin, Seattle, New York, Cupertino", mode: "Location-specific",
     summary: "A current 2027 low-level software and systems internship supporting custom silicon and machine-learning infrastructure.",
     eligibility: ["Pursuing a bachelor's or master's degree in computer science, computer engineering, or a related field, with final graduation in December 2027 or later.", "The posting asks for programming experience in C, C++, Java, or Python plus data structures, algorithms, or software-design experience from coursework or projects.", "This guide covers the current undergraduate route; location and work-authorization details must be checked in the posting."],

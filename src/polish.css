@@ -711,3 +711,9 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
 .narrow-label { margin: 0 0 12px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; font-weight: 800; color: #4f6054; }
 .narrow-options { display: flex; flex-wrap: wrap; gap: 8px; }
 @media(max-width: 760px) { .narrow-bar { padding: 17px 16px; border-radius: 13px; } }
+
+/* Footer: brand, year links, utility links and popular guides. */
+@media(min-width: 761px) {
+  .footer-inner { grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 48px; }
+}
+.callout .text-link:not(:last-child) { margin-right: 22px; }

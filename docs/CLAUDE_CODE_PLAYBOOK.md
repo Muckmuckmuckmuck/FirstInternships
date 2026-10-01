@@ -293,6 +293,9 @@ Preserve:
 - Employer-aware program H1s from `programHeading()`. Do not revert to generic title-only H1s that collide across different employers.
 - A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 156-card inventory belongs on `/internships`, not on the homepage.
 - Exact-year cards on year hubs plus a compact sample of opening-specific pathways. Do not restore the same full unknown-minimum inventory to all four year pages.
+- Related programs from the catalog-wide assignment in `relatedPrograms()`: same-employer programs first, then six slots balanced across each page's most similar programs so every program is suggested from several others. Never reintroduce an alphabetical or array-order tie-break; it starved later programs of internal links. Keep the assignment cheap (pairs are scored once), because it runs during hydration on phones.
+- Guide "next read" links that rotate onward through `GUIDES`, and the footer's popular-guide links in `FOOTER_GUIDE_LINKS`.
+- Page-level review lines that show `reviewSpan()` of the programs on the page, never one blanket review date.
 
 Do not add:
 
@@ -525,11 +528,13 @@ After pushing:
 3. Add only valid program IDs and guide slugs.
 4. Ensure the new page is linked through ordinary navigation or crosslinks.
 5. Verify ItemList structured data matches the visible inventory.
+6. A collection's inclusion rule is a promise: add a test that every listed record meets it. A field hub can carry `updated: "YYYY-MM-DD"` when its own copy changes; the sitemap uses the later of that and its newest program.
 
 ### Add a guide
 
 1. Choose a real application task.
    Give the guide an `updated: "YYYY-MM-DD"` date, and change it whenever the guide's content materially changes. It drives the visible byline, the Article `dateModified` and the sitemap `lastmod`, and the test suite requires it.
+   Title it the way students phrase the question when the content answers it. Set `topicSlug` when a focused collection is the natural next step; the guide's closing callout then links there.
 2. Write original, practical sections rather than employer-specific requirements.
 3. Add examples only when clearly labeled as examples.
 4. Link relevant programs and validate all references.

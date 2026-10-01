@@ -70,12 +70,13 @@ function lastmodForRoute(route) {
   const explicit = {
     "/": "2026-09-28", "/internships": "2026-09-28",
     "/freshman-internships": "2026-09-28", "/sophomore-internships": "2026-09-28", "/junior-internships": "2026-09-28", "/senior-internships": "2026-09-28",
-    "/undergraduate-research-internships": "2026-09-28", "/summer-2027-college-internships": "2026-09-28",
+    "/undergraduate-research-internships": "2026-09-28", "/summer-2027-college-internships": "2026-10-01", "/community-college-internships": "2026-10-01",
     "/application-timeline": "2026-09-20", "/about": "2026-09-20", "/contact": "2026-09-20", "/privacy": "2026-09-21", "/terms": "2026-09-18",
   }[route];
   if (explicit) return explicit;
   const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
-  return programs.reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, VERIFIED);
+  // A hub's own editorial update counts too, without freezing it against newer programs.
+  return programs.reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, page.field?.updated || VERIFIED);
 }
 const generatedPublic = {
   "sitemap.xml": `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...crawlable, "/privacy", "/terms"].map(route => `<url><loc>${SITE}${route}</loc><lastmod>${lastmodForRoute(route)}</lastmod></url>`).join("")}</urlset>`,

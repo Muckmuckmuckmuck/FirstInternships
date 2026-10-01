@@ -247,6 +247,21 @@ test("expanded content preserves conditional years and unknown requirements", ()
   assert.ok(Date.parse(nih.opens) < Date.parse(nih.deadline));
   assert.ok(relatedPrograms(nih).every(p => p.fields.includes("healthcare") || p.fields.includes("research")), "related paths should prioritize shared fields");
   assert.ok(!relatedPrograms(nih).some(p => p.id === nih.id));
+  // Related links must spread across the catalog: an alphabetical tie-break once
+  // gave a handful of A–B employers nearly every slot and left half the
+  // programs unlinked from any other program page.
+  const inbound = new Map(PROGRAMS.map(p => [p.id, 0]));
+  for (const program of PROGRAMS) {
+    const related = relatedPrograms(program);
+    assert.equal(related.length, 6, `${program.id}: should suggest six related programs`);
+    assert.equal(new Set(related.map(p => p.id)).size, related.length, `${program.id}: duplicate related program`);
+    assert.ok(related.every(p => p.id !== program.id && (p.company === program.company || p.fields.some(field => program.fields.includes(field)))), `${program.id}: related programs must share a field or employer`);
+    for (const sibling of PROGRAMS.filter(p => p.id !== program.id && p.company === program.company).slice(0, 6)) assert.ok(related.includes(sibling), `${program.id}: should link ${sibling.id} from the same employer`);
+    for (const p of related) inbound.set(p.id, inbound.get(p.id) + 1);
+  }
+  const counts = [...inbound.values()];
+  assert.ok(Math.min(...counts) >= 2, "every program should be suggested from at least two other program pages");
+  assert.ok(Math.max(...counts) <= 12, "no program should dominate the related slots");
   assert.ok(programsForYear(3).some(p => p.id === "wbd-us-internships"));
   assert.ok(!programsForYear(2).some(p => p.id === "wbd-us-internships"));
   assert.equal(PROGRAMS.find(p => p.id === "disney-abc7-consumer-2027").firstYear, null, "a preferred class year must not become a hard minimum");
@@ -281,7 +296,7 @@ test("focused collections have substantive original content and valid crosslinks
   assert.equal(TOPICS.length, 4);
   assert.ok(programsForTopic(TOPICS.find(t => t.filter === "paid")).every(p => p.pay === "Paid"));
   const community = TOPICS.find(t => t.slug === "community-college-internships");
-  assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow"]);
+  assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow", "white-house-internship", "cia-directorate-of-operations-internship", "intuit-internships", "regeneron-summer-internship", "spotify-global-summer", "nytimes-internships-outside-newsroom", "uber-career-prep"]);
   const paragraphs = new Set();
   for (const topic of TOPICS) {
     assert.equal(resolvePage(topicPath(topic)).type, "topic");
@@ -332,4 +347,60 @@ test("collection and guide-list structured data matches visible inventory", asyn
   const graph = JSON.parse(library.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])["@graph"];
   assert.equal(graph.find(item => item["@type"] === "ItemList").numberOfItems, GUIDES.length);
   for (const guide of GUIDES) assert.ok(library.includes(`href="${guidePath(guide)}"`));
+});
+test("every guide is linked from other guide pages and popular guides from the footer", async () => {
+  const inbound = new Map(GUIDES.map(guide => [guidePath(guide), 0]));
+  for (const guide of GUIDES) {
+    const html = await readFile(`dist${guidePath(guide)}.html`, "utf8");
+    const main = html.match(/<main id="main">([\s\S]*?)<\/main>/)[1];
+    for (const href of new Set([...main.matchAll(/href="(\/guides\/[^"#?]+)"/g)].map(match => match[1]))) if (href !== guidePath(guide) && inbound.has(href)) inbound.set(href, inbound.get(href) + 1);
+  }
+  for (const [path, count] of inbound) assert.ok(count >= 1, `${path}: no other guide links to it`);
+  for (const guide of GUIDES.filter(g => g.topicSlug)) {
+    const topic = TOPICS.find(t => t.slug === guide.topicSlug);
+    assert.ok(topic, `${guide.slug}: unknown topicSlug ${guide.topicSlug}`);
+    const html = await readFile(`dist${guidePath(guide)}.html`, "utf8");
+    assert.ok(html.match(/<main id="main">([\s\S]*?)<\/main>/)[1].includes(`href="${topicPath(topic)}"`), `${guide.slug}: should link its collection`);
+  }
+  const pay = await readFile("dist/guides/do-internships-pay.html", "utf8");
+  assert.ok(pay.includes(`Of the ${PROGRAMS.length} programs in this directory, ${PROGRAMS.filter(p => p.pay === "Paid").length} are paid`), "the pay guide's answer must follow the catalog");
+  const home = await readFile("dist/index.html", "utf8");
+  const footer = home.match(/<footer[\s\S]*?<\/footer>/)[0];
+  for (const slug of ["how-to-get-an-internship-with-no-experience", "how-to-find-internships", "when-to-apply-for-summer-internships"]) assert.ok(footer.includes(`href="/guides/${slug}"`), `footer should link ${slug}`);
+});
+test("the Summer 2027 collection lists only records whose sources name a 2027 cycle", () => {
+  const topic = TOPICS.find(t => t.slug === "summer-2027-college-internships");
+  const programs = programsForTopic(topic);
+  assert.equal(programs.length, topic.programIds.length, "every collection ID must resolve");
+  assert.equal(new Set(topic.programIds).size, topic.programIds.length);
+  for (const p of programs) assert.match(`${p.title} ${p.status} ${p.timing} ${p.deadlineLabel || ""} ${p.deadlineDateLabel || ""}`, /2027/, `${p.id}: no 2027 cycle in its record`);
+  for (const p of programs) assert.doesNotMatch(p.status, /closed/i, `${p.id}: a closed cycle does not belong in the Summer 2027 shortlist`);
+});
+test("the community-college collection lists only records that name a two-year or associate route", () => {
+  const topic = TOPICS.find(t => t.slug === "community-college-internships");
+  const programs = programsForTopic(topic);
+  assert.equal(programs.length, topic.programIds.length, "every collection ID must resolve");
+  for (const p of programs) assert.match([p.title, p.summary, p.yearLabel, ...p.eligibility, p.timing, p.pitfall].join(" "), /community[- ]college|two-year|associate(?:'s)?(?:,| or | degree| program)/i, `${p.id}: no community-college or associate route in its record`);
+});
+test("the deadline hub names only publishers with a published 2027 cutoff, and no blanket review date", async () => {
+  const { description } = resolvePage("/internship-deadlines");
+  for (const [named, company] of [["NASA", "NASA"], ["NIH", "National Institutes of Health"], ["the White House", "The White House"], ["Pfizer", "Pfizer"], ["Novartis", "Novartis"]]) {
+    assert.ok(description.includes(named), named);
+    assert.ok(PROGRAMS.some(p => p.company === company && hasPublishedCutoff(p) && /2027/.test(p.deadlineLabel || p.deadlineDateLabel)), `${company}: needs a published 2027 cutoff to be named`);
+  }
+  const html = await readFile("dist/internship-deadlines.html", "utf8");
+  assert.doesNotMatch(html.match(/<main id="main">([\s\S]*?)<\/main>/)[1], /Sources were reviewed [A-Z][a-z]+ \d/, "each entry carries its own review date");
+});
+test("page-level review lines show the real span of program review dates", async () => {
+  const label = date => new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" }).format(new Date(`${date}T00:00:00Z`));
+  const latest = PROGRAMS.map(p => p.verified).sort().at(-1);
+  for (const route of ["/about", "/internships"]) {
+    const main = (await readFile(`dist${route}.html`, "utf8")).match(/<main id="main">([\s\S]*?)<\/main>/)[1];
+    assert.ok(main.includes(`<time dateTime="${latest}">${label(latest)}</time>`), `${route}: should show the latest program review`);
+  }
+  for (const topic of TOPICS) {
+    const main = (await readFile(`dist${topicPath(topic)}.html`, "utf8")).match(/<main id="main">([\s\S]*?)<\/main>/)[1];
+    const dates = programsForTopic(topic).map(p => p.verified).sort();
+    assert.ok(main.includes(`<time dateTime="${dates.at(-1)}">`), `${topic.slug}: should show its latest program review`);
+  }
 });

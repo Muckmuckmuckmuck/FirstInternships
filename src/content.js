@@ -364,6 +364,13 @@ export function relatedPrograms(program, limit = RELATED_LIMIT) {
   relatedById ||= assignRelatedPrograms();
   return (relatedById.get(program.id) || []).slice(0, limit);
 }
+// First and last source-review dates across a set of programs. Page-level
+// review lines show this span rather than one blanket date, because programs
+// are reviewed on different days.
+export function reviewSpan(programs) {
+  const dates = programs.map(p => p.verified).sort();
+  return dates.length ? [dates[0], dates.at(-1)] : [VERIFIED, VERIFIED];
+}
 export function programsForYear(year) { return PROGRAMS.filter(p => p.years.includes(year)); }
 export function programsForField(field) { return PROGRAMS.filter(p => p.fields.includes(field)); }
 export const ROUTES = ["/", "/internships", ...YEARS.map(yearPath), ...FIELDS.map(fieldPath), ...PROGRAMS.map(programPath), ...TOPICS.map(topicPath), "/guides", ...GUIDES.map(guidePath), "/internship-deadlines", "/application-timeline", "/compare", "/about", "/contact", "/saved", "/404"];

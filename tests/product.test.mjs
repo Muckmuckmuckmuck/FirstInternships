@@ -391,3 +391,16 @@ test("the deadline hub names only publishers with a published 2027 cutoff, and n
   const html = await readFile("dist/internship-deadlines.html", "utf8");
   assert.doesNotMatch(html.match(/<main id="main">([\s\S]*?)<\/main>/)[1], /Sources were reviewed [A-Z][a-z]+ \d/, "each entry carries its own review date");
 });
+test("page-level review lines show the real span of program review dates", async () => {
+  const label = date => new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" }).format(new Date(`${date}T00:00:00Z`));
+  const latest = PROGRAMS.map(p => p.verified).sort().at(-1);
+  for (const route of ["/about", "/internships"]) {
+    const main = (await readFile(`dist${route}.html`, "utf8")).match(/<main id="main">([\s\S]*?)<\/main>/)[1];
+    assert.ok(main.includes(`<time dateTime="${latest}">${label(latest)}</time>`), `${route}: should show the latest program review`);
+  }
+  for (const topic of TOPICS) {
+    const main = (await readFile(`dist${topicPath(topic)}.html`, "utf8")).match(/<main id="main">([\s\S]*?)<\/main>/)[1];
+    const dates = programsForTopic(topic).map(p => p.verified).sort();
+    assert.ok(main.includes(`<time dateTime="${dates.at(-1)}">`), `${topic.slug}: should show its latest program review`);
+  }
+});

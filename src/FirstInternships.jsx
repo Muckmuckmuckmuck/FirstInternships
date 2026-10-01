@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, Bookmark, CalendarDays, GitCompareArrows, GraduationCap, Menu, Search, ShieldCheck, X } from "lucide-react";
-import { CONTACT, FIELDS, GUIDES, PROGRAMS, TOPICS, VERIFIED, YEARS, featuredGuides, featuredPrograms, fieldPath, footerGuides, guidePath, guidesForProgram, programHeading, programPath, programsForField, programsForTopic, programsForYear, relatedPrograms, resolvePage, searchPrograms, topicPath, yearPath } from "./content.js";
+import { CONTACT, FIELDS, GUIDES, PROGRAMS, TOPICS, VERIFIED, YEARS, featuredGuides, featuredPrograms, fieldPath, footerGuides, guidePath, guidesForProgram, programHeading, programPath, programsForField, programsForTopic, programsForYear, relatedPrograms, resolvePage, reviewSpan, searchPrograms, topicPath, yearPath } from "./content.js";
 import { CalendarDownload, CompareButton, ComparisonPage, ComparisonProvider, DeadlineBadge, DeadlinesPage, useReviewClock } from "./DirectoryTools.jsx";
 import { deadlineState, filterQuery, hasPublishedCutoff, readFilters, sortPrograms } from "./directory-tools.js";
 import { ABOUT_FAQS, ABOUT_SECTIONS, CONTACT_LIMITS, CONTACT_TOPICS } from "./editorial-pages.js";
@@ -11,6 +11,10 @@ export { sanitizePlanner, csvCell } from "./planner.js";
 
 const STORE = "fi_planner_v1";
 const reviewLabel = date => new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" }).format(new Date(`${date}T00:00:00Z`));
+function ReviewSpan({ programs }) {
+  const [first, last] = reviewSpan(programs);
+  return first === last ? <time dateTime={first}>{reviewLabel(first)}</time> : <><time dateTime={first}>{reviewLabel(first)}</time> to <time dateTime={last}>{reviewLabel(last)}</time></>;
+}
 function usePlanner() {
   // Keep the first server and client render identical; read storage afterwards.
   const [planner, setPlanner] = useState(emptyPlanner);
@@ -268,7 +272,7 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
       <div className="group-heading"><span className="group-number">?</span><div><p className="eyebrow">{alsoCheck.length} more worth checking</p><h3 id="also-title">No minimum year published</h3></div></div>
       <p className="also-note">These publishers do not state one universal minimum college year, or they describe a preferred year rather than a hard rule. That is not the same as being closed to you — the individual opening decides. Open a guide to check credits, enrollment, authorization and dates before ruling one in or out.</p>
       <div className="cards">{alsoCheck.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>
-    </section>}<p className="directory-note">These are sourced program pathways, not a live feed of individual job offers. Last editorial review: September 19, 2026. Verify today's availability on the official site.</p></div></div>
+    </section>}<p className="directory-note">These are sourced program pathways, not a live feed of individual job offers. Program sources reviewed <ReviewSpan programs={PROGRAMS} />. Verify today's availability on the official site.</p></div></div>
   </section>;
 }
 function Home({ planner }) {
@@ -345,7 +349,7 @@ function TopicPage({ topic, planner }) {
   return <div className="container"><Breadcrumbs items={[["Internships", "/internships"], [topic.name, null]]} />
     <PageIntro eyebrow="The focused edit / college only" title={topic.title} description={topic.intro} />
     <div className="topic-jump"><a className="button" href="#pathways">Explore {matches.length} pathways <ArrowRight size={16} /></a><a className="text-link" href="#questions">Questions before you apply <ArrowRight size={15} /></a></div>
-    <div className="review-line"><ShieldCheck size={15} /> Editorial review: <time dateTime={VERIFIED}>September 19, 2026</time><a href="/about">How we verify</a></div>
+    <div className="review-line"><ShieldCheck size={15} /> Sources reviewed <ReviewSpan programs={matches} /><a href="/about">How we verify</a></div>
     <div className="collection-layout"><EditorialSections sections={topic.sections} /><aside className="quick-check"><p className="eyebrow">A useful shortlist</p><h2>Three checks before the click.</h2><ol><li>Does my enrollment and degree timeline fit?</li><li>Are the current dates and work arrangement confirmed?</li><li>Can I prepare the requested evidence and attend the full term?</li></ol><a className="text-link" href="/compare">Compare requirements <ArrowRight size={15} /></a><a className="text-link" href="/internship-deadlines">Check published cutoffs <ArrowRight size={15} /></a></aside></div>
     <section className="collection-programs" id="pathways"><p className="eyebrow">Sourced program pathways / not live vacancies</p><h2>{topic.name}: programs to investigate</h2><p className="muted">A match here is a starting point. Read the college-year conditions, source status, and current official opening. Closed cohorts remain clearly labeled for future preparation.</p><div className="cards">{matches.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div></section>
     <div className="prose narrow"><Questions items={topic.faqs} /></div><section className="section"><h2>Prepare your next step</h2><GuideCards items={guides} /></section><section className="section"><h2>Explore another focused collection</h2><div className="topic-crosslinks">{TOPICS.filter(t => t.slug !== topic.slug).map(t => <a key={t.slug} href={topicPath(t)}>{t.name} <ArrowUpRight size={15} /></a>)}</div><YearLinks /></section></div>;
@@ -387,7 +391,7 @@ function GuidePage({ guide }) {
 function About() {
   return <div className="container"><Breadcrumbs items={[["About & editorial process", null]]} />
     <PageIntro eyebrow="Clarity earns the click" title="A useful directory, not a shortcut around the facts." description="FirstInternships helps current college students understand selected internship pathways before applying. We are an independent directory, not an employer, recruiter, or application service." />
-    <div className="review-line"><ShieldCheck size={15} /> Editorial standards · Inventory last reviewed <time dateTime={VERIFIED}>{reviewLabel(VERIFIED)}</time><a href="/contact">Report a correction</a></div>
+    <div className="review-line"><ShieldCheck size={15} /> Editorial standards · Program sources reviewed <ReviewSpan programs={PROGRAMS} /><a href="/contact">Report a correction</a></div>
     <MobileContents items={ABOUT_SECTIONS.map(([id, heading]) => [heading, `#${id}`])} />
     <div className="prose narrow">{ABOUT_SECTIONS.map(([id, heading, body]) => <section key={id} id={id}><h2>{heading}</h2><p>{body}</p></section>)}
       <section><h2>Read the policies</h2><p>The <a href="/privacy">privacy policy</a> describes exactly what stays in your browser and what a hosting provider or advertising partner may process. The <a href="/terms">terms</a> describe what this directory is responsible for and what it is not. If something in either document does not match what you see on the site, that is a mistake worth telling us about.</p><a className="text-link" href="/contact">Get in touch <ArrowRight size={15} /></a></section>

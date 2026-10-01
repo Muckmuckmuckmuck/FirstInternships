@@ -40,7 +40,7 @@ FirstInternships is not:
 - A reason to invent dates, pay, remote status, class years, or future cycles.
 - A license to create hundreds of near-duplicate keyword pages.
 
-As of September 30, 2026, the maintained baseline is 136 sourced program guides, 17 original preparation guides, 188 prerendered React routes, and 187 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
+As of September 30, 2026, the maintained baseline is 156 sourced program guides, 17 original preparation guides, 208 prerendered React routes, and 207 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
 
 ## 3. Non-negotiable invariants
 
@@ -291,7 +291,7 @@ Preserve:
 - Program-specific sitemap review dates; do not replace them with one fabricated blanket date.
 - Concise search titles without a blanket `| FirstInternships` suffix on every route. Google can show the WebSite name separately. Keep the homepage brand-led and keep program titles within the tested content limit.
 - Employer-aware program H1s from `programHeading()`. Do not revert to generic title-only H1s that collide across different employers.
-- A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 136-card inventory belongs on `/internships`, not on the homepage.
+- A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 156-card inventory belongs on `/internships`, not on the homepage.
 - Exact-year cards on year hubs plus a compact sample of opening-specific pathways. Do not restore the same full unknown-minimum inventory to all four year pages.
 
 Do not add:

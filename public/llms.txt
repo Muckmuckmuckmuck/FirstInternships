@@ -4,7 +4,7 @@ Independent college internship directory. Program facts are reviewed against off
 
 - [College Internships by Class Year](https://firstinternships.com/)
 - [College Internship Directory](https://firstinternships.com/internships)
-- [Internships for First-Year College Students](https://firstinternships.com/freshman-internships)
+- [Freshman Internships for First-Year College Students](https://firstinternships.com/freshman-internships)
 - [Internships for College Sophomores](https://firstinternships.com/sophomore-internships)
 - [Internships for College Juniors](https://firstinternships.com/junior-internships)
 - [Internships for College Seniors](https://firstinternships.com/senior-internships)

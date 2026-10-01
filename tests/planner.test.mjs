@@ -41,7 +41,7 @@ test("backup parser refuses unsupported files, invalid records, and oversized da
   for (const value of [null, [], { ...valid, version: 2 }, { ...valid, format: "other" }, { ...valid, programs: "not-an-array" }, { ...valid, programs: [valid.programs[0], valid.programs[0]] }]) assert.throws(() => parsePlannerBackup(JSON.stringify(value)));
   for (const patch of [{ stage: "Employer accepted" }, { note: "x".repeat(1201) }, { date: "2027-02-29" }, { checkedMaterials: [12] }]) assert.throws(() => parsePlannerBackup(JSON.stringify({ ...valid, programs: [valid.programs[0], { ...valid.programs[1], ...patch }] })));
   assert.throws(() => parsePlannerBackup("invalid csv,text"), /not valid JSON/);
-  assert.throws(() => parsePlannerBackup(" ".repeat(BACKUP_LIMIT + 1)), /512 KB/);
+  assert.throws(() => parsePlannerBackup(" ".repeat(BACKUP_LIMIT + 1)), /1 MB/);
   assert.throws(() => parsePlannerBackup(JSON.stringify({ ...valid, programs: [{ id: "retired-program" }] })), /No programs/);
 });
 

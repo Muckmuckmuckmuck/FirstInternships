@@ -341,7 +341,7 @@ Preserve these rules:
 Backups:
 
 - Are versioned JSON using `firstinternships-planner` format version 1.
-- Are read locally and currently capped at 512 KB.
+- Are read locally and currently capped at 1 MB (sized so a full-catalog backup with maximum-length notes still restores).
 - Store checked prompt text, not only array indexes.
 - Reject malformed, duplicate, unsupported, or oversized records before mutation.
 - Default to add-missing behavior that preserves existing records.

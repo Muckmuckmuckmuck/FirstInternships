@@ -17,6 +17,7 @@ import { EMPLOYERS_INDUSTRY_PROGRAMS } from "./employers-industry-expansion.js";
 import { EMPLOYERS_HEALTH_PROGRAMS } from "./employers-health-expansion.js";
 import { EMPLOYERS_PUBLIC_MEDIA_PROGRAMS } from "./employers-public-media-expansion.js";
 import { EMPLOYERS_QUANT_TECH_PROGRAMS } from "./employers-quant-tech-expansion.js";
+import { EMPLOYERS_CAMPUS_PROGRAMS } from "./employers-campus-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -193,6 +194,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_HEALTH_PROGRAMS,
   ...EMPLOYERS_PUBLIC_MEDIA_PROGRAMS,
   ...EMPLOYERS_QUANT_TECH_PROGRAMS,
+  ...EMPLOYERS_CAMPUS_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,

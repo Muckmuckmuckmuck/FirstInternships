@@ -247,6 +247,21 @@ test("expanded content preserves conditional years and unknown requirements", ()
   assert.ok(Date.parse(nih.opens) < Date.parse(nih.deadline));
   assert.ok(relatedPrograms(nih).every(p => p.fields.includes("healthcare") || p.fields.includes("research")), "related paths should prioritize shared fields");
   assert.ok(!relatedPrograms(nih).some(p => p.id === nih.id));
+  // Related links must spread across the catalog: an alphabetical tie-break once
+  // gave a handful of A–B employers nearly every slot and left half the
+  // programs unlinked from any other program page.
+  const inbound = new Map(PROGRAMS.map(p => [p.id, 0]));
+  for (const program of PROGRAMS) {
+    const related = relatedPrograms(program);
+    assert.equal(related.length, 6, `${program.id}: should suggest six related programs`);
+    assert.equal(new Set(related.map(p => p.id)).size, related.length, `${program.id}: duplicate related program`);
+    assert.ok(related.every(p => p.id !== program.id && (p.company === program.company || p.fields.some(field => program.fields.includes(field)))), `${program.id}: related programs must share a field or employer`);
+    for (const sibling of PROGRAMS.filter(p => p.id !== program.id && p.company === program.company).slice(0, 6)) assert.ok(related.includes(sibling), `${program.id}: should link ${sibling.id} from the same employer`);
+    for (const p of related) inbound.set(p.id, inbound.get(p.id) + 1);
+  }
+  const counts = [...inbound.values()];
+  assert.ok(Math.min(...counts) >= 2, "every program should be suggested from at least two other program pages");
+  assert.ok(Math.max(...counts) <= 12, "no program should dominate the related slots");
   assert.ok(programsForYear(3).some(p => p.id === "wbd-us-internships"));
   assert.ok(!programsForYear(2).some(p => p.id === "wbd-us-internships"));
   assert.equal(PROGRAMS.find(p => p.id === "disney-abc7-consumer-2027").firstYear, null, "a preferred class year must not become a hard minimum");
@@ -332,4 +347,16 @@ test("collection and guide-list structured data matches visible inventory", asyn
   const graph = JSON.parse(library.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])["@graph"];
   assert.equal(graph.find(item => item["@type"] === "ItemList").numberOfItems, GUIDES.length);
   for (const guide of GUIDES) assert.ok(library.includes(`href="${guidePath(guide)}"`));
+});
+test("every guide is linked from other guide pages and popular guides from the footer", async () => {
+  const inbound = new Map(GUIDES.map(guide => [guidePath(guide), 0]));
+  for (const guide of GUIDES) {
+    const html = await readFile(`dist${guidePath(guide)}.html`, "utf8");
+    const main = html.match(/<main id="main">([\s\S]*?)<\/main>/)[1];
+    for (const href of new Set([...main.matchAll(/href="(\/guides\/[^"#?]+)"/g)].map(match => match[1]))) if (href !== guidePath(guide) && inbound.has(href)) inbound.set(href, inbound.get(href) + 1);
+  }
+  for (const [path, count] of inbound) assert.ok(count >= 1, `${path}: no other guide links to it`);
+  const home = await readFile("dist/index.html", "utf8");
+  const footer = home.match(/<footer[\s\S]*?<\/footer>/)[0];
+  for (const slug of ["how-to-get-an-internship-with-no-experience", "how-to-find-internships", "when-to-apply-for-summer-internships"]) assert.ok(footer.includes(`href="/guides/${slug}"`), `footer should link ${slug}`);
 });

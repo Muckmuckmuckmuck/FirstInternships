@@ -296,6 +296,17 @@ export const FEATURED_PROGRAM_IDS = [
   "fedex-college-connections",
 ];
 export const FEATURED_GUIDE_SLUGS = ["email-templates-for-internships", "how-to-follow-up-on-an-internship-email", "how-to-apply-for-an-internship"];
+// Sitewide footer links to the guides that answer the broadest student
+// questions, labelled the way students phrase them.
+export const FOOTER_GUIDE_LINKS = [
+  ["how-to-get-an-internship-with-no-experience", "Getting an internship with no experience"],
+  ["how-to-find-internships", "How to find internships"],
+  ["when-to-apply-for-summer-internships", "When to apply for summer internships"],
+  ["internship-resume-with-no-experience", "Internship resume with no experience"],
+  ["email-templates-for-internships", "Internship email templates"],
+  ["internship-interview-guide", "Internship interview prep"],
+];
+export const footerGuides = () => FOOTER_GUIDE_LINKS.map(([slug, label]) => [GUIDES.find(guide => guide.slug === slug), label]).filter(([guide]) => guide);
 export const featuredPrograms = () => FEATURED_PROGRAM_IDS.map(id => PROGRAMS.find(program => program.id === id)).filter(Boolean);
 export const featuredGuides = () => FEATURED_GUIDE_SLUGS.map(slug => GUIDES.find(guide => guide.slug === slug)).filter(Boolean);
 export function programHeading(program) {
@@ -307,10 +318,43 @@ export function guidesForProgram(program) {
   const slugs = program.guideSlugs || (program.fields.includes("research") ? ["research-internship-personal-statement", "ask-for-internship-recommendation-letter", "when-to-apply-for-summer-internships"] : ["how-to-apply-for-an-internship", "internship-resume-with-no-experience", "internship-interview-guide"]);
   return slugs.map(slug => GUIDES.find(g => g.slug === slug)).filter(Boolean);
 }
-export function relatedPrograms(program, limit = 3) {
-  const score = candidate => candidate.fields.filter(field => program.fields.includes(field)).length + (candidate.fields.includes(program.fields[0]) ? 2 : 0);
-  return PROGRAMS.filter(candidate => candidate.id !== program.id && candidate.fields.some(field => program.fields.includes(field)))
-    .sort((a, b) => score(b) - score(a) || a.company.localeCompare(b.company)).slice(0, limit);
+// Related pathways are assigned once for the whole catalog so internal links
+// reach every program. An alphabetical tie-break once gave a few A–B employers
+// nearly every slot and left half the catalog with none. Other programs from
+// the same employer come first; the remaining slots are filled in rounds from
+// each page's most similar programs, giving each slot to the candidate linked
+// least so far. The result depends only on PROGRAMS, so SSR and hydration agree.
+const RELATED_LIMIT = 6;
+const RELATED_POOL = 12;
+const pairHash = text => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+function relatedness(program, candidate) {
+  const shared = candidate.fields.filter(field => program.fields.includes(field)).length;
+  const primary = candidate.fields[0] === program.fields[0] ? 2 : candidate.fields.includes(program.fields[0]) ? 1 : 0;
+  return 4 * shared / new Set([...program.fields, ...candidate.fields]).size + primary + (candidate.years.some(year => program.years.includes(year)) ? 1 : 0);
+}
+const closerTo = program => (a, b) => Number(b.company === program.company) - Number(a.company === program.company) || relatedness(program, b) - relatedness(program, a) || pairHash(`${program.id}>${a.id}`) - pairHash(`${program.id}>${b.id}`);
+let relatedById;
+function assignRelatedPrograms() {
+  const inbound = new Map(PROGRAMS.map(p => [p.id, 0]));
+  const picks = new Map(), pools = new Map();
+  for (const program of PROGRAMS) {
+    const sameEmployer = PROGRAMS.filter(c => c.id !== program.id && c.company === program.company).slice(0, RELATED_LIMIT);
+    sameEmployer.forEach(c => inbound.set(c.id, inbound.get(c.id) + 1));
+    picks.set(program.id, sameEmployer);
+    pools.set(program.id, PROGRAMS.filter(c => c.company !== program.company && c.fields.some(field => program.fields.includes(field))).sort(closerTo(program)).slice(0, RELATED_POOL));
+  }
+  for (let round = 0; round < RELATED_LIMIT; round++) for (const program of PROGRAMS) {
+    const chosen = picks.get(program.id);
+    if (chosen.length >= RELATED_LIMIT) continue;
+    const next = pools.get(program.id).filter(c => !chosen.includes(c)).sort((a, b) => inbound.get(a.id) - inbound.get(b.id) || closerTo(program)(a, b))[0];
+    if (next) { chosen.push(next); inbound.set(next.id, inbound.get(next.id) + 1); }
+  }
+  for (const program of PROGRAMS) picks.get(program.id).sort(closerTo(program));
+  return picks;
+}
+export function relatedPrograms(program, limit = RELATED_LIMIT) {
+  relatedById ||= assignRelatedPrograms();
+  return (relatedById.get(program.id) || []).slice(0, limit);
 }
 export function programsForYear(year) { return PROGRAMS.filter(p => p.years.includes(year)); }
 export function programsForField(field) { return PROGRAMS.filter(p => p.fields.includes(field)); }

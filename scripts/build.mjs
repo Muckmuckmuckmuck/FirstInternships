@@ -75,7 +75,8 @@ function lastmodForRoute(route) {
   }[route];
   if (explicit) return explicit;
   const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
-  return programs.reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, VERIFIED);
+  // A hub's own editorial update counts too, without freezing it against newer programs.
+  return programs.reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, page.field?.updated || VERIFIED);
 }
 const generatedPublic = {
   "sitemap.xml": `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...crawlable, "/privacy", "/terms"].map(route => `<url><loc>${SITE}${route}</loc><lastmod>${lastmodForRoute(route)}</lastmod></url>`).join("")}</urlset>`,

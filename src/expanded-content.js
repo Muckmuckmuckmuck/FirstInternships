@@ -221,7 +221,9 @@ export const TOPICS = [
       "goldman-sachs-summer-analyst", "new-york-fed-junior-summer-analyst", "nih-sip", "met-museum-summer-2027", "white-house-internship",
       "google-business-undergraduate-intern", "google-bsms-technical-internships", "amazon-sde-intern-2027", "cisco-product-internship-2027", "oracle-sales-development-intern-2027", "dell-undergraduate-internships", "servicenow-finance-intern-2027", "databricks-internships",
       "pfizer-futures-internship", "novartis-summer-of-science", "abbvie-summer-internship", "bms-summer-internships", "gilead-internship-program", "abbott-university-internships", "stryker-summer-internship",
-      "nytimes-internships-outside-newsroom", "washington-post-newsroom-internship", "dow-jones-summer-internship"],
+      "nytimes-internships-outside-newsroom", "washington-post-newsroom-internship", "dow-jones-summer-internship",
+      "two-sigma-internships", "wells-fargo-summer-internships", "fidelity-undergraduate-internships", "schwab-internship-academy", "moodys-summer-internship",
+      "rsm-tax-assurance-internships", "booz-allen-summer-games", "ge-vernova-summer-internships", "gm-summer-internships-2027"],
     guideSlugs: ["when-to-apply-for-summer-internships", "how-to-apply-for-an-internship", "internship-offer-checklist"],
     sections: [
       ["What counts as a Summer 2027 listing", "Every program in this collection has an official source that identifies a Summer 2027 cycle, term, or application route. That does not mean every role remains available today. Some employers close a posting as soon as a hiring target is reached, while research programs can keep an information page live before or after the submission window. Read the status and timing on each guide, then open the employer source before preparing an application. We do not advance a 2026 date by one year or label an undated recurring program as Summer 2027 just because it usually returns."],

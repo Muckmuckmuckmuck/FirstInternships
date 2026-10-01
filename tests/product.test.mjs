@@ -296,7 +296,7 @@ test("focused collections have substantive original content and valid crosslinks
   assert.equal(TOPICS.length, 4);
   assert.ok(programsForTopic(TOPICS.find(t => t.filter === "paid")).every(p => p.pay === "Paid"));
   const community = TOPICS.find(t => t.slug === "community-college-internships");
-  assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow", "white-house-internship", "cia-directorate-of-operations-internship", "intuit-internships", "regeneron-summer-internship", "spotify-global-summer", "nytimes-internships-outside-newsroom", "uber-career-prep"]);
+  assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow", "white-house-internship", "cia-directorate-of-operations-internship", "intuit-internships", "regeneron-summer-internship", "spotify-global-summer", "nytimes-internships-outside-newsroom", "uber-career-prep", "nist-surf", "llnl-computing-internships"]);
   const paragraphs = new Set();
   for (const topic of TOPICS) {
     assert.equal(resolvePage(topicPath(topic)).type, "topic");

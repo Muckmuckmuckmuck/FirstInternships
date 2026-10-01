@@ -38,6 +38,9 @@ export default defineConfig(({ isSsrBuild }) => ({
             // both data chunks under the 500 kB warning and lets a batch update
             // leave the older content chunk cached.
             { name: "directory-employers", test: /\/src\/employers-[^/]+-expansion\.js$/, priority: 20 },
+            // Laboratory, research and public-sector program batches grow alongside the
+            // employer batches; a third data chunk keeps every chunk under 500 kB.
+            { name: "directory-programs", test: /\/src\/programs-[^/]+-expansion\.js$/, priority: 15 },
             // Editorial data changes far more often than the interface. Keep it in
             // a parallel, independently parsed chunk as the directory grows.
             { name: "directory-content", test: /\/src\/(?:content|expanded-content|editorial-pages|[^/]+-expansion(?:-\d+)?)\.js$/, priority: 10 },

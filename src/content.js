@@ -16,6 +16,8 @@ import { EMPLOYERS_BUSINESS_PROGRAMS } from "./employers-business-expansion.js";
 import { EMPLOYERS_INDUSTRY_PROGRAMS } from "./employers-industry-expansion.js";
 import { EMPLOYERS_HEALTH_PROGRAMS } from "./employers-health-expansion.js";
 import { EMPLOYERS_PUBLIC_MEDIA_PROGRAMS } from "./employers-public-media-expansion.js";
+// Laboratory, research and public-sector programs, in their own browser chunk.
+import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 export { TOPICS } from "./expanded-content.js";
 export const SITE = "https://firstinternships.com";
 export const VERIFIED = "2026-09-19";
@@ -187,6 +189,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_INDUSTRY_PROGRAMS,
   ...EMPLOYERS_HEALTH_PROGRAMS,
   ...EMPLOYERS_PUBLIC_MEDIA_PROGRAMS,
+  ...LAB_PROGRAMS,
 ].map(program => ({ ...program, verified: program.verified || VERIFIED, seoTitle: program.seoTitle || PROGRAM_SEO[program.id][0], seoDescription: program.seoDescription || PROGRAM_SEO[program.id][1] }));
 
 export const YEARS = [

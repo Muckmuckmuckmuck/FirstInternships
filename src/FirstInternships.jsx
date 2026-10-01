@@ -368,6 +368,7 @@ function GuidePage({ guide }) {
   const family = g => guideCategory(g).split(" & ")[0];
   const nextGuides = [...onward.filter(g => family(g) === family(guide)), ...onward.filter(g => family(g) !== family(guide))].slice(0, 3);
   const examples = (guide.programIds || []).map(id => PROGRAMS.find(p => p.id === id)).filter(Boolean);
+  const collection = TOPICS.find(topic => topic.slug === guide.topicSlug);
   const [copyNotice, setCopyNotice] = useState("");
   const copyExample = async () => {
     try { await navigator.clipboard.writeText(guide.example.text); setCopyNotice("Copied. Replace placeholders with accurate details and follow the employer's instructions."); }
@@ -379,7 +380,7 @@ function GuidePage({ guide }) {
     <div className="article-layout"><article><EditorialSections sections={guide.sections} />
       {guide.example && <section className="guide-example" id="example"><p className="eyebrow">A practical starting point</p><h2>{guide.example.title}</h2><pre>{guide.example.text}</pre><button className="button secondary small" onClick={copyExample}>Copy this outline</button><p className="small-note" role="status">{copyNotice}</p><p className="small-note">This is editorial guidance, not an employer-required format. Use true details, respect authorship rules, and follow the actual application prompt.</p></section>}
       {examples.length > 0 && <section className="guide-program-links" id="programs"><h2>Check the program-specific instructions</h2><p>Use these independent guides to find the official requirements and application route. General advice does not override a publisher's instructions.</p><ul>{examples.map(program => <li key={program.id}><a href={programPath(program)}>{program.title} <ArrowUpRight size={14} /></a></li>)}</ul></section>}
-      <div className="callout"><strong>Make the advice specific to an opening</strong><p>Check eligibility and the selected role's document instructions before submitting. FirstInternships does not accept applications or store your resume.</p><a className="text-link" href="/internships">Find a program <ArrowRight size={15} /></a></div><AdSlot slot="VITE_ADSENSE_SLOT_IN_FEED" />
+      <div className="callout"><strong>Make the advice specific to an opening</strong><p>Check eligibility and the selected role's document instructions before submitting. FirstInternships does not accept applications or store your resume.</p><a className="text-link" href="/internships">Find a program <ArrowRight size={15} /></a>{collection && <a className="text-link" href={topicPath(collection)}>Browse {collection.name.toLowerCase()} <ArrowRight size={15} /></a>}</div><AdSlot slot="VITE_ADSENSE_SLOT_IN_FEED" />
     </article><aside className="article-sidebar"><div className="quick-check"><h2>In this guide</h2><nav aria-label="On this page">{guide.sections.map(([title], i) => <a href={`#section-${i + 1}`} key={title}>{title}</a>)}{guide.example && <a href="#example">Practical outline</a>}{examples.length > 0 && <a href="#programs">Program-specific guidance</a>}</nav><a className="button secondary" href="/saved">Open your planner <Bookmark size={15} /></a></div></aside></div>
     <section className="section"><h2>Your next useful read</h2><GuideCards items={nextGuides} /></section></div>;
 }

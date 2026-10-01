@@ -356,6 +356,14 @@ test("every guide is linked from other guide pages and popular guides from the f
     for (const href of new Set([...main.matchAll(/href="(\/guides\/[^"#?]+)"/g)].map(match => match[1]))) if (href !== guidePath(guide) && inbound.has(href)) inbound.set(href, inbound.get(href) + 1);
   }
   for (const [path, count] of inbound) assert.ok(count >= 1, `${path}: no other guide links to it`);
+  for (const guide of GUIDES.filter(g => g.topicSlug)) {
+    const topic = TOPICS.find(t => t.slug === guide.topicSlug);
+    assert.ok(topic, `${guide.slug}: unknown topicSlug ${guide.topicSlug}`);
+    const html = await readFile(`dist${guidePath(guide)}.html`, "utf8");
+    assert.ok(html.match(/<main id="main">([\s\S]*?)<\/main>/)[1].includes(`href="${topicPath(topic)}"`), `${guide.slug}: should link its collection`);
+  }
+  const pay = await readFile("dist/guides/do-internships-pay.html", "utf8");
+  assert.ok(pay.includes(`Of the ${PROGRAMS.length} programs in this directory, ${PROGRAMS.filter(p => p.pay === "Paid").length} are paid`), "the pay guide's answer must follow the catalog");
   const home = await readFile("dist/index.html", "utf8");
   const footer = home.match(/<footer[\s\S]*?<\/footer>/)[0];
   for (const slug of ["how-to-get-an-internship-with-no-experience", "how-to-find-internships", "when-to-apply-for-summer-internships"]) assert.ok(footer.includes(`href="/guides/${slug}"`), `footer should link ${slug}`);

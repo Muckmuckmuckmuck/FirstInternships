@@ -716,3 +716,4 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
 @media(min-width: 761px) {
   .footer-inner { grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 48px; }
 }
+.callout .text-link:not(:last-child) { margin-right: 22px; }

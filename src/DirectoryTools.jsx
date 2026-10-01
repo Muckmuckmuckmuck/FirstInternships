@@ -84,7 +84,7 @@ export function ComparisonPage({ planner }) {
   const rows = [
     ["College-year guidance", p => <><strong>{p.yearLabel}</strong><p>{p.firstYear ? `Earliest undergraduate entry: year ${p.firstYear}.` : "A universal minimum is not confirmed."} Read all conditions below.</p></>],
     ["Eligibility requirements", p => <ul>{p.eligibility.map(rule => <li key={rule}>{rule}</li>)}</ul>],
-    ["Compensation", p => <><strong>{p.pay}</strong><p>{p.pay === "Paid" ? "Confirm the current opening's amount and written terms." : "No universal compensation amount asserted."}</p></>],
+    ["Compensation", p => <><strong>{p.pay}</strong><p>{p.pay === "Paid" ? "Confirm the current opening's amount and written terms." : p.pay === "Unpaid" ? "The official source states this program is unpaid; check whether your school offers funding or credit." : "No universal compensation amount asserted."}</p></>],
     ["Location & arrangement", p => <><strong>{p.location}</strong><p>{p.mode}</p></>],
     ["Published cutoff", p => <><DeadlineBadge program={p} /><p>{p.timing}</p></>],
     ["Easy to miss", p => p.pitfall],

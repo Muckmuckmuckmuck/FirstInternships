@@ -26,14 +26,22 @@ export default defineConfig(({ isSsrBuild }) => ({
     copyPublicDir: false,
     // Split heavy vendor libs into their own long-cached chunks so they download
     // in parallel and stay cached across deploys (faster first + repeat loads).
-    rollupOptions: {
+    // Vite 8 bundles with Rolldown. Its groups capture each matched module's
+    // dependencies too, so priority decides which group claims a module that
+    // more than one group reaches (content.js imports every expansion module).
+    rolldownOptions: {
       output: {
-        manualChunks: isSsrBuild ? undefined : id => {
-          if (id.includes("/node_modules/react/") || id.includes("/node_modules/react-dom/") || id.includes("/node_modules/scheduler/")) return "react";
-          // Editorial data changes far more often than the interface. Keep it in
-          // a parallel, independently parsed chunk as the directory grows.
-          if (/\/src\/(?:content|expanded-content|editorial-pages|[^/]+-expansion(?:-\d+)?)\.js$/.test(id)) return "directory-content";
-          return undefined;
+        codeSplitting: isSsrBuild ? undefined : {
+          groups: [
+            { name: "react", test: /\/node_modules\/(?:react|react-dom|scheduler)\//, priority: 30 },
+            // Employer batches are the fastest-growing data. Their own chunk keeps
+            // both data chunks under the 500 kB warning and lets a batch update
+            // leave the older content chunk cached.
+            { name: "directory-employers", test: /\/src\/employers-[^/]+-expansion\.js$/, priority: 20 },
+            // Editorial data changes far more often than the interface. Keep it in
+            // a parallel, independently parsed chunk as the directory grows.
+            { name: "directory-content", test: /\/src\/(?:content|expanded-content|editorial-pages|[^/]+-expansion(?:-\d+)?)\.js$/, priority: 10 },
+          ],
         },
       },
     },

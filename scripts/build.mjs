@@ -70,7 +70,7 @@ function lastmodForRoute(route) {
   const explicit = {
     "/": "2026-09-28", "/internships": "2026-09-28",
     "/freshman-internships": "2026-09-28", "/sophomore-internships": "2026-09-28", "/junior-internships": "2026-09-28", "/senior-internships": "2026-09-28",
-    "/undergraduate-research-internships": "2026-09-28", "/summer-2027-college-internships": "2026-10-01",
+    "/undergraduate-research-internships": "2026-09-28", "/summer-2027-college-internships": "2026-10-01", "/community-college-internships": "2026-10-01",
     "/application-timeline": "2026-09-20", "/about": "2026-09-20", "/contact": "2026-09-20", "/privacy": "2026-09-21", "/terms": "2026-09-18",
   }[route];
   if (explicit) return explicit;

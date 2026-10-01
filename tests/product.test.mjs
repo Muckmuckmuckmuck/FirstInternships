@@ -296,7 +296,7 @@ test("focused collections have substantive original content and valid crosslinks
   assert.equal(TOPICS.length, 4);
   assert.ok(programsForTopic(TOPICS.find(t => t.filter === "paid")).every(p => p.pay === "Paid"));
   const community = TOPICS.find(t => t.slug === "community-college-internships");
-  assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow"]);
+  assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow", "white-house-internship", "cia-directorate-of-operations-internship", "intuit-internships", "regeneron-summer-internship", "spotify-global-summer", "nytimes-internships-outside-newsroom", "uber-career-prep"]);
   const paragraphs = new Set();
   for (const topic of TOPICS) {
     assert.equal(resolvePage(topicPath(topic)).type, "topic");
@@ -375,4 +375,10 @@ test("the Summer 2027 collection lists only records whose sources name a 2027 cy
   assert.equal(new Set(topic.programIds).size, topic.programIds.length);
   for (const p of programs) assert.match(`${p.title} ${p.status} ${p.timing} ${p.deadlineLabel || ""} ${p.deadlineDateLabel || ""}`, /2027/, `${p.id}: no 2027 cycle in its record`);
   for (const p of programs) assert.doesNotMatch(p.status, /closed/i, `${p.id}: a closed cycle does not belong in the Summer 2027 shortlist`);
+});
+test("the community-college collection lists only records that name a two-year or associate route", () => {
+  const topic = TOPICS.find(t => t.slug === "community-college-internships");
+  const programs = programsForTopic(topic);
+  assert.equal(programs.length, topic.programIds.length, "every collection ID must resolve");
+  for (const p of programs) assert.match([p.title, p.summary, p.yearLabel, ...p.eligibility, p.timing, p.pitfall].join(" "), /community[- ]college|two-year|associate(?:'s)?(?:,| or | degree| program)/i, `${p.id}: no community-college or associate route in its record`);
 });

@@ -368,3 +368,11 @@ test("every guide is linked from other guide pages and popular guides from the f
   const footer = home.match(/<footer[\s\S]*?<\/footer>/)[0];
   for (const slug of ["how-to-get-an-internship-with-no-experience", "how-to-find-internships", "when-to-apply-for-summer-internships"]) assert.ok(footer.includes(`href="/guides/${slug}"`), `footer should link ${slug}`);
 });
+test("the Summer 2027 collection lists only records whose sources name a 2027 cycle", () => {
+  const topic = TOPICS.find(t => t.slug === "summer-2027-college-internships");
+  const programs = programsForTopic(topic);
+  assert.equal(programs.length, topic.programIds.length, "every collection ID must resolve");
+  assert.equal(new Set(topic.programIds).size, topic.programIds.length);
+  for (const p of programs) assert.match(`${p.title} ${p.status} ${p.timing} ${p.deadlineLabel || ""} ${p.deadlineDateLabel || ""}`, /2027/, `${p.id}: no 2027 cycle in its record`);
+  for (const p of programs) assert.doesNotMatch(p.status, /closed/i, `${p.id}: a closed cycle does not belong in the Summer 2027 shortlist`);
+});

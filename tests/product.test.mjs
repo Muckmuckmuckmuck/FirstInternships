@@ -382,3 +382,12 @@ test("the community-college collection lists only records that name a two-year o
   assert.equal(programs.length, topic.programIds.length, "every collection ID must resolve");
   for (const p of programs) assert.match([p.title, p.summary, p.yearLabel, ...p.eligibility, p.timing, p.pitfall].join(" "), /community[- ]college|two-year|associate(?:'s)?(?:,| or | degree| program)/i, `${p.id}: no community-college or associate route in its record`);
 });
+test("the deadline hub names only publishers with a published 2027 cutoff, and no blanket review date", async () => {
+  const { description } = resolvePage("/internship-deadlines");
+  for (const [named, company] of [["NASA", "NASA"], ["NIH", "National Institutes of Health"], ["the White House", "The White House"], ["Pfizer", "Pfizer"], ["Novartis", "Novartis"]]) {
+    assert.ok(description.includes(named), named);
+    assert.ok(PROGRAMS.some(p => p.company === company && hasPublishedCutoff(p) && /2027/.test(p.deadlineLabel || p.deadlineDateLabel)), `${company}: needs a published 2027 cutoff to be named`);
+  }
+  const html = await readFile("dist/internship-deadlines.html", "utf8");
+  assert.doesNotMatch(html.match(/<main id="main">([\s\S]*?)<\/main>/)[1], /Sources were reviewed [A-Z][a-z]+ \d/, "each entry carries its own review date");
+});

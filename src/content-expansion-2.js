@@ -44,7 +44,7 @@ export const CONTENT_EXPANSION_2_PROGRAMS = [
     steps: ["Confirm that you are in the program's second-year and graduation window before waiting for a role to open.", "Set an official job alert and prepare one analyst example using data, SQL, strategy, product, or customer experience.", "Apply through Capital One Careers when a related role appears and complete any track-specific assessment or interview."],
     prepare: ["Use a course, club, job, or project where you organized data and explained a recommendation to someone else.", "Practice describing how you handled a messy question, checked your work, and changed your approach after feedback."],
     pitfall: "This is a second-year internship, not a generic early-career program that automatically accepts every undergraduate year.",
-    materials: ["Second-year and graduation check", "Role alert", "Resume", "Analyst project example"], guideSlugs: consultingGuides,
+    materials: ["Second-year and graduation check", "Role alert", "Resume", "Analyst project example"], guideSlugs: ["how-to-get-an-internship-with-no-experience", ...consultingGuides],
   },
   {
     id: "intel-college-internships", company: "Intel", title: "College Internships", initials: "IN", color: "#35728e",

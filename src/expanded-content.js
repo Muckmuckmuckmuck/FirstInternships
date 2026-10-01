@@ -15,7 +15,7 @@ export const ADDITIONAL_PROGRAMS = [
     prepare: ["Choose a small project that shows curiosity and careful testing. Explain the problem, your own contribution, and how you checked the outcome. For hardware work, a clearly documented design or measurement is useful; for software, include readable setup instructions and a brief demonstration.", "Write down a moment when you learned a difficult concept and changed your approach. Early-college applicants can use coursework honestly. Avoid claiming that an introductory project involved professional-scale AI infrastructure, and never publish private datasets or restricted course solutions."],
     pitfall: "Ignite is explicitly a pre-internship pathway, not a promise of a later internship or job.",
     materials: ["Current Ignite opening", "Resume with graduation date", "Explainable technical project", "Availability and location check"],
-    guideSlugs: ["internship-project-portfolio", "internship-resume-with-no-experience"],
+    guideSlugs: ["how-to-get-an-internship-with-no-experience", "internship-project-portfolio", "internship-resume-with-no-experience"],
     faqs: [["Is Ignite the same as every NVIDIA internship?", "No. Ignite is the early-college pre-internship pathway. Check the opening's program name rather than treating any NVIDIA student role as equivalent."], ["What if I cannot find an Ignite opening?", "Keep the official overview in your preparation list. An evergreen overview does not establish that applications are open; do not use an old posting's dates for a new cycle."]],
   },
   {

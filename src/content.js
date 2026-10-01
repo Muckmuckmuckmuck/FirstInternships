@@ -20,6 +20,7 @@ import { EMPLOYERS_QUANT_TECH_PROGRAMS } from "./employers-quant-tech-expansion.
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
+import { PUBLIC_PROGRAMS } from "./programs-public-expansion.js";
 export { TOPICS } from "./expanded-content.js";
 export const SITE = "https://firstinternships.com";
 export const VERIFIED = "2026-09-19";
@@ -194,6 +195,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_QUANT_TECH_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
+  ...PUBLIC_PROGRAMS,
 ].map(program => ({ ...program, verified: program.verified || VERIFIED, seoTitle: program.seoTitle || PROGRAM_SEO[program.id][0], seoDescription: program.seoDescription || PROGRAM_SEO[program.id][1] }));
 
 export const YEARS = [

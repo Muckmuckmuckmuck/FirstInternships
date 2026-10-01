@@ -334,31 +334,49 @@ export function guidesForProgram(program) {
 // least so far. The result depends only on PROGRAMS, so SSR and hydration agree.
 const RELATED_LIMIT = 6;
 const RELATED_POOL = 12;
-const pairHash = text => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
-function relatedness(program, candidate) {
-  const shared = candidate.fields.filter(field => program.fields.includes(field)).length;
-  const primary = candidate.fields[0] === program.fields[0] ? 2 : candidate.fields.includes(program.fields[0]) ? 1 : 0;
-  return 4 * shared / new Set([...program.fields, ...candidate.fields]).size + primary + (candidate.years.some(year => program.years.includes(year)) ? 1 : 0);
-}
-const closerTo = program => (a, b) => Number(b.company === program.company) - Number(a.company === program.company) || relatedness(program, b) - relatedness(program, a) || pairHash(`${program.id}>${a.id}`) - pairHash(`${program.id}>${b.id}`);
+const textHash = text => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+// A stable, well-mixed tie-break for an ordered pair of ID hashes.
+const pairTie = (a, b) => { let h = Math.imul(a ^ Math.imul(b, 0x9e3779b1), 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); return (h ^ (h >>> 16)) >>> 0; };
+const bitCount = n => { let count = 0; for (; n; n &= n - 1) count++; return count; };
 let relatedById;
 function assignRelatedPrograms() {
-  const inbound = new Map(PROGRAMS.map(p => [p.id, 0]));
-  const picks = new Map(), pools = new Map();
-  for (const program of PROGRAMS) {
-    const sameEmployer = PROGRAMS.filter(c => c.id !== program.id && c.company === program.company).slice(0, RELATED_LIMIT);
-    sameEmployer.forEach(c => inbound.set(c.id, inbound.get(c.id) + 1));
-    picks.set(program.id, sameEmployer);
-    pools.set(program.id, PROGRAMS.filter(c => c.company !== program.company && c.fields.some(field => program.fields.includes(field))).sort(closerTo(program)).slice(0, RELATED_POOL));
+  // Pairs are scored once, with fields and years as bitmasks. Recomputing
+  // scores inside a sort comparator blocked a phone's main thread on hydration.
+  const n = PROGRAMS.length;
+  const fieldBit = new Map([...new Set(PROGRAMS.flatMap(p => p.fields))].map((field, i) => [field, 2 ** i]));
+  const mask = values => values.reduce((bits, value) => bits | value, 0);
+  const fieldMasks = PROGRAMS.map(p => mask(p.fields.map(field => fieldBit.get(field))));
+  const primaryBits = PROGRAMS.map(p => fieldBit.get(p.fields[0]) || 0);
+  const yearMasks = PROGRAMS.map(p => mask(p.years.map(year => 2 ** year)));
+  const idHashes = PROGRAMS.map(p => textHash(p.id));
+  const ranked = PROGRAMS.map((program, a) => {
+    const sameEmployer = [], others = [], score = new Float64Array(n), tie = new Uint32Array(n);
+    for (let b = 0; b < n; b++) {
+      if (b === a) continue;
+      const shared = bitCount(fieldMasks[a] & fieldMasks[b]);
+      const same = PROGRAMS[b].company === program.company;
+      if (!same && !shared) continue;
+      const primary = primaryBits[b] === primaryBits[a] ? 2 : fieldMasks[b] & primaryBits[a] ? 1 : 0;
+      score[b] = 4 * shared / bitCount(fieldMasks[a] | fieldMasks[b]) + primary + (yearMasks[a] & yearMasks[b] ? 1 : 0);
+      tie[b] = pairTie(idHashes[a], idHashes[b]);
+      (same ? sameEmployer : others).push(b);
+    }
+    const closer = (x, y) => score[y] - score[x] || tie[x] - tie[y];
+    return { sameEmployer: sameEmployer.sort(closer), others: others.sort(closer) };
+  });
+  const inbound = new Uint16Array(n);
+  const picks = ranked.map(({ sameEmployer }) => sameEmployer.slice(0, RELATED_LIMIT));
+  picks.forEach(chosen => chosen.forEach(b => inbound[b]++));
+  const pools = ranked.map(({ others }) => others.slice(0, RELATED_POOL));
+  // Pools are in rank order, so the first least-linked candidate is also the closest.
+  for (let round = 0; round < RELATED_LIMIT; round++) for (let a = 0; a < n; a++) {
+    if (picks[a].length >= RELATED_LIMIT) continue;
+    let next = -1;
+    for (const b of pools[a]) if (!picks[a].includes(b) && (next < 0 || inbound[b] < inbound[next])) next = b;
+    if (next >= 0) { picks[a].push(next); inbound[next]++; }
   }
-  for (let round = 0; round < RELATED_LIMIT; round++) for (const program of PROGRAMS) {
-    const chosen = picks.get(program.id);
-    if (chosen.length >= RELATED_LIMIT) continue;
-    const next = pools.get(program.id).filter(c => !chosen.includes(c)).sort((a, b) => inbound.get(a.id) - inbound.get(b.id) || closerTo(program)(a, b))[0];
-    if (next) { chosen.push(next); inbound.set(next.id, inbound.get(next.id) + 1); }
-  }
-  for (const program of PROGRAMS) picks.get(program.id).sort(closerTo(program));
-  return picks;
+  const order = a => { const position = new Map([...ranked[a].sameEmployer, ...ranked[a].others].map((b, i) => [b, i])); return (x, y) => position.get(x) - position.get(y); };
+  return new Map(PROGRAMS.map((program, a) => [program.id, picks[a].sort(order(a)).map(b => PROGRAMS[b])]));
 }
 export function relatedPrograms(program, limit = RELATED_LIMIT) {
   relatedById ||= assignRelatedPrograms();

@@ -16,6 +16,11 @@ import { EMPLOYERS_BUSINESS_PROGRAMS } from "./employers-business-expansion.js";
 import { EMPLOYERS_INDUSTRY_PROGRAMS } from "./employers-industry-expansion.js";
 import { EMPLOYERS_HEALTH_PROGRAMS } from "./employers-health-expansion.js";
 import { EMPLOYERS_PUBLIC_MEDIA_PROGRAMS } from "./employers-public-media-expansion.js";
+import { EMPLOYERS_QUANT_TECH_PROGRAMS } from "./employers-quant-tech-expansion.js";
+// Laboratory, research and public-sector programs, in their own browser chunk.
+import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
+import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
+import { PUBLIC_PROGRAMS } from "./programs-public-expansion.js";
 export { TOPICS } from "./expanded-content.js";
 export const SITE = "https://firstinternships.com";
 export const VERIFIED = "2026-09-19";
@@ -187,6 +192,10 @@ export const PROGRAMS = [
   ...EMPLOYERS_INDUSTRY_PROGRAMS,
   ...EMPLOYERS_HEALTH_PROGRAMS,
   ...EMPLOYERS_PUBLIC_MEDIA_PROGRAMS,
+  ...EMPLOYERS_QUANT_TECH_PROGRAMS,
+  ...LAB_PROGRAMS,
+  ...RESEARCH_PROGRAMS_2,
+  ...PUBLIC_PROGRAMS,
 ].map(program => ({ ...program, verified: program.verified || VERIFIED, seoTitle: program.seoTitle || PROGRAM_SEO[program.id][0], seoDescription: program.seoDescription || PROGRAM_SEO[program.id][1] }));
 
 export const YEARS = [
@@ -334,6 +343,7 @@ export function guidesForProgram(program) {
 // least so far. The result depends only on PROGRAMS, so SSR and hydration agree.
 const RELATED_LIMIT = 6;
 const RELATED_POOL = 12;
+const RELATED_MIN_INBOUND = 2;
 const textHash = text => { let h = 2166136261; for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 // A stable, well-mixed tie-break for an ordered pair of ID hashes.
 const pairTie = (a, b) => { let h = Math.imul(a ^ Math.imul(b, 0x9e3779b1), 0x85ebca6b); h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35); return (h ^ (h >>> 16)) >>> 0; };
@@ -374,6 +384,23 @@ function assignRelatedPrograms() {
     let next = -1;
     for (const b of pools[a]) if (!picks[a].includes(b) && (next < 0 || inbound[b] < inbound[next])) next = b;
     if (next >= 0) { picks[a].push(next); inbound[next]++; }
+  }
+  // A program with one common field can fall outside every page's pool as the
+  // catalog grows. Give it the slot of the page that ranks it closest, replacing
+  // that page's most-linked pick that stays above the minimum without it.
+  for (let b = 0; b < n; b++) while (inbound[b] < RELATED_MIN_INBOUND) {
+    let best = null;
+    for (let a = 0; a < n; a++) {
+      if (a === b || picks[a].includes(b)) continue;
+      const rank = ranked[a].others.indexOf(b);
+      if (rank < 0 || (best && rank >= best.rank)) continue;
+      let drop = -1;
+      for (const c of picks[a]) if (PROGRAMS[c].company !== PROGRAMS[a].company && inbound[c] > RELATED_MIN_INBOUND && (drop < 0 || inbound[c] > inbound[drop])) drop = c;
+      if (drop >= 0) best = { a, rank, drop };
+    }
+    if (!best) break;
+    picks[best.a][picks[best.a].indexOf(best.drop)] = b;
+    inbound[best.drop]--; inbound[b]++;
   }
   const order = a => { const position = new Map([...ranked[a].sameEmployer, ...ranked[a].others].map((b, i) => [b, i])); return (x, y) => position.get(x) - position.get(y); };
   return new Map(PROGRAMS.map((program, a) => [program.id, picks[a].sort(order(a)).map(b => PROGRAMS[b])]));

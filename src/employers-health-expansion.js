@@ -47,8 +47,8 @@ const G = {
 export const EMPLOYERS_HEALTH_PROGRAMS = [
   {
     id: "pfizer-futures-internship", company: "Pfizer", title: "Pfizer Futures Internship", initials: "PF", color: "#0000c9",
-    seoTitle: "Pfizer Futures Internship 2027: Dates & Eligibility",
-    seoDescription: "Pfizer Futures is a paid summer internship for undergraduates. The 2027 window runs Oct 5 to Nov 8, 2026, with a 3.0 GPA minimum (3.3 for R&D) and 4+ days a week on site.",
+    seoTitle: "Pfizer Summer Internship 2027: Dates & Eligibility",
+    seoDescription: "Pfizer's paid summer internship, Pfizer Futures, takes 2027 applications Oct 5 to Nov 8, 2026. Undergrads need a 3.0 GPA (3.3 for R&D) and US work authorization.",
     fields: ["life-sciences", "healthcare", "business", "research"],
     firstYear: 1, years: [1, 2, 3, 4], yearLabel: "Current freshmen–seniors at application", pay: "Paid", location: "Multiple US Pfizer sites", mode: "On site at least 4 days a week",
     summary: "Pfizer's paid summer internship for undergraduates, placing interns on project teams across the company's divisions with mentorship and professional development sessions.",
@@ -57,6 +57,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
       "Applicants need at least a 3.0 cumulative GPA as of the most recently completed semester. Pfizer sets a 3.3 minimum for R&D roles.",
       "Applicants must be immediately authorized to work in the US — the program cannot support anyone who needs employer-sponsored visas now or in the future — and must be at least 18 before the scheduled start date.",
       "Interns must be able to commute to a Pfizer location at least four days a week, and Pfizer notes that some lab and manufacturing roles need more on-site days.",
+      "Pfizer says prior industry experience is not required. Alongside project work, it describes mentorship, professional development sessions and chances to meet interns across the company.",
     ],
     timing: "Pfizer publishes the application window for the 2027 cohort as October 5 to November 8, 2026. No time of day is given for the close, so no exact cutoff instant is recorded here. The Pfizer Futures page does not publish term dates, weekly hours, a pay figure or a list of host sites, and it does not say whether seniors must return to school after the summer.",
     status: "2027 window published",
@@ -64,7 +65,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
     url: "https://www.pfizer.com/en/about/careers/pfizer-futures",
     sources: [
       { name: "Paid status, 2027 application window, GPA, work-authorization, age and commuting requirements", url: "https://www.pfizer.com/en/about/careers/pfizer-futures" },
-      { name: "Early careers overview stating freshman-to-senior eligibility and placements across divisions and US sites", url: "https://www.pfizer.com/en/about/careers/early-careers" },
+      { name: "Early careers overview: freshman-to-senior eligibility, plus Pfizer's MBA, rotational and postdoctoral programs", url: "https://www.pfizer.com/en/about/careers/early-careers" },
     ],
     steps: [
       "Before October 5, check the four hard gates: your cumulative GPA as of your last completed semester (3.3 if you want R&D), US work authorization with no future sponsorship need, age 18 by the start date, and a Pfizer site you could reach four or more days a week.",
@@ -78,8 +79,15 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
     ],
     pitfall: "The GPA is checked as of your most recently completed semester, and R&D roles require 3.3, not 3.0. A student with a 3.1 who applies for an R&D placement fails a rule the page states plainly.",
     materials: ["Cumulative GPA as of last completed semester", "US work authorization without sponsorship", "Pfizer site within a four-day-a-week commute", "Resume aimed at one Pfizer division", "Application confirmation"],
+    faqs: [
+      ["When do Pfizer internships open for summer 2027?", "Pfizer publishes the Pfizer Futures window for the 2027 cohort as October 5 to November 8, 2026. It gives no closing time, so treat November 7 as your working deadline rather than the last evening."],
+      ["Is the Pfizer Futures internship paid?", "Yes. Pfizer describes Pfizer Futures as its paid summer internship program for undergraduates. The page does not publish a pay figure, term dates, housing support or a list of host sites."],
+      ["Do I need pharmaceutical or lab experience?", "No. Pfizer says prior industry experience isn't required and that it is as interested in potential, mindset and willingness to grow. The GPA rules still apply: 3.0 overall, and 3.3 for R&D roles."],
+      ["Can international students apply?", "Only with immediate US work authorization that will never need employer sponsorship. Pfizer says the program cannot support applicants who require employer-sponsored visas now or in the future."],
+      ["What other Pfizer programs are there for students?", "Pfizer's early careers page also lists an MBA Summer Associate Program for first-year MBA students, several two-year rotational programs for recent graduates, including Digital, Global Supply, R&D and Global Regulatory Sciences, and postdoctoral training. For an undergraduate summer internship, Pfizer Futures is the program."],
+    ],
     guideSlugs: [G.when, G.apply, G.interview],
-    verified: "2026-09-29", updated: "2026-09-29",
+    verified: "2026-10-06", updated: "2026-10-06",
   },
   {
     id: "merck-future-talent-program", company: "Merck", title: "Future Talent Program Internships", initials: "MK", color: "#00857c",

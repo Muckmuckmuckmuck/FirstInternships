@@ -88,8 +88,15 @@ export const EMPLOYERS_TECH_PROGRAMS = [
     ],
     pitfall: "The transcript is a requested document, not an extra. The upload field only appears after you select \"Now attending\" under Degree Status, so a resume-only submission is missing something the posting asks for.",
     materials: ["Resume with graduation date in MM/YY", "Current transcript in English (PDF)", "Ranked preference among sales, marketing and finance", "Preferred office from the six listed", "Submission confirmation before Oct 9, 2026"],
+    faqs: [
+      ["When is the Google Business Undergraduate Internship deadline?", "The Summer 2027 posting asks applicants to complete their application by October 9. It is a Summer 2027 posting that was live in September and October 2026, so that means October 9, 2026. No time of day is given."],
+      ["Who is the Google business internship for?", "Students currently enrolled in a full-time bachelor's program. Google says the program is intended for students in the penultimate year of their degree, depending on their program and circumstances, and prefers students returning to a bachelor's program after the internship."],
+      ["Which teams and locations does it cover?", "Interns are placed on Sales, Marketing and Finance teams. Google considers each application for several business functions across the US, may collect more information after the application period closes, and then lets you state function preferences. You can name a preferred location from Mountain View, Chicago, New York, San Bruno, San Francisco and Sunnyvale."],
+      ["What do I need to apply?", "An updated resume showing your anticipated graduation date as MM/YY, and a current unofficial or official transcript in English. The transcript upload appears only after you select 'Now attending' under Degree Status."],
+      ["How much does the Google business internship pay?", "The posting lists 'US: $58,000 – $77,000 (USD) + 0% bonus target', with individual pay set by job-related skills, experience and education. Google describes the program as a paid summer internship with 1:1 mentorship and a speaker series with company leaders."],
+    ],
     guideSlugs: [G.apply, G.files, G.interview],
-    verified: "2026-09-29",
+    verified: "2026-10-06", updated: "2026-10-06",
   },
   {
     id: "google-bsms-technical-internships", company: "Google", title: "BS/MS Technical Internships, Summer 2027", initials: "GO", color: "#2f7d52",

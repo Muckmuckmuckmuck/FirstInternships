@@ -54,6 +54,7 @@ test("college-year filtering uses accepted years, not just earliest year", () =>
 test("route resolution supports clean URLs and rejects unknown routes", () => {
   assert.equal(resolvePage("/programs/nasa-ostem.html").program.id, "nasa-ostem");
   assert.equal(resolvePage("/guides/").type, "guides");
+  assert.equal(resolvePage("/account").type, "account");
   assert.equal(resolvePage("/not-a-page").type, "404");
   assert.equal(YEARS.length, 4);
   assert.ok(FIELDS.length >= 17, "field hubs should not regress");
@@ -99,7 +100,7 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
     const json = JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
     assert.ok(json["@graph"].some(entry => entry["@type"] === "WebPage"));
     assert.ok(!json["@graph"].some(entry => entry["@type"] === "JobPosting"));
-    if (["/saved", "/compare", "/404"].includes(route)) assert.ok(html.includes("noindex, follow"));
+    if (["/saved", "/compare", "/account", "/404"].includes(route)) assert.ok(html.includes("noindex, follow"));
     else assert.ok(html.includes("index, follow, max-image-preview:large"));
     const main = html.match(/<main id="main">([\s\S]*?)<\/main>/)[1];
     assert.equal((main.match(/<h1(?:\s|>)/g) || []).length, 1, route);
@@ -116,8 +117,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 });
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
-  assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  for (const route of ROUTES.filter(r => !["/saved", "/compare", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
+  assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
+  for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
   // Guides carry their own date too, so a rewritten guide does not advertise the
   // stale blanket date in its byline, Article dateModified or sitemap lastmod.
@@ -126,7 +127,17 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
     assert.ok(sitemap.includes(`<loc>${SITE}${guidePath(guide)}</loc><lastmod>${guide.updated}</lastmod>`), guide.slug);
   }
   const deployment = JSON.parse(await readFile("vercel.json", "utf8"));
-  assert.ok(!deployment.crons, "retired outreach cron must not run");
+  assert.ok(!deployment.crons?.some(job => job.path === "/api/process-queue"), "retired outreach cron must not run");
+  assert.deepEqual(deployment.crons, [{ path: "/api/newsletter-run", schedule: "0 16 * * 1" }], "only the isolated weekly newsletter job may be scheduled");
+  const vercelIgnore = await readFile(".vercelignore", "utf8");
+  assert.match(vercelIgnore, /^api\/\*$/m, "API files must remain denylisted by default");
+  assert.match(vercelIgnore, /^lib\/\*$/m, "server helpers must remain denylisted by default");
+  for (const active of ["newsletter-confirm", "newsletter-digest", "newsletter-run", "newsletter-subscribe", "newsletter-unsubscribe"]) {
+    assert.match(vercelIgnore, new RegExp(`^!api/${active}\\.js$`, "m"));
+  }
+  for (const legacy of ["grade", "process-queue", "send-email", "stripe", "auth-google"]) {
+    assert.doesNotMatch(vercelIgnore, new RegExp(`^!api/${legacy}\\.js$`, "m"), `${legacy} must stay quarantined`);
+  }
   assert.deepEqual(deployment.redirects.filter(redirect => ROUTES.includes(redirect.source.replace(/\.html$/, ""))), [], "deployment redirects must not intercept maintained pages");
   const kept = new Set(ROUTES.map(r => r === "/" ? "index.html" : `${r.slice(1)}.html`).concat(["privacy.html", "terms.html"]));
   async function check(directory) {
@@ -239,7 +250,8 @@ test("expanded content preserves conditional years and unknown requirements", ()
   assert.match(PROGRAMS.find(p => p.id === "noaa-hollings").yearLabel, /5-year/);
   assert.equal(PROGRAMS.find(p => p.id === "noaa-hollings").deadline, undefined, "no time zone must not become an invented UTC event");
   assert.equal(PROGRAMS.find(p => p.id === "federal-reserve-board").firstYear, null);
-  assert.ok(!searchPrograms({ paid: true }).some(p => p.id === "nvidia-ignite"));
+  assert.equal(PROGRAMS.find(p => p.id === "nvidia-ignite").pay, "Paid");
+  assert.ok(searchPrograms({ paid: true }).some(p => p.id === "nvidia-ignite"));
   assert.ok(searchPrograms({ query: "community college" }).some(p => p.id === "nih-sip"));
   assert.ok(searchPrograms({ query: "biomedical" }).some(p => p.id === "nih-sip"));
   const nih = PROGRAMS.find(p => p.id === "nih-sip");
@@ -279,7 +291,7 @@ test("expanded content preserves conditional years and unknown requirements", ()
 });
 
 test("all public content is reachable through ordinary homepage links", async () => {
-  const publicRoutes = ROUTES.filter(route => !["/saved", "/compare", "/404"].includes(route));
+  const publicRoutes = ROUTES.filter(route => !["/saved", "/compare", "/account", "/404"].includes(route));
   const reached = new Set(["/"]);
   const pending = ["/"];
   while (pending.length) {

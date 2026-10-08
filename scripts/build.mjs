@@ -29,7 +29,7 @@ const organization = { "@type": "Organization", "@id": `${SITE}/#organization`, 
 function metadata(page) {
   const canonical = `${SITE}${page.path === "/" ? "/" : page.path}`;
   const title = page.path === "/" ? `FirstInternships: ${page.title}` : page.title;
-  const noindex = ["saved", "compare", "404"].includes(page.type);
+  const noindex = ["saved", "compare", "account", "404"].includes(page.type);
   const graph = [organization, { "@type": "WebSite", "@id": `${SITE}/#website`, name: "FirstInternships", url: `${SITE}/`, publisher: { "@id": organization["@id"] } }, { "@type": "WebPage", "@id": `${canonical}#page`, url: canonical, name: title, description: page.description, isPartOf: { "@id": `${SITE}/#website` }, ...( ["year", "field", "topic", "guides", "directory"].includes(page.type) ? { additionalType: "https://schema.org/CollectionPage" } : {}) }];
   const parents = page.type === "program" ? [["Programs", "/internships"]] : page.type === "guide" ? [["Guides", "/guides"]] : ["year", "field", "topic"].includes(page.type) ? [["Internships", "/internships"]] : [];
   if (page.path !== "/") graph.push({ "@type": "BreadcrumbList", itemListElement: [["Home", "/"], ...parents, [page.title, page.path]].map(([name, path], i) => ({ "@type": "ListItem", position: i + 1, name, item: `${SITE}${path}` })) });
@@ -60,7 +60,7 @@ async function copyPublic(directory) {
   }
 }
 await copyPublic(join(root, "public"));
-const crawlable = ROUTES.filter(route => !["/saved", "/compare", "/404"].includes(route));
+const crawlable = ROUTES.filter(route => !["/saved", "/compare", "/account", "/404"].includes(route));
 function lastmodForRoute(route) {
   const page = resolvePage(route);
   if (page.program?.verified) return page.program.updated || page.program.verified;
@@ -71,7 +71,7 @@ function lastmodForRoute(route) {
     "/": "2026-09-28", "/internships": "2026-09-28",
     "/freshman-internships": "2026-09-28", "/sophomore-internships": "2026-09-28", "/junior-internships": "2026-09-28", "/senior-internships": "2026-09-28",
     "/undergraduate-research-internships": "2026-10-01", "/summer-2027-college-internships": "2026-10-01", "/community-college-internships": "2026-10-01",
-    "/application-timeline": "2026-09-20", "/about": "2026-09-20", "/contact": "2026-09-20", "/privacy": "2026-09-21", "/terms": "2026-09-18",
+    "/application-timeline": "2026-09-20", "/about": "2026-10-07", "/contact": "2026-10-07", "/privacy": "2026-10-07", "/terms": "2026-10-07",
   }[route];
   if (explicit) return explicit;
   const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];

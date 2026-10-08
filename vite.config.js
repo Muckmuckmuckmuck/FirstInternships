@@ -34,6 +34,10 @@ export default defineConfig(({ isSsrBuild }) => ({
         codeSplitting: isSsrBuild ? undefined : {
           groups: [
             { name: "react", test: /\/node_modules\/(?:react|react-dom|scheduler)\//, priority: 30 },
+            // Keep the Supabase client in its own long-cached dynamic chunk. The
+            // provider imports it only on /account, so public SEO pages do not pay
+            // the authentication SDK's parse/execute cost.
+            { name: "supabase", test: /\/node_modules\/@supabase\//, priority: 25 },
             // Employer batches are the fastest-growing data. Their own chunk keeps
             // both data chunks under the 500 kB warning and lets a batch update
             // leave the older content chunk cached.

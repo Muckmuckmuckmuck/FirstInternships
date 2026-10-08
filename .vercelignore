@@ -3,12 +3,22 @@
 # (src/ contains no /api/ reference), and api/grade.js is unauthenticated by
 # design from the outreach era — it would keep an open Gemini-cost path live.
 # Keep the quarantined backend in the repository, but out of the deployment.
-api/
-lib/
+# Only the explicitly reviewed account/newsletter endpoints and their two
+# isolated helpers are deployable. New files remain excluded until reviewed.
+api/*
+!api/newsletter-confirm.js
+!api/newsletter-digest.js
+!api/newsletter-run.js
+!api/newsletter-subscribe.js
+!api/newsletter-unsubscribe.js
+lib/*
+!lib/newsletter-matcher.js
+!lib/newsletter-server.js
 
 # Research and seed material the site build never reads.
 docs/
 tests/
+supabase/
 scripts/etl_recruiters.py
 scripts/funnel.py
 scripts/import_recruiters.py

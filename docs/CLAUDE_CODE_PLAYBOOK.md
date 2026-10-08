@@ -29,6 +29,7 @@ FirstInternships is:
 - Organized around exact college-year eligibility, useful fields, and focused opportunity collections.
 - A set of editorial application guides backed by official publisher sources.
 - A static, crawlable site with optional browser-local planning tools.
+- A site with an optional, isolated passwordless account for explicitly consented personalized internship emails.
 - Free to use; applications happen on official employer or institution sites.
 
 FirstInternships is not:
@@ -36,7 +37,7 @@ FirstInternships is not:
 - An employer, recruiter, staffing firm, or representative of a listed organization.
 - A live, automatically synchronized job feed.
 - A guarantee that a recurring program is currently open.
-- An application submission service, referral service, resume host, or account system.
+- An application submission service, referral service, resume host, or general-purpose student profile system. The optional account stores only an auth email and newsletter preferences.
 - A reason to invent dates, pay, remote status, class years, or future cycles.
 - A license to create hundreds of near-duplicate keyword pages.
 
@@ -58,6 +59,8 @@ The following rules override convenience and growth pressure:
 10. Existing legacy aliases remain permanent redirects and must not become duplicate indexable pages.
 11. Ads may not resemble internship cards, application buttons, navigation, or editorial recommendations.
 12. No change may reactivate the legacy outreach, email, billing, or queue system by accident.
+13. Account creation never implies newsletter consent. Only an explicit optional opt-in from a verified account can become active, and existing Supabase users default to `needs_consent`.
+14. The account/newsletter subsystem never uploads, synchronizes, reads, or infers from browser-local planner data.
 
 ## 4. Active architecture and ownership
 
@@ -78,6 +81,7 @@ Prefer a new, clearly named expansion module for a substantial researched batch.
 - `src/FirstInternships.jsx` owns route-driven pages and shared directory UI.
 - `src/DirectoryTools.jsx` owns filtering, comparison, and published-deadline experiences.
 - `src/SavedPlanner.jsx` owns the browser-local saved workspace.
+- `src/Account.jsx` owns the optional passwordless account and newsletter-preference interface. `src/account-client.js` owns Supabase browser configuration, pending preference handoff, settings normalization, and authenticated subscription calls. `src/account.css` is the account-specific visual layer.
 - `src/ApplicationTimeline.jsx` owns the temporary preparation timeline builder.
 - `src/styles.css` and `src/polish.css` are the visual system. Preserve their cascade intentionally.
 - `src/index.jsx` hydrates prerendered HTML in production and performs a normal client render in development.
@@ -88,6 +92,7 @@ Prefer a new, clearly named expansion module for a substantial researched batch.
 - `src/planner.js` validates planner data, backup/restore, CSV, and personal calendar output.
 - `src/directory-tools.js` validates URL filters, comparisons, sorting, and published-deadline calendar output.
 - `src/timeline.js` handles calendar-day arithmetic and personal workback plans.
+- `lib/newsletter-matcher.js` validates and ranks catalog matches without inventing eligibility, status, pay, location, or remote facts. `lib/newsletter-server.js` owns server-only Supabase, Resend, token, request-audit, and delivery helpers.
 
 Keep logic that can be tested without a browser in these pure modules. Do not bury date, storage, validation, or export rules inside JSX event handlers.
 
@@ -97,7 +102,8 @@ Keep logic that can be tested without a browser in these pure modules. Do not bu
 - `scripts/serve.mjs` provides a production-like clean-URL preview with real redirects and 404s.
 - `vite.config.js` separates React, the route interface, and the growing directory/editorial data into browser chunks. Files named `*-expansion.js` enter the content chunk automatically; keep large non-UI content out of the interface bundle and investigate any renewed chunk-size warning instead of suppressing it.
 - `vercel.json` defines the production build, output directory, clean URLs, and redirects.
-- `.vercelignore` keeps the quarantined `api/`/`lib/` backend out of the deployment. Vercel turns any file under `api/` into a serverless function on its own, so removing a `functions` entry is not enough to stop one being served.
+- `api/newsletter-subscribe.js`, `api/newsletter-confirm.js`, `api/newsletter-unsubscribe.js`, and `api/newsletter-digest.js` are the active implementations; `api/newsletter-run.js` is the thin scheduled alias for the digest worker. Deployment ignore rules must include only those functions and their `lib/newsletter-*` helpers while continuing to exclude every legacy outreach endpoint. Vercel turns any deployed file under `api/` into a serverless function, so review the final deployment artifact rather than assuming an unused endpoint is harmless.
+- `supabase/migrations/202610070001_newsletter_accounts.sql` is the additive, idempotent account/newsletter migration. It preserves all existing auth/profile rows and backfills existing users as `needs_consent`. `docs/ACCOUNT_NEWSLETTER_SYSTEM.md` is the architecture, privacy, rollout, and incident runbook.
 - `public/sitemap.xml` and `public/llms.txt` are generated and tracked. A build may update them.
 - `dist/` is generated and ignored. Do not commit it.
 
@@ -109,22 +115,22 @@ Keep logic that can be tested without a browser in these pure modules. Do not bu
 
 When changing an invariant, update or add the test that proves the intended behavior. Do not weaken a test merely to make a new implementation pass.
 
-## 5. Quarantined legacy code
+## 5. Active account/newsletter boundary and quarantined legacy code
 
-The `api/`, `lib/`, old deployment documents, and seed files come from an earlier outreach SaaS. They are not part of the current directory experience. The active package manifest deliberately does not install their Google GenAI, Supabase, or Stripe SDKs, because the source is quarantined from deployment and unused by the directory.
+Most files in `api/`, `lib/`, old deployment documents, and seed files come from an earlier outreach SaaS. They are not part of the current directory experience. The narrowly named `newsletter-*` files and the migration documented in `docs/ACCOUNT_NEWSLETTER_SYSTEM.md` are the only active exception. They use Supabase Auth for a passwordless account and Resend for first-party editorial newsletters; they do not send from a student's Gmail or access recruiter data.
 
 Without an explicit, separately scoped migration plan, do not:
 
-- Enable Gmail or outreach automation.
+- Enable Gmail or cold-outreach automation.
 - Restore queue processing or scheduled email jobs.
 - Connect the directory planner to Supabase.
-- Add authentication, credits, billing, or Stripe flows.
+- Add credits, billing, Stripe, recruiter discovery, resume storage, or general profile flows to the account.
 - Reinstall legacy backend SDKs merely to make quarantined files executable.
 - Import recruiter data into the public directory.
 - Expose names, email addresses, ETL output, or seed data.
 - Assume the existing Supabase project belongs to this production site.
 
-If future work intentionally revives any legacy service, audit privacy, security, data ownership, legal language, API authorization, rate limits, deletion, and deployment configuration as a new project. It is not a routine UI change.
+The personalized digest is not a revival of that service. Keep its tables, endpoints, cron, sender identity, consent records, and deployment allowlist isolated. Existing auth users and legacy profile rows must be preserved; do not infer newsletter consent from the old `profiles.marketing_consent` field. If future work intentionally revives any other legacy service, audit privacy, security, data ownership, legal language, API authorization, rate limits, deletion, and deployment configuration as a new project. It is not a routine UI change.
 
 ## 6. Program data model
 

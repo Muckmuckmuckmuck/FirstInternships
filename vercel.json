@@ -4,6 +4,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
+  "crons": [
+    {
+      "path": "/api/newsletter-run",
+      "schedule": "0 16 * * 1"
+    }
+  ],
   "redirects": [
     {
       "source": "/internships/computer-science",

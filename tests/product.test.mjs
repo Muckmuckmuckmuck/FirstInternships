@@ -4,6 +4,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, featuredPrograms, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
 import { LEGACY_REDIRECTS } from "../src/legacy.js";
+import { INTERVIEW_PREP } from "../src/interview-prep.js";
 import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, hasPublishedCutoff, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
@@ -415,4 +416,23 @@ test("page-level review lines show the real span of program review dates", async
     const dates = programsForTopic(topic).map(p => p.verified).sort();
     assert.ok(main.includes(`<time dateTime="${dates.at(-1)}">`), `${topic.slug}: should show its latest program review`);
   }
+});
+
+test("interview-practice links are relevant, disclosed and limited to finance programs", async () => {
+  const ids = Object.keys(INTERVIEW_PREP);
+  assert.ok(ids.length > 0 && ids.length <= 30, "a curated set, not a sitewide link");
+  for (const id of ids) {
+    const program = PROGRAMS.find(p => p.id === id);
+    assert.ok(program, `${id} is not a program`);
+    assert.ok(program.fields.includes("finance"), `${id} is not a finance program`);
+    assert.doesNotMatch(program.company, /Federal Reserve/, `${id}: Fed research internships are excluded`);
+    const { href, label } = INTERVIEW_PREP[id];
+    assert.equal(new URL(href).origin, "https://prepalyst.com", `${id}: unexpected destination`);
+    assert.ok(label.length > 10 && label.length <= 80, `${id}: descriptive label`);
+  }
+  const linked = await readFile(`dist${programPath(PROGRAMS.find(p => p.id === "goldman-sachs-summer-analyst"))}.html`, "utf8");
+  assert.match(linked, /href="https:\/\/prepalyst\.com\/guides\/investment-banking-interview-questions"/);
+  assert.match(linked, /sister site from FirstInternships(&#x27;|&apos;|')? founder/);
+  const unlinked = await readFile(`dist${programPath(PROGRAMS.find(p => p.id === "chicago-fed-summer-internships"))}.html`, "utf8");
+  assert.doesNotMatch(unlinked, /prepalyst\.com/);
 });

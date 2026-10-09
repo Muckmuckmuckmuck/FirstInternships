@@ -4,6 +4,7 @@ const SUPABASE_ANON_KEY = "VITE_SUPABASE_ANON_KEY";
 export const ACCOUNT_PATH = "/account";
 export const CONSENT_VERSION = "2026-10-07";
 export const PENDING_NEWSLETTER_KEY = "fi_pending_newsletter_v1";
+export const NEWSLETTER_INTENT_PARAM = "newsletter_intent";
 export const NEWSLETTER_STATUSES = Object.freeze([
   "needs_consent",
   "pending",
@@ -16,6 +17,7 @@ export const NEWSLETTER_FREQUENCIES = Object.freeze(["weekly", "biweekly"]);
 export const WORK_MODES = Object.freeze(["on-site", "hybrid", "remote"]);
 
 const PENDING_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const INTENT_ID_PATTERN = /^[A-Za-z0-9_-]{48}$/;
 let browserClientPromise;
 
 function cleanText(value, maxLength) {
@@ -105,11 +107,22 @@ function storageOrNull(storage) {
   }
 }
 
-export function savePendingNewsletterPreferences(preferences, storage) {
+export function createNewsletterIntentId(cryptoSource = globalThis.crypto) {
+  if (!cryptoSource?.getRandomValues) {
+    throw new Error("This browser cannot safely continue newsletter signup. You can still create an account without email alerts.");
+  }
+  const bytes = new Uint8Array(24);
+  cryptoSource.getRandomValues(bytes);
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+export function savePendingNewsletterPreferences(preferences, storage, intentId = createNewsletterIntentId()) {
   const target = storageOrNull(storage);
   if (!target) throw new Error("This browser blocked the temporary storage needed to finish newsletter signup.");
+  if (!INTENT_ID_PATTERN.test(intentId)) throw new Error("Newsletter signup could not be secured. Please try again.");
   const payload = {
     version: 1,
+    intentId,
     consent: true,
     consentVersion: CONSENT_VERSION,
     createdAt: new Date().toISOString(),
@@ -119,7 +132,7 @@ export function savePendingNewsletterPreferences(preferences, storage) {
   return payload;
 }
 
-export function readPendingNewsletterPreferences(storage, now = Date.now()) {
+export function readPendingNewsletterPreferences(expectedIntentId, storage, now = Date.now()) {
   const target = storageOrNull(storage);
   if (!target) return null;
   try {
@@ -127,6 +140,7 @@ export function readPendingNewsletterPreferences(storage, now = Date.now()) {
     const created = Date.parse(parsed?.createdAt || "");
     if (
       parsed?.version !== 1 ||
+      !INTENT_ID_PATTERN.test(parsed?.intentId || "") ||
       parsed?.consent !== true ||
       parsed?.consentVersion !== CONSENT_VERSION ||
       !Number.isFinite(created) ||
@@ -136,7 +150,12 @@ export function readPendingNewsletterPreferences(storage, now = Date.now()) {
       target.removeItem(PENDING_NEWSLETTER_KEY);
       return null;
     }
+    // A missing or different callback nonce may belong to another account on
+    // a shared browser. Leave the legitimate pending intent untouched so only
+    // the matching authentication callback can consume it.
+    if (!INTENT_ID_PATTERN.test(expectedIntentId || "") || parsed.intentId !== expectedIntentId) return null;
     return {
+      intentId: parsed.intentId,
       consent: true,
       consentVersion: CONSENT_VERSION,
       preferences: cleanNewsletterPreferences(parsed.preferences),
@@ -151,6 +170,29 @@ export function clearPendingNewsletterPreferences(storage) {
   const target = storageOrNull(storage);
   if (!target) return;
   try { target.removeItem(PENDING_NEWSLETTER_KEY); } catch { /* ignored */ }
+}
+
+export function newsletterIntentFromLocation(location = typeof window === "undefined" ? null : window.location) {
+  if (!location) return "";
+  try {
+    const value = new URLSearchParams(location.search || "").get(NEWSLETTER_INTENT_PARAM) || "";
+    return INTENT_ID_PATTERN.test(value) ? value : "";
+  } catch {
+    return "";
+  }
+}
+
+export function clearNewsletterIntentFromUrl(intentId, history = typeof window === "undefined" ? null : window.history, location = typeof window === "undefined" ? null : window.location) {
+  if (!history || !location || !INTENT_ID_PATTERN.test(intentId || "")) return false;
+  try {
+    const url = new URL(location.href);
+    if (url.searchParams.get(NEWSLETTER_INTENT_PARAM) !== intentId) return false;
+    url.searchParams.delete(NEWSLETTER_INTENT_PARAM);
+    history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function publicSupabaseConfig() {
@@ -190,6 +232,25 @@ export async function getAccountClient() {
     });
   }
   return browserClientPromise;
+}
+
+export function accountAuthRedirect({ source = "account", intentId = "", origin = typeof window === "undefined" ? "https://firstinternships.com" : window.location.origin } = {}) {
+  const redirect = new URL(ACCOUNT_PATH, origin);
+  redirect.searchParams.set("welcome", "1");
+  const cleanSource = cleanText(source, 60);
+  if (cleanSource) redirect.searchParams.set("source", cleanSource);
+  if (INTENT_ID_PATTERN.test(intentId)) redirect.searchParams.set(NEWSLETTER_INTENT_PARAM, intentId);
+  return redirect.toString();
+}
+
+export async function signInWithGoogle(client, { source = "account" } = {}) {
+  if (!client?.auth?.signInWithOAuth) throw new Error("Google sign-in is not available right now.");
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: accountAuthRedirect({ source }) },
+  });
+  if (error) throw error;
+  return data;
 }
 
 export async function getMyNewsletterSettings(client) {

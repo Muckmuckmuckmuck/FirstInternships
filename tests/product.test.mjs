@@ -133,9 +133,12 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const vercelIgnore = await readFile(".vercelignore", "utf8");
   assert.match(vercelIgnore, /^api\/\*$/m, "API files must remain denylisted by default");
   assert.match(vercelIgnore, /^lib\/\*$/m, "server helpers must remain denylisted by default");
-  for (const active of ["newsletter-confirm", "newsletter-digest", "newsletter-run", "newsletter-subscribe", "newsletter-unsubscribe"]) {
-    assert.match(vercelIgnore, new RegExp(`^!api/${active}\\.js$`, "m"));
-  }
+  const expectedApiAllowlist = ["newsletter-confirm.js", "newsletter-digest.js", "newsletter-run.js", "newsletter-subscribe.js", "newsletter-unsubscribe.js", "newsletter-webhook.js"].sort();
+  const expectedLibAllowlist = ["newsletter-matcher.js", "newsletter-server.js"].sort();
+  const apiAllowlist = [...vercelIgnore.matchAll(/^!api\/([^\r\n]+)$/gm)].map(match => match[1]).sort();
+  const libAllowlist = [...vercelIgnore.matchAll(/^!lib\/([^\r\n]+)$/gm)].map(match => match[1]).sort();
+  assert.deepEqual(apiAllowlist, expectedApiAllowlist, "only reviewed newsletter API functions may deploy");
+  assert.deepEqual(libAllowlist, expectedLibAllowlist, "only reviewed newsletter server helpers may deploy");
   for (const legacy of ["grade", "process-queue", "send-email", "stripe", "auth-google"]) {
     assert.doesNotMatch(vercelIgnore, new RegExp(`^!api/${legacy}\\.js$`, "m"), `${legacy} must stay quarantined`);
   }
@@ -153,6 +156,38 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
     assert.ok(ROUTES.includes(to), from);
     assert.ok(deployment.redirects.some(r => r.source === from && r.destination === to), from);
     assert.ok(deployment.redirects.some(r => r.source === `${from}.html` && r.destination === to), `${from}.html`);
+  }
+});
+
+test("account state is site-wide without loading newsletter settings on organic pages", async () => {
+  const appSource = await readFile("src/FirstInternships.jsx", "utf8");
+  const accountSource = await readFile("src/Account.jsx", "utf8");
+  const promptStart = accountSource.indexOf("export function SignupPrompt");
+  const promptEnd = accountSource.indexOf("export function AccountConversionCTA", promptStart);
+  const promptSource = accountSource.slice(promptStart, promptEnd);
+
+  assert.match(appSource, /<AccountProvider active=\{accountFeatureEnabled\(\)\} settingsActive=\{page\.type === "account"\}>/);
+  assert.match(accountSource, /if \(!settingsActive\) \{[\s\S]*status: "signed-in"[\s\S]*settings: null[\s\S]*return;/);
+  assert.match(promptSource, /account\.status !== "signed-out"/, "only a confirmed signed-out visitor may see the prompt");
+  assert.match(promptSource, /account\.status === "signed-in"\) setOpen\(false\)/, "a cross-tab sign-in must close an open prompt");
+  assert.doesNotMatch(promptSource, /auth\.getSession/, "the prompt should reuse the site-wide auth state instead of issuing a second session check");
+  assert.match(promptSource, /setTimeout\(reveal, 12000\)/, "the prompt must remain delayed");
+  assert.match(promptSource, /startedAt >= 4000[\s\S]*>= 0\.28/, "scroll-triggered display must retain its time and depth thresholds");
+  assert.match(promptSource, /event\.key === "Escape"/, "keyboard users must be able to dismiss the prompt");
+});
+
+test("account disclosures cover Google auth boundaries and separate newsletter consent", async () => {
+  const [privacy, terms] = await Promise.all([
+    readFile("public/privacy.html", "utf8"),
+    readFile("public/terms.html", "utf8"),
+  ]);
+  for (const [name, document] of [["privacy", privacy], ["terms", terms]]) {
+    assert.match(document, /Updated October 9, 2026/, `${name} disclosure date`);
+    assert.match(document, /Supabase/, `${name} must identify the auth processor`);
+    assert.match(document, /Gmail messages/, `${name} must explain that Gmail access is not requested`);
+    assert.match(document, /Google Drive files/, `${name} must explain that Drive access is not requested`);
+    assert.match(document, /Google contacts/, `${name} must explain that contacts access is not requested`);
+    assert.match(document, /does not (?:by itself |automatically )?(?:subscribe|enroll)/, `${name} must keep account creation separate from newsletter consent`);
   }
 });
 

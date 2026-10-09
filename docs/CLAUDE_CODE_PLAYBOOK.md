@@ -61,6 +61,7 @@ The following rules override convenience and growth pressure:
 12. No change may reactivate the legacy outreach, email, billing, or queue system by accident.
 13. Account creation never implies newsletter consent. Only an explicit optional opt-in from a verified account can become active, and existing Supabase users default to `needs_consent`.
 14. The account/newsletter subsystem never uploads, synchronizes, reads, or infers from browser-local planner data.
+15. Bounce and complaint suppression is terminal in the self-service UI. A normal unsubscribe may not downgrade those states, and a complaint always dominates a later bounce.
 
 ## 4. Active architecture and ownership
 
@@ -81,7 +82,7 @@ Prefer a new, clearly named expansion module for a substantial researched batch.
 - `src/FirstInternships.jsx` owns route-driven pages and shared directory UI.
 - `src/DirectoryTools.jsx` owns filtering, comparison, and published-deadline experiences.
 - `src/SavedPlanner.jsx` owns the browser-local saved workspace.
-- `src/Account.jsx` owns the optional passwordless account and newsletter-preference interface. `src/account-client.js` owns Supabase browser configuration, pending preference handoff, settings normalization, and authenticated subscription calls. `src/account.css` is the account-specific visual layer.
+- `src/Account.jsx` owns the optional Google/email account, delayed dismissible signup prompt, and newsletter-preference interface. `src/account-client.js` owns Supabase browser configuration, nonce-bound pending preference handoff, settings normalization, and authenticated subscription calls. `src/account.css` is the account-specific visual layer. Google login creates or enters an account only; never pass a pending newsletter opt-in through the Google shortcut.
 - `src/ApplicationTimeline.jsx` owns the temporary preparation timeline builder.
 - `src/styles.css` and `src/polish.css` are the visual system. Preserve their cascade intentionally.
 - `src/index.jsx` hydrates prerendered HTML in production and performs a normal client render in development.
@@ -102,8 +103,8 @@ Keep logic that can be tested without a browser in these pure modules. Do not bu
 - `scripts/serve.mjs` provides a production-like clean-URL preview with real redirects and 404s.
 - `vite.config.js` separates React, the route interface, and the growing directory/editorial data into browser chunks. Files named `*-expansion.js` enter the content chunk automatically; keep large non-UI content out of the interface bundle and investigate any renewed chunk-size warning instead of suppressing it.
 - `vercel.json` defines the production build, output directory, clean URLs, and redirects.
-- `api/newsletter-subscribe.js`, `api/newsletter-confirm.js`, `api/newsletter-unsubscribe.js`, and `api/newsletter-digest.js` are the active implementations; `api/newsletter-run.js` is the thin scheduled alias for the digest worker. Deployment ignore rules must include only those functions and their `lib/newsletter-*` helpers while continuing to exclude every legacy outreach endpoint. Vercel turns any deployed file under `api/` into a serverless function, so review the final deployment artifact rather than assuming an unused endpoint is harmless.
-- `supabase/migrations/202610070001_newsletter_accounts.sql` is the additive, idempotent account/newsletter migration. It preserves all existing auth/profile rows and backfills existing users as `needs_consent`. `docs/ACCOUNT_NEWSLETTER_SYSTEM.md` is the architecture, privacy, rollout, and incident runbook.
+- `api/newsletter-subscribe.js`, `api/newsletter-confirm.js`, `api/newsletter-unsubscribe.js`, `api/newsletter-digest.js`, and the raw-body/signature-verified `api/newsletter-webhook.js` are the active implementations; `api/newsletter-run.js` is the thin scheduled alias for the digest worker. Deployment ignore rules must include only those functions and their `lib/newsletter-*` helpers while continuing to exclude every legacy outreach endpoint. Vercel turns any deployed file under `api/` into a serverless function, so review the final deployment artifact rather than assuming an unused endpoint is harmless.
+- `supabase/migrations/202610070001_newsletter_accounts.sql` is the applied additive account/newsletter migration. `202610080001_newsletter_delivery_safety.sql` is the additive follow-up for authenticated provider suppression, consent-evidence retention, and bounded retries. Both preserve all existing auth/profile rows; never edit production history as a substitute for applying the follow-up. `docs/ACCOUNT_NEWSLETTER_SYSTEM.md` is the architecture, privacy, rollout, and incident runbook.
 - `public/sitemap.xml` and `public/llms.txt` are generated and tracked. A build may update them.
 - `dist/` is generated and ignored. Do not commit it.
 

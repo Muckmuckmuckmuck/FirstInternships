@@ -20,7 +20,7 @@ Public, prerendered directory
         |
         | optional /account interaction
         v
-Supabase Auth (passwordless email magic link)
+Supabase Auth (Google OAuth or passwordless email magic link)
         |
         | authenticated session
         +--------------------------+
@@ -43,6 +43,10 @@ active subscriptions only
         v
 /api/newsletter-run (scheduled alias) -> /api/newsletter-digest logic
         |                         -> catalog matcher -> Resend
+        |                                                |
+        |                         signed bounce/complaint webhook
+        |                                                v
+        |                                  /api/newsletter-webhook
         |
         v
 newsletter deliveries and run diagnostics
@@ -59,10 +63,10 @@ The public directory and its SEO pages must continue to render without an accoun
 
 ## 3. Account and consent flow
 
-1. The student enters an email address on `/account` and requests a passwordless magic link.
-2. Supabase Auth sends the link. Following it establishes the normal Supabase session; no password is stored by FirstInternships.
+1. The student may continue with Google or enter an email address on `/account` and request a passwordless magic link. Google OAuth is handled by the configured Supabase Auth provider; the site does not request Gmail, Drive, contacts, or other elevated Google scopes.
+2. Google OAuth or the Supabase magic link establishes the normal Supabase session; no password is stored by FirstInternships. Google sign-in creates or enters the account only and never carries a newsletter opt-in.
 3. Creating or signing into an account does **not** subscribe the person. Newsletter opt-in is an optional, unchecked choice.
-4. If a person selects the newsletter before completing sign-in, the browser may temporarily retain the chosen preferences so the flow can continue after authentication. It must not retain the email in that temporary object, and it must clear the object after a successful handoff.
+4. If a person selects the newsletter before completing email-link sign-in, the browser may temporarily retain the chosen preferences so the flow can continue after authentication. It must not retain the email in that temporary object. A cryptographically random intent nonce must appear in both the temporary object and that specific callback URL; a missing or mismatched nonce cannot consume the intent. Clear the object and nonce after a successful handoff. Google shortcuts deliberately clear pending intent and leave newsletter consent off.
 5. An authenticated `POST /api/newsletter-subscribe` requires an explicit affirmative consent value and a valid preference payload. If Supabase has already verified the email through the magic-link flow, the explicit opt-in activates the subscription and records confirmation against that verified address.
 6. If the authenticated address is not yet verified, the request remains pending and Resend sends a separate single-use link. `GET /api/newsletter-confirm?token=...` activates the subscription and records the confirmation event. The current token expires after 24 hours.
 7. Settings can be read for the signed-in user through `get_my_newsletter_settings()`. Preferences may be changed without creating a second subscription. A previously unsubscribed user must take a new affirmative action before reactivation.
@@ -78,6 +82,8 @@ The allowed subscription states are:
 
 Never infer consent from an existing `profiles.marketing_consent` value, an existing account, planner activity, site visits, saved programs, or silence. Never preselect the opt-in checkbox. Existing users start at `needs_consent` and are not emailed to ask whether they want marketing email.
 
+Public directory pages may show one non-modal signup prompt per browser session after either 12 seconds or four seconds plus meaningful scroll depth. The prompt has no overlay or scroll lock, requires a deliberate CTA, and has a visible close button. Closing it records a 30-day browser-local dismissal. It must never auto-submit, preselect newsletter consent, show to a signed-in person, or appear on `/account`, utility, legal, or error pages. If auth availability cannot be checked, do not show the prompt.
+
 Every promotional newsletter must include a visible unsubscribe link and standards-compliant one-click headers. The public unsubscribe endpoint accepts RFC 8058 `POST` requests. A `GET` displays a confirmation screen and must not unsubscribe immediately, because security scanners often open every link in an email. An unsubscribe must not require login and must take effect before any later send is selected.
 
 ## 4. Data model and access rules
@@ -88,6 +94,8 @@ The additive newsletter migration owns these tables:
 - `newsletter_subscriptions`: one current subscription state per auth user, including consent/confirmation and delivery-control timestamps needed by the sender.
 - `newsletter_tokens`: hashed, expiring, single-use newsletter-confirmation credentials. Unsubscribe links use a separately signed action token. The table is service-only.
 - `newsletter_consent_events`: append-only evidence of opt-in, confirmation, preference changes, unsubscribe, and suppression transitions.
+- `newsletter_provider_events`: service-only, idempotent receipts for authenticated Resend bounce and complaint events. Store event/message IDs, a one-way recipient hash, and minimal diagnostics—not raw message content.
+- `newsletter_suppressions`: service-only, address-level bounce/complaint state keyed by a one-way normalized-email hash. It survives account deletion/recreation and complaint is always dominant.
 - `newsletter_runs`: one record per attempted digest run, including dry-run/production state and aggregate diagnostics.
 - `newsletter_deliveries`: per-recipient delivery idempotency, selected program identifiers, provider message reference, and delivery outcome. Keep message bodies out unless an operational need is approved.
 
@@ -97,6 +105,7 @@ Access rules:
 - The browser may not write `active`, bounce, complaint, token, provider-message, run, or delivery state directly.
 - `newsletter_tokens`, `newsletter_runs`, and `newsletter_deliveries` are service-role-only.
 - Consent events are append-only. Client actions go through a constrained RPC or server endpoint; clients do not edit history.
+- Consent-event `user_id` uses `ON DELETE SET NULL` so minimal opt-out/suppression evidence can survive a verified account deletion without keeping the auth account. Complaint and bounce states cannot be reset by the normal preference/unsubscribe functions.
 - RLS must be enabled before browser access is enabled. Test with two accounts and prove that account A cannot read or alter account B.
 - No service-role key, Resend key, cron secret, raw token, or provider webhook secret may appear in client code, a `VITE_` variable, logs, documentation examples, or committed fixtures.
 
@@ -174,6 +183,7 @@ VITE_SUPABASE_ANON_KEY
 VITE_ACCOUNTS_ENABLED   # public UI gate; false/unset until migration verification
 RESEND_API_KEY
 RESEND_FROM_EMAIL
+RESEND_WEBHOOK_SECRET
 SITE_URL
 CRON_SECRET
 NEWSLETTER_ENABLED
@@ -188,6 +198,8 @@ NEWSLETTER_AUDIT_SALT     # server-only hashing salt
 
 `SITE_URL` must be the canonical `https://firstinternships.com` origin in production. `RESEND_FROM_EMAIL` must use a sending identity verified in the owner's Resend account. Keep marketing and magic-link configuration conceptually separate even if the same verified domain is used.
 
+Google account login is configured in Supabase Auth Providers, not through the quarantined Gmail OAuth variables in `.env.example`. Its authorized origin is the canonical production site and its OAuth callback is the Supabase project callback URL. Keep the OAuth client secret in Supabase/Google configuration; never copy it into a `VITE_` variable or commit it.
+
 Before any production newsletter:
 
 1. Verify the sending domain in Resend.
@@ -196,9 +208,9 @@ Before any production newsletter:
 4. Ensure there is only one valid SPF policy for the hostname; merge authorized senders rather than publishing conflicting SPF records.
 5. Confirm From, reply-to, return-path/bounce handling, unsubscribe headers, and links all use intended production identities.
 6. Send to controlled inboxes at major mailbox providers and inspect authentication results, text/HTML rendering, link destinations, and mobile layout.
-7. Configure provider webhook authentication before using delivery, bounce, or complaint events to mutate subscriber state.
+7. Register `https://firstinternships.com/api/newsletter-webhook` for `email.bounced` and `email.complained`, store its `whsec_...` secret as `RESEND_WEBHOOK_SECRET`, and prove invalid/stale signatures cannot mutate subscriber state. Verification uses the exact raw request body plus the `svix-id`, `svix-timestamp`, and `svix-signature` headers.
 
-`/api/newsletter-run` is the Vercel cron route and a thin alias of the implementation exported by `/api/newsletter-digest`. Both are authenticated operations protected by `CRON_SECRET`. The worker must also honor `NEWSLETTER_ENABLED` and dry-run gates. A cron schedule alone is not authorization to send. Runs must be idempotent so retries do not duplicate a subscriber's issue. Keep the Vercel cron path synchronized with the deployed alias.
+`/api/newsletter-run` is the Vercel cron route and a thin alias of the implementation exported by `/api/newsletter-digest`. Both are authenticated operations protected by `CRON_SECRET`. The worker must also honor `NEWSLETTER_ENABLED` and dry-run gates. A cron schedule alone is not authorization to send. Dry and live modes use different weekly idempotency keys. Each issue is protected by a database-backed worker lease, and run totals are rebuilt from durable delivery rows instead of trusting one worker's in-memory counters. Failed deliveries and claims stale for at least 15 minutes may be reclaimed, with a maximum of ten attempts; sent, skipped, dry-run, and suppressed deliveries are final. Resend retains an idempotency key for 24 hours, so automatic retries are limited to a conservative 20-hour window; an ambiguous handoff outside that window is quarantined instead of resent. Every sendability check and delivery outcome carries the exact claim-attempt number so a stale worker cannot mutate a reclaimed delivery. Recheck that both the delivery and subscription remain sendable immediately before provider handoff. Keep the Vercel cron path synchronized with the deployed alias.
 
 ## 8. Privacy, retention, deletion, and export
 
@@ -229,7 +241,8 @@ Roll out in stages; the send gates should default off.
 ### Stage 1 — internal accounts
 
 - Enable `/account` for controlled test accounts.
-- Verify magic links, pending preference handoff, settings reads/updates, sign-out, confirmation expiry/replay protection, and unsubscribe behavior.
+- Verify Google login, magic links, nonce-bound pending preference handoff, settings reads/updates, sign-out, confirmation expiry/replay protection, and unsubscribe behavior.
+- Verify the prompt appears once per session on an eligible page, closes only by an explicit action, honors its 30-day dismissal, stays absent for signed-in users, and remains usable on mobile and with keyboard focus.
 - Keep `NEWSLETTER_ENABLED=false`.
 
 ### Stage 2 — dry-run matching
@@ -242,7 +255,7 @@ Roll out in stages; the send gates should default off.
 
 - Complete SPF, DKIM, DMARC, provider-webhook, and legal-page checks.
 - Send only to consenting owner-controlled and invited test accounts.
-- Validate bounce and complaint suppression before widening access.
+- Validate signed bounce and complaint events, replay idempotency, complaint dominance, stale/failed claim retry, and immediate pre-send eligibility checks before widening access.
 
 ### Stage 4 — measured launch
 
@@ -326,6 +339,7 @@ An account/newsletter change is not complete until all applicable items are true
 - Existing Supabase users and profile data are preserved.
 - An account remains separate from optional, explicit newsletter consent.
 - Double opt-in, token expiry/single use, unsubscribe, bounce, and complaint paths are tested.
+- Google account creation and the public signup prompt never imply or transfer newsletter consent.
 - Only confirmed `active` subscribers can be selected for a send.
 - Preferences are validated against allowlists and arrays/lengths are bounded.
 - Matching preserves exact college-year, compensation, location, status, and source semantics.
@@ -333,6 +347,7 @@ An account/newsletter change is not complete until all applicable items are true
 - Legacy outreach/Gmail/credits/resume/Stripe code remains quarantined.
 - RLS and two-account isolation tests pass.
 - Send gates default safe; dry run and idempotency are verified.
+- Invalid, stale, malformed, and replayed provider webhooks cannot weaken suppression or create duplicate consent transitions.
 - SPF, DKIM, DMARC, From identity, and provider webhook are verified before launch.
 - Privacy and terms match the deployed behavior.
 - Secrets and personal data are absent from commits and logs.

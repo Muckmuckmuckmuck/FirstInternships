@@ -5,7 +5,7 @@ import { CalendarDownload, CompareButton, ComparisonPage, ComparisonProvider, De
 import { deadlineState, filterQuery, hasPublishedCutoff, readFilters, sortPrograms } from "./directory-tools.js";
 import { ABOUT_FAQS, ABOUT_SECTIONS, CONTACT_LIMITS, CONTACT_TOPICS } from "./editorial-pages.js";
 import ApplicationTimeline from "./ApplicationTimeline.jsx";
-import { AccountConversionCTA, AccountPage, AccountProvider, accountFeatureEnabled, useAccount } from "./Account.jsx";
+import { AccountConversionCTA, AccountPage, AccountProvider, SignupPrompt, accountFeatureEnabled, useAccount } from "./Account.jsx";
 import SavedPlanner from "./SavedPlanner.jsx";
 import { interviewPrepFor } from "./interview-prep.js";
 import { emptyPlanner, restorePlanner, sanitizePlanner } from "./planner.js";
@@ -490,10 +490,10 @@ function SiteContent({ pathname = "/" }) {
       {page.type === "about" && <About />}
       {page.type === "contact" && <Contact />}
       {page.type === "404" && <div className="container section empty-state"><p className="eyebrow">404 / Let's find another way</p><h1>That page isn't here.</h1><p>Find college internship pathways or start with an application guide.</p><a className="button" href="/internships">Browse internships <ArrowRight size={16} /></a></div>}
-    </main><Footer />
+    </main><Footer /><SignupPrompt pageType={page.type} pathname={pathname} />
   </div>;
 }
 export default function FirstInternships({ pathname = "/" }) {
   const page = resolvePage(pathname);
-  return <AccountProvider active={accountFeatureEnabled() && page.type === "account"}><ComparisonProvider isCompare={page.type === "compare"}><SiteContent pathname={pathname} /></ComparisonProvider></AccountProvider>;
+  return <AccountProvider active={accountFeatureEnabled()} settingsActive={page.type === "account"}><ComparisonProvider isCompare={page.type === "compare"}><SiteContent pathname={pathname} /></ComparisonProvider></AccountProvider>;
 }

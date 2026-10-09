@@ -1,16 +1,20 @@
 import React, { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
-import { ArrowRight, BellRing, Check, Loader2, LogOut, Mail, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
+import { ArrowRight, BellRing, Check, Loader2, LogOut, Mail, ShieldCheck, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { FIELDS, PROGRAMS, YEARS } from "./content.js";
 import {
   ACCOUNT_PATH,
+  accountAuthRedirect,
   clearPendingNewsletterPreferences,
+  clearNewsletterIntentFromUrl,
   cleanNewsletterPreferences,
   friendlyAccountError,
   getAccountClient,
   getMyNewsletterSettings,
+  newsletterIntentFromLocation,
   postNewsletterSubscription,
   readPendingNewsletterPreferences,
   savePendingNewsletterPreferences,
+  signInWithGoogle,
   validateNewsletterPreferences,
 } from "./account-client.js";
 import "./account.css";
@@ -79,11 +83,13 @@ function initialAccountState() {
   };
 }
 
-export function AccountProvider({ children, active = false }) {
+export function AccountProvider({ children, active = false, settingsActive = false }) {
   const [state, setState] = useState(() => active ? initialAccountState() : { ...initialAccountState(), status: "inactive" });
   const clientRef = useRef(null);
   const mountedRef = useRef(false);
   const refreshSequence = useRef(0);
+  const pendingCompletionRef = useRef({ intentId: "", promise: null });
+  const authRequestRef = useRef("");
 
   const patchState = useCallback(update => {
     if (!mountedRef.current) return;
@@ -97,13 +103,37 @@ export function AccountProvider({ children, active = false }) {
       return;
     }
 
+    // Organic pages only need the local Supabase session so their navigation,
+    // calls to action, and signup prompt reflect the signed-in state. Keep the
+    // newsletter settings RPC and pending-consent work on /account, where those
+    // details are actually rendered and the auth callback is expected to land.
+    if (!settingsActive) {
+      patchState(current => ({ ...current, status: "signed-in", session, settings: null, busy: "" }));
+      return;
+    }
+
     patchState(current => ({ ...current, status: "signed-in", session, busy: current.busy || "loading-settings" }));
     let completionFeedback = null;
     try {
-      const pending = finishPending ? readPendingNewsletterPreferences() : null;
+      const callbackIntentId = finishPending ? newsletterIntentFromLocation() : "";
+      const pending = callbackIntentId ? readPendingNewsletterPreferences(callbackIntentId) : null;
       if (pending) {
-        await postNewsletterSubscription(clientRef.current, pending);
+        let completion = pendingCompletionRef.current;
+        if (completion.intentId !== pending.intentId || !completion.promise) {
+          const promise = postNewsletterSubscription(clientRef.current, pending);
+          completion = { intentId: pending.intentId, promise };
+          pendingCompletionRef.current = completion;
+        }
+        try {
+          await completion.promise;
+        } catch (error) {
+          if (pendingCompletionRef.current.promise === completion.promise) {
+            pendingCompletionRef.current = { intentId: "", promise: null };
+          }
+          throw error;
+        }
         clearPendingNewsletterPreferences();
+        clearNewsletterIntentFromUrl(pending.intentId);
         completionFeedback = { kind: "success", message: "Your account is ready and your personalized internship emails are being set up." };
       }
       const settings = await getMyNewsletterSettings(clientRef.current);
@@ -126,7 +156,7 @@ export function AccountProvider({ children, active = false }) {
         feedback: { kind: "error", message: friendlyAccountError(error) },
       }));
     }
-  }, [patchState]);
+  }, [patchState, settingsActive]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -177,19 +207,19 @@ export function AccountProvider({ children, active = false }) {
         return false;
       }
     }
+    if (authRequestRef.current) return false;
+    authRequestRef.current = "magic-link";
 
     patchState({ busy: "magic-link", feedback: null, magicLinkSentTo: "" });
     try {
-      if (consent) savePendingNewsletterPreferences(cleanPreferences);
-      else clearPendingNewsletterPreferences();
+      const pendingIntent = consent ? savePendingNewsletterPreferences(cleanPreferences) : null;
+      if (!consent) clearPendingNewsletterPreferences();
       const client = clientRef.current || await getAccountClient();
       clientRef.current = client;
-      const redirect = new URL(ACCOUNT_PATH, window.location.origin);
-      redirect.searchParams.set("welcome", "1");
       const { error } = await client.auth.signInWithOtp({
         email: cleanEmail,
         options: {
-          emailRedirectTo: redirect.toString(),
+          emailRedirectTo: accountAuthRedirect({ source, intentId: pendingIntent?.intentId || "" }),
           shouldCreateUser: true,
           data: { fi_account_source: String(source).slice(0, 60) },
         },
@@ -210,6 +240,29 @@ export function AccountProvider({ children, active = false }) {
       if (consent) clearPendingNewsletterPreferences();
       patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error) } });
       return false;
+    } finally {
+      if (authRequestRef.current === "magic-link") authRequestRef.current = "";
+    }
+  }, [patchState]);
+
+  const requestGoogleSignIn = useCallback(async ({ source = "account" } = {}) => {
+    if (authRequestRef.current) return false;
+    authRequestRef.current = "google";
+    patchState({ busy: "google", feedback: null, magicLinkSentTo: "" });
+    try {
+      // Google creates or signs into the account only. Newsletter consent stays
+      // separate and unchecked on the account page after the redirect.
+      clearPendingNewsletterPreferences();
+      const client = clientRef.current || await getAccountClient();
+      clientRef.current = client;
+      await signInWithGoogle(client, { source });
+      patchState({ busy: "" });
+      return true;
+    } catch (error) {
+      patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error) } });
+      return false;
+    } finally {
+      if (authRequestRef.current === "google") authRequestRef.current = "";
     }
   }, [patchState]);
 
@@ -269,12 +322,13 @@ export function AccountProvider({ children, active = false }) {
     ...state,
     user: state.session?.user || null,
     requestMagicLink,
+    requestGoogleSignIn,
     saveNewsletterSettings,
     unsubscribeNewsletter,
     signOut,
     dismissFeedback,
     refresh,
-  }), [dismissFeedback, refresh, requestMagicLink, saveNewsletterSettings, signOut, state, unsubscribeNewsletter]);
+  }), [dismissFeedback, refresh, requestGoogleSignIn, requestMagicLink, saveNewsletterSettings, signOut, state, unsubscribeNewsletter]);
 
   return <AccountContext.Provider value={value}>{children}</AccountContext.Provider>;
 }
@@ -292,6 +346,30 @@ function Feedback({ feedback, onDismiss }) {
     <p>{feedback.message}</p>
     <button type="button" onClick={onDismiss} aria-label="Dismiss message">×</button>
   </div>;
+}
+
+function GoogleMark() {
+  return <svg className="google-mark" viewBox="0 0 18 18" aria-hidden="true">
+    <path fill="#4285F4" d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.482h4.844a4.14 4.14 0 0 1-1.797 2.715v2.258h2.909c1.703-1.568 2.684-3.879 2.684-6.614Z" />
+    <path fill="#34A853" d="M9 18c2.43 0 4.468-.806 5.956-2.181l-2.909-2.258c-.806.54-1.836.86-3.047.86-2.344 0-4.328-1.585-5.037-3.714H.956v2.332A9 9 0 0 0 9 18Z" />
+    <path fill="#FBBC05" d="M3.963 10.707A5.41 5.41 0 0 1 3.681 9c0-.593.102-1.169.282-1.707V4.961H.956A9 9 0 0 0 0 9c0 1.452.347 2.827.956 4.039l3.007-2.332Z" />
+    <path fill="#EA4335" d="M9 3.579c1.321 0 2.507.454 3.441 1.346l2.581-2.581C13.464.892 11.426 0 9 0A9 9 0 0 0 .956 4.961l3.007 2.332C4.672 5.164 6.656 3.579 9 3.579Z" />
+  </svg>;
+}
+
+function GoogleSignInButton({ source, label = "Continue with Google", className = "" }) {
+  const account = useAccount();
+  const busy = account.busy === "google";
+  const blocked = Boolean(account.busy);
+  return <button
+    className={`account-google-button ${className}`.trim()}
+    type="button"
+    onClick={() => account.requestGoogleSignIn({ source })}
+    disabled={blocked}
+  >
+    {busy ? <Loader2 size={18} className="account-spinner" /> : <GoogleMark />}
+    <span>{busy ? "Opening Google…" : label}</span>
+  </button>;
 }
 
 function AccountHero() {
@@ -402,7 +480,8 @@ function SignedOutPanel({ source }) {
   const account = useAccount();
   const [queryDefaults] = useState(accountQueryDefaults);
   const [draft, setDraft] = useState(() => ({ ...settingsDraft({ preferences: queryDefaults.preferences }), email: "" }));
-  const busy = account.busy === "magic-link";
+  const magicBusy = account.busy === "magic-link";
+  const authBusy = account.busy === "magic-link" || account.busy === "google";
 
   const submit = async event => {
     event.preventDefault();
@@ -432,15 +511,20 @@ function SignedOutPanel({ source }) {
     </div>
     <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
     <form onSubmit={submit} className="account-form">
+      <div className="account-fast-signin">
+        <GoogleSignInButton source={queryDefaults.source || source} />
+        <p>Google creates or signs into your free account. Newsletter email stays off until you choose it.</p>
+      </div>
+      <div className="account-or-divider"><span>or use email</span></div>
       <label className="account-control account-email-control">
         <span>College email or personal email</span>
-        <input type="email" value={draft.email} onChange={event => setDraft(current => ({ ...current, email: event.target.value }))} placeholder="you@example.edu" autoComplete="email" required maxLength={320} disabled={busy} />
+        <input type="email" value={draft.email} onChange={event => setDraft(current => ({ ...current, email: event.target.value }))} placeholder="you@example.edu" autoComplete="email" required maxLength={320} disabled={authBusy} />
       </label>
-      <PreferenceFields draft={draft} setDraft={setDraft} disabled={busy} />
-      <ConsentFields draft={draft} setDraft={setDraft} disabled={busy} />
+      <PreferenceFields draft={draft} setDraft={setDraft} disabled={authBusy} />
+      <ConsentFields draft={draft} setDraft={setDraft} disabled={authBusy} />
       <div className="account-submit-row">
-        <button className="button account-primary-button" type="submit" disabled={busy}>
-          {busy ? <><Loader2 size={16} className="account-spinner" /> Sending secure link…</> : <>Create my account <ArrowRight size={16} /></>}
+        <button className="button account-primary-button" type="submit" disabled={authBusy}>
+          {magicBusy ? <><Loader2 size={16} className="account-spinner" /> Sending secure link…</> : authBusy ? <>Please wait…</> : <>Create my account <ArrowRight size={16} /></>}
         </button>
         <p>Creating an account does not subscribe you unless the email consent box is checked. Your match choices are submitted only when you opt in.</p>
       </div>
@@ -466,6 +550,7 @@ function SignedInPanel() {
   const [statusTitle, statusDescription] = STATUS_COPY[status] || STATUS_COPY.needs_consent;
   const busy = account.busy === "saving" || account.busy === "loading-settings";
   const active = ACTIVE_NEWSLETTER_STATUSES.has(status);
+  const suppressed = ["bounced", "complained"].includes(status);
   const preferences = formPreferences(draft);
 
   const submit = async event => {
@@ -500,10 +585,10 @@ function SignedInPanel() {
         {!account.settings && !busy && <div className="account-inline-warning" role="alert">We could not load your saved preferences. <button type="button" onClick={account.refresh}>Try again</button></div>}
         <form className="account-form" onSubmit={submit}>
           <PreferenceFields draft={draft} setDraft={setDraft} disabled={busy} />
-          <ConsentFields draft={draft} setDraft={setDraft} disabled={busy} suppressed={["bounced", "complained"].includes(status)} />
+          <ConsentFields draft={draft} setDraft={setDraft} disabled={busy} suppressed={suppressed} />
           <div className="account-submit-row">
-            <button className="button account-primary-button" type="submit" disabled={busy || !account.settings}>
-              {busy ? <><Loader2 size={16} className="account-spinner" /> Saving…</> : <>Save preferences <Check size={16} /></>}
+            <button className="button account-primary-button" type="submit" disabled={busy || !account.settings || suppressed}>
+              {busy ? <><Loader2 size={16} className="account-spinner" /> Saving…</> : suppressed ? <>Email suppressed <ShieldCheck size={16} /></> : <>Save preferences <Check size={16} /></>}
             </button>
             {active && <button className="account-unsubscribe-button" type="button" onClick={() => account.unsubscribeNewsletter(preferences)} disabled={busy}>Turn off all emails</button>}
           </div>
@@ -511,6 +596,93 @@ function SignedInPanel() {
       </section>
     </div>
   </div>;
+}
+
+const SIGNUP_PROMPT_DISMISSED_KEY = "fi_signup_prompt_dismissed_v1";
+const SIGNUP_PROMPT_SESSION_KEY = "fi_signup_prompt_seen_v1";
+const SIGNUP_PROMPT_DISMISS_MS = 30 * 24 * 60 * 60 * 1000;
+const SIGNUP_PROMPT_PAGES = new Set(["home", "directory", "year", "field", "topic", "program", "guide", "guides", "deadlines"]);
+
+export function SignupPrompt({ pageType = "", pathname = "/" }) {
+  const account = useAccount();
+  const [open, setOpen] = useState(false);
+
+  const dismiss = useCallback(() => {
+    try { window.localStorage.setItem(SIGNUP_PROMPT_DISMISSED_KEY, String(Date.now())); } catch { /* already shown only once this session */ }
+    setOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (!accountFeatureEnabled() || account.status !== "signed-out" || !SIGNUP_PROMPT_PAGES.has(pageType) || pathname === ACCOUNT_PATH) return undefined;
+    let persistent;
+    let session;
+    try {
+      persistent = window.localStorage;
+      session = window.sessionStorage;
+      const dismissedAt = Number(persistent.getItem(SIGNUP_PROMPT_DISMISSED_KEY) || 0);
+      if (dismissedAt > 0 && Date.now() - dismissedAt < SIGNUP_PROMPT_DISMISS_MS) return undefined;
+      if (session.getItem(SIGNUP_PROMPT_SESSION_KEY)) return undefined;
+    } catch {
+      // If dismissal cannot be remembered, avoid repeatedly interrupting the
+      // visitor across pages in the same browsing session.
+      return undefined;
+    }
+
+    let cancelled = false;
+    let checking = false;
+    const reveal = () => {
+      if (cancelled || checking) return;
+      checking = true;
+      try {
+        session.setItem(SIGNUP_PROMPT_SESSION_KEY, String(Date.now()));
+        if (!cancelled) setOpen(true);
+      } catch {
+        // If the once-per-session marker cannot be written, fail quiet rather
+        // than risk showing the prompt again on every page.
+      }
+    };
+    const startedAt = Date.now();
+    const onScroll = () => {
+      const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      if (Date.now() - startedAt >= 4000 && window.scrollY / scrollable >= 0.28) reveal();
+    };
+    const timer = window.setTimeout(reveal, 12000);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [account.status, pageType, pathname]);
+
+  useEffect(() => {
+    // Supabase broadcasts auth changes between tabs. If the visitor completes
+    // sign-in elsewhere while this card is open, remove the now-stale prompt.
+    if (account.status === "signed-in") setOpen(false);
+  }, [account.status]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKeyDown = event => {
+      if (event.key === "Escape") dismiss();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [dismiss, open]);
+
+  if (!open) return null;
+  const source = `signup-prompt-${pageType}`.slice(0, 60);
+  return <aside className="signup-prompt" role="complementary" aria-live="polite" aria-labelledby="signup-prompt-title">
+    <button className="signup-prompt-close" type="button" onClick={dismiss} aria-label="Dismiss account signup prompt"><X size={18} /></button>
+    <div className="signup-prompt-icon" aria-hidden="true"><BellRing size={20} /></div>
+    <p className="eyebrow">Free for college students</p>
+    <h2 id="signup-prompt-title">Let the right internships find you.</h2>
+    <p>Create an account in seconds, choose your year and interests, and turn on a focused digest only if you want it.</p>
+    <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
+    <GoogleSignInButton source={source} label="Sign up with Google" />
+    <a className="signup-prompt-email" href={`${ACCOUNT_PATH}?source=${encodeURIComponent(source)}`}>Use email instead <ArrowRight size={14} /></a>
+    <small>Creating an account never opts you into newsletter email.</small>
+  </aside>;
 }
 
 export function AccountConversionCTA({ source = "site", compact = false, className = "", year = null, field = "", programId = "" }) {

@@ -39,7 +39,7 @@ function digestConfig() {
     // Missing is safe: a live send requires the owner to set this explicitly to
     // false in addition to NEWSLETTER_ENABLED=true.
     dryRun: process.env.NEWSLETTER_DRY_RUN !== "false",
-    audienceLimit: asInteger(process.env.NEWSLETTER_AUDIENCE_LIMIT, 500, 1, 5000),
+    audienceLimit: asInteger(process.env.NEWSLETTER_AUDIENCE_LIMIT, 50, 1, 5000),
     matchLimit: asInteger(process.env.NEWSLETTER_MAX_MATCHES, 6, 1, 10),
     minScore: asInteger(process.env.NEWSLETTER_MIN_MATCH_SCORE, DEFAULT_MIN_MATCH_SCORE, 25, 100),
   };
@@ -110,7 +110,11 @@ export default async function handler(req, res) {
   try { options = requestOptions(req); }
   catch (error) { return res.status(400).json({ error: error.message }); }
 
-  const issueKey = newsletterRunKey(options.scheduledFor, options.frequency);
+  const issueKey = newsletterRunKey(
+    options.scheduledFor,
+    options.frequency,
+    config.dryRun ? "dry" : "live",
+  );
   let run;
   try {
     run = await newsletterRpc("newsletter_start_run", {
@@ -125,8 +129,16 @@ export default async function handler(req, res) {
   }
 
   if (!run?.id) return res.status(500).json({ error: "newsletter_run_start_failed" });
-  if (!run.created && ["completed", "completed_with_errors", "dry_run"].includes(run.status)) {
+  if (!run.acquired && ["completed", "completed_with_errors", "dry_run"].includes(run.status)) {
     return res.status(200).json({ issueKey, alreadyProcessed: true, status: run.status });
+  }
+  if (!run.acquired) {
+    return res.status(202).json({ issueKey, status: run.status || "started", alreadyRunning: true });
+  }
+  if (!run.leaseToken) {
+    // Fail closed if the delivery-safety migration has not been applied. An
+    // unfenced worker must never reach the provider handoff.
+    return res.status(503).json({ error: "newsletter_run_lease_unavailable" });
   }
 
   let candidates;
@@ -138,6 +150,7 @@ export default async function handler(req, res) {
   } catch {
     await newsletterRpc("newsletter_finish_run", {
       p_run_id: run.id,
+      p_lease_token: run.leaseToken,
       p_status: "failed",
       p_candidate_count: 0,
       p_sent_count: 0,
@@ -179,6 +192,7 @@ export default async function handler(req, res) {
     if (!matches.length) {
       await newsletterRpc("newsletter_mark_delivery", {
         p_delivery_id: delivery.id,
+        p_claim_attempt: delivery.attempts,
         p_status: "skipped",
         p_provider_message_id: null,
         p_provider_error: "no_strong_matches",
@@ -190,9 +204,39 @@ export default async function handler(req, res) {
     if (config.dryRun) {
       await newsletterRpc("newsletter_mark_delivery", {
         p_delivery_id: delivery.id,
+        p_claim_attempt: delivery.attempts,
         p_status: "dry_run",
         p_provider_message_id: null,
         p_provider_error: null,
+      }).catch(() => {});
+      totals.skipped += 1;
+      continue;
+    }
+
+    let sendable;
+    try {
+      sendable = await newsletterRpc("newsletter_delivery_sendable", {
+        p_delivery_id: delivery.id,
+        p_claim_attempt: delivery.attempts,
+      });
+    } catch {
+      await newsletterRpc("newsletter_mark_delivery", {
+        p_delivery_id: delivery.id,
+        p_claim_attempt: delivery.attempts,
+        p_status: "failed",
+        p_provider_message_id: null,
+        p_provider_error: "sendability_recheck_failed",
+      }).catch(() => {});
+      totals.failed += 1;
+      continue;
+    }
+    if (sendable !== true) {
+      await newsletterRpc("newsletter_mark_delivery", {
+        p_delivery_id: delivery.id,
+        p_claim_attempt: delivery.attempts,
+        p_status: "suppressed",
+        p_provider_message_id: null,
+        p_provider_error: "subscription_not_active_at_handoff",
       }).catch(() => {});
       totals.skipped += 1;
       continue;
@@ -212,8 +256,9 @@ export default async function handler(req, res) {
       postalAddress: config.postalAddress,
     });
 
+    let provider;
     try {
-      const provider = await sendResendEmail({
+      provider = await sendResendEmail({
         to: candidate.email,
         ...copy,
         idempotencyKey: `newsletter-delivery-${delivery.id}`,
@@ -222,20 +267,33 @@ export default async function handler(req, res) {
           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
       });
+    } catch (error) {
+      const disposition = error?.retryDisposition === "rejected" ? "rejected" : "ambiguous";
       await newsletterRpc("newsletter_mark_delivery", {
         p_delivery_id: delivery.id,
+        p_claim_attempt: delivery.attempts,
+        p_status: "failed",
+        p_provider_message_id: null,
+        p_provider_error: `${disposition}:${error?.message || "resend_failed"}`,
+      }).catch(() => {});
+      totals.failed += 1;
+      continue;
+    }
+
+    // A provider acknowledgement followed by a database outage is an
+    // ambiguous handoff. Leave the attempt claimed so a later worker can use
+    // the same provider idempotency key inside the bounded retry window.
+    try {
+      const marked = await newsletterRpc("newsletter_mark_delivery", {
+        p_delivery_id: delivery.id,
+        p_claim_attempt: delivery.attempts,
         p_status: "sent",
         p_provider_message_id: provider.id,
         p_provider_error: null,
       });
-      totals.sent += 1;
-    } catch (error) {
-      await newsletterRpc("newsletter_mark_delivery", {
-        p_delivery_id: delivery.id,
-        p_status: "failed",
-        p_provider_message_id: null,
-        p_provider_error: error?.message || "resend_failed",
-      }).catch(() => {});
+      if (marked?.status === "sent") totals.sent += 1;
+      else totals.skipped += 1;
+    } catch {
       totals.failed += 1;
     }
   }
@@ -243,9 +301,11 @@ export default async function handler(req, res) {
   const finalStatus = config.dryRun
     ? "dry_run"
     : totals.failed ? "completed_with_errors" : "completed";
+  let finished;
   try {
-    await newsletterRpc("newsletter_finish_run", {
+    finished = await newsletterRpc("newsletter_finish_run", {
       p_run_id: run.id,
+      p_lease_token: run.leaseToken,
       p_status: finalStatus,
       p_candidate_count: totals.candidates,
       p_sent_count: totals.sent,
@@ -256,11 +316,19 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "newsletter_run_finish_failed", issueKey, ...totals });
   }
 
-  return res.status(totals.failed ? 207 : 200).json({
+  const status = finished?.status || finalStatus;
+  const authoritativeTotals = {
+    candidates: finished?.candidateCount ?? totals.candidates,
+    sent: finished?.sentCount ?? totals.sent,
+    skipped: finished?.skippedCount ?? totals.skipped,
+    failed: finished?.failedCount ?? totals.failed,
+  };
+  return res.status(status === "started" ? 202 : authoritativeTotals.failed ? 207 : 200).json({
     issueKey,
-    status: finalStatus,
+    status,
     dryRun: config.dryRun,
-    ...totals,
+    retryPending: status === "started",
+    ...authoritativeTotals,
   });
 }
 

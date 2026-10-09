@@ -2,9 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, featuredPrograms, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
+import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, featuredPrograms, fieldPath, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
 import { LEGACY_REDIRECTS } from "../src/legacy.js";
-import { INTERVIEW_PREP } from "../src/interview-prep.js";
+import { FIELD_INTERVIEW_PREP, GUIDE_INTERVIEW_PREP, INTERVIEW_PREP } from "../src/interview-prep.js";
 import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, hasPublishedCutoff, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
@@ -470,4 +470,20 @@ test("interview-practice links are relevant, disclosed and limited to finance pr
   assert.match(linked, /sister site from FirstInternships(&#x27;|&apos;|')? founder/);
   const unlinked = await readFile(`dist${programPath(PROGRAMS.find(p => p.id === "chicago-fed-summer-internships"))}.html`, "utf8");
   assert.doesNotMatch(unlinked, /prepalyst\.com/);
+});
+
+test("the finance field page and interview guide carry one disclosed Prepalyst link each", async () => {
+  assert.deepEqual(Object.keys(FIELD_INTERVIEW_PREP), ["finance"]);
+  assert.deepEqual(Object.keys(GUIDE_INTERVIEW_PREP), ["internship-interview-guide"]);
+  for (const { href, label } of [...Object.values(FIELD_INTERVIEW_PREP), ...Object.values(GUIDE_INTERVIEW_PREP)]) {
+    assert.equal(new URL(href).origin, "https://prepalyst.com");
+    assert.ok(label.length > 10 && label.length <= 80);
+  }
+  const field = await readFile(`dist${fieldPath(FIELDS.find(f => f.id === "finance"))}.html`, "utf8");
+  assert.match(field, /href="https:\/\/prepalyst\.com\/interview-questions"/);
+  assert.match(field, /sister site from FirstInternships(&#x27;|&apos;|')? founder/);
+  const guide = await readFile(`dist${guidePath(GUIDES.find(g => g.slug === "internship-interview-guide"))}.html`, "utf8");
+  assert.match(guide, /href="https:\/\/prepalyst\.com\/interview-questions\/financial-analyst"/);
+  const other = await readFile(`dist${fieldPath(FIELDS.find(f => f.id === "business"))}.html`, "utf8");
+  assert.doesNotMatch(other, /prepalyst\.com/);
 });

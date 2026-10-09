@@ -48,3 +48,25 @@ export const INTERVIEW_PREP = {
 export function interviewPrepFor(programId) {
   return INTERVIEW_PREP[programId] ?? null;
 }
+
+/**
+ * The same disclosed link on two non-program pages where finance interview preparation is the
+ * natural next step: the Finance & Accounting field page and the general interview guide (for
+ * readers interviewing for finance roles). One link each, to the matching Prepalyst page.
+ * Reviewed 2026-10-09: both target pages returned 200 on prepalyst.com.
+ */
+export const FIELD_INTERVIEW_PREP = {
+  finance: { href: `${PREPALYST}/interview-questions`, label: "finance interview questions with worked answers, by topic" },
+};
+
+export const GUIDE_INTERVIEW_PREP = {
+  "internship-interview-guide": { href: `${PREPALYST}/interview-questions/financial-analyst`, label: "financial analyst interview questions with worked answers" },
+};
+
+export function fieldInterviewPrepFor(fieldId) {
+  return FIELD_INTERVIEW_PREP[fieldId] ?? null;
+}
+
+export function guideInterviewPrepFor(guideSlug) {
+  return GUIDE_INTERVIEW_PREP[guideSlug] ?? null;
+}

@@ -538,7 +538,8 @@ test("interview-practice links are relevant, disclosed and limited to finance pr
     assert.ok(label.length > 10 && label.length <= 80, `${id}: descriptive label`);
   }
   const linked = await readFile(`dist${programPath(PROGRAMS.find(p => p.id === "goldman-sachs-summer-analyst"))}.html`, "utf8");
-  assert.match(linked, /href="https:\/\/prepalyst\.com\/guides\/investment-banking-interview-questions"/);
+  assert.match(linked, /href="https:\/\/prepalyst\.com\/companies\/goldman-sachs\/prep"/);
+  assert.match(linked, /Goldman Sachs interview questions with worked answers/);
   assert.match(linked, /sister site from FirstInternships(&#x27;|&apos;|')? founder/);
   const unlinked = await readFile(`dist${programPath(PROGRAMS.find(p => p.id === "chicago-fed-summer-internships"))}.html`, "utf8");
   assert.doesNotMatch(unlinked, /prepalyst\.com/);

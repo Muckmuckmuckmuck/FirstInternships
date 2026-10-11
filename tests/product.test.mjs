@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 230, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 256, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 17, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -251,7 +251,8 @@ test("cutoffs are time-aware and next-deadline sorting puts unknown/past dates l
   const original = [...PROGRAMS];
   const sorted = sortPrograms(PROGRAMS, "deadline", now);
   const futureDated = sorted.filter(p => p.deadline && Date.parse(p.deadline) > now);
-  assert.deepEqual(futureDated.slice(0, 2).map(p => p.id), ["doe-cci", "doe-suli"]);
+  assert.equal(futureDated[0].id, "television-academy-spring-2027", "the nearest exact cutoff should lead");
+  assert.ok(futureDated.some(p => p.id === "doe-suli") && futureDated.some(p => p.id === "doe-cci"));
   assert.ok(futureDated.every((p, i) => i === 0 || Date.parse(futureDated[i - 1].deadline) <= Date.parse(p.deadline)));
   assert.deepEqual(PROGRAMS, original, "sorting must not mutate content records");
   assert.ok(sortPrograms(PROGRAMS, "year", now).slice(-3).every(p => p.firstYear === null));
@@ -352,6 +353,7 @@ test("October growth batch preserves publisher-specific years, dates and applica
   assert.deepEqual(currentPrograms().map(program => program.id), [
     "world-bank-wbg-pioneers", "nvidia-ignite", "pfizer-futures-internship", "capital-one-early-internship", "paramount-internships",
     "cleveland-clinic-lih-2027", "smithsonian-air-space-summer-2027", "whitney-marketing-spring-2027", "port-authority-summer-2027",
+    "aig-summer-internship-2027", "la-times-summer-internships-2027", "kp-launch-college-program-2027", "nordstrom-corporate-internships-2027",
   ]);
   const home = await readFile(join("dist", "index.html"), "utf8");
   assert.match(home, /High-interest and newly reviewed/);
@@ -359,6 +361,41 @@ test("October growth batch preserves publisher-specific years, dates and applica
   const capitalOne = await readFile(join("dist", "programs/capital-one-early-internship.html"), "utf8");
   assert.match(capitalOne, /More Capital One internship guides/);
   assert.ok(capitalOne.includes('href="/programs/capital-one-internship-programs"'));
+});
+
+test("October 11 expansion preserves sourced eligibility, cycle status and dates", () => {
+  const ids = [
+    "aig-summer-internship-2027", "aon-us-summer-internship", "chubb-north-america-internship", "usaa-summer-internship",
+    "geico-corporate-internships", "gallagher-sales-internship-2027", "munich-re-summer-leadership", "marsh-mclennan-agency-internships",
+    "teach-for-america-ignite-spring-2027", "breakthrough-teaching-fellowship-2027", "health-career-connection-summer-2027",
+    "kp-launch-college-program-2027", "kennedy-krieger-mchc-rise-up", "chci-congressional-internship-2027",
+    "apaics-congressional-internship-summer-2027", "ccai-foster-youth-internship-2027", "noaa-lapenta-internship-2027",
+    "nps-scientists-in-parks-summer-2027", "la-times-summer-internships-2027", "television-academy-spring-2027",
+    "aaf-most-promising-students-2027", "wolf-trap-internships", "nascar-next-internship-2027",
+    "kohls-apparel-design-intern-2027", "nordstrom-corporate-internships-2027", "royal-caribbean-shoreside-internships",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-11"));
+  assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(batch.every(program => ["Paid", "Unpaid", "Check opening", "Check program"].includes(program.pay)));
+
+  assert.equal(PROGRAMS.find(p => p.id === "aig-summer-internship-2027").deadlineDate, "2026-10-31");
+  assert.equal(PROGRAMS.find(p => p.id === "aig-summer-internship-2027").deadline, undefined, "AIG publishes no closing time");
+  assert.deepEqual(PROGRAMS.find(p => p.id === "aon-us-summer-internship").years, [3]);
+  assert.equal(PROGRAMS.find(p => p.id === "chubb-north-america-internship").firstYear, null, "bachelor's enrollment is not an all-years rule");
+  assert.deepEqual(PROGRAMS.find(p => p.id === "gallagher-sales-internship-2027").years, [2, 3]);
+  assert.equal(PROGRAMS.find(p => p.id === "kp-launch-college-program-2027").deadline, "2027-01-09T01:00:00Z");
+  assert.equal(PROGRAMS.find(p => p.id === "chci-congressional-internship-2027").deadline, "2026-12-02T04:59:00Z");
+  assert.equal(PROGRAMS.find(p => p.id === "noaa-lapenta-internship-2027").deadlineDate, "2026-12-24");
+  assert.equal(PROGRAMS.find(p => p.id === "la-times-summer-internships-2027").firstYear, null, "undergraduate status alone is not a year filter");
+  assert.match(PROGRAMS.find(p => p.id === "television-academy-spring-2027").status, /closed/i);
+  assert.equal(PROGRAMS.find(p => p.id === "royal-caribbean-shoreside-internships").firstYear, null, "current enrollment alone is not a year filter");
+  assert.equal(PROGRAMS.find(p => p.id === "nordstrom-corporate-internships-2027").deadlineDate, "2026-10-18");
+
+  const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
+  for (const id of ["aig-summer-internship-2027", "gallagher-sales-internship-2027", "breakthrough-teaching-fellowship-2027", "health-career-connection-summer-2027", "kp-launch-college-program-2027", "chci-congressional-internship-2027", "apaics-congressional-internship-summer-2027", "ccai-foster-youth-internship-2027", "noaa-lapenta-internship-2027", "nps-scientists-in-parks-summer-2027", "la-times-summer-internships-2027", "nascar-next-internship-2027", "kohls-apparel-design-intern-2027", "nordstrom-corporate-internships-2027"]) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
+  assert.ok(!summer2027.includes("television-academy-spring-2027"), "a closed spring cycle is not a Summer 2027 listing");
 });
 
 test("all public content is reachable through ordinary homepage links", async () => {

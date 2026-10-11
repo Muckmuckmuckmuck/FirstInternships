@@ -19,6 +19,9 @@ import { EMPLOYERS_PUBLIC_MEDIA_PROGRAMS } from "./employers-public-media-expans
 import { EMPLOYERS_QUANT_TECH_PROGRAMS } from "./employers-quant-tech-expansion.js";
 import { EMPLOYERS_CAMPUS_PROGRAMS } from "./employers-campus-expansion.js";
 import { EMPLOYERS_FALL_2026_PROGRAMS } from "./employers-fall-2026-expansion.js";
+import { EMPLOYERS_OCTOBER_2026_INSURANCE_PROGRAMS } from "./employers-october-2026-insurance-expansion.js";
+import { OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS } from "./employers-october-2026-public-service-expansion.js";
+import { EMPLOYERS_OCTOBER_2026_CONSUMER_MEDIA_PROGRAMS } from "./employers-october-2026-consumer-media-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -197,6 +200,9 @@ export const PROGRAMS = [
   ...EMPLOYERS_QUANT_TECH_PROGRAMS,
   ...EMPLOYERS_CAMPUS_PROGRAMS,
   ...EMPLOYERS_FALL_2026_PROGRAMS,
+  ...EMPLOYERS_OCTOBER_2026_INSURANCE_PROGRAMS,
+  ...OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS,
+  ...EMPLOYERS_OCTOBER_2026_CONSUMER_MEDIA_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
@@ -329,6 +335,10 @@ export const CURRENT_PROGRAM_IDS = [
   "smithsonian-air-space-summer-2027",
   "whitney-marketing-spring-2027",
   "port-authority-summer-2027",
+  "aig-summer-internship-2027",
+  "la-times-summer-internships-2027",
+  "kp-launch-college-program-2027",
+  "nordstrom-corporate-internships-2027",
 ];
 export const FEATURED_GUIDE_SLUGS = ["email-templates-for-internships", "how-to-follow-up-on-an-internship-email", "how-to-apply-for-an-internship"];
 // Sitewide footer links to the guides that answer the broadest student

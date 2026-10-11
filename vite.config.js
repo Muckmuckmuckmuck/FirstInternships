@@ -38,9 +38,12 @@ export default defineConfig(({ isSsrBuild }) => ({
             // provider imports it only on /account, so public SEO pages do not pay
             // the authentication SDK's parse/execute cost.
             { name: "supabase", test: /\/node_modules\/@supabase\//, priority: 25 },
-            // Employer batches are the fastest-growing data. Their own chunk keeps
-            // both data chunks under the 500 kB warning and lets a batch update
-            // leave the older content chunk cached.
+            // Recent employer batches move fastest, so keep them separate from
+            // the older employer catalog. This leaves room for future verified
+            // additions without pushing one data chunk through the 500 kB limit.
+            { name: "directory-employers-current", test: /\/src\/employers-(?:fall-2026|october-2026-[^/]+)-expansion\.js$/, priority: 21 },
+            // The established employer batches remain a long-cached parallel
+            // chunk that does not churn when a current-cycle program is added.
             { name: "directory-employers", test: /\/src\/employers-[^/]+-expansion\.js$/, priority: 20 },
             // Laboratory, research and public-sector program batches grow alongside the
             // employer batches; a third data chunk keeps every chunk under 500 kB.

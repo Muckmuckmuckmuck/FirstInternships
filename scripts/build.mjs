@@ -15,7 +15,7 @@ const run = args => {
 };
 run(["build"]);
 run(["build", "--ssr", "src/entry-server.jsx", "--outDir", ssr]);
-const { render, ROUTES, SITE, RENDERED_AT, VERIFIED, resolvePage, PROGRAMS, GUIDES, deadlineState, featuredPrograms, guidePath, hasPublishedCutoff, programHeading, programPath, programsForField, programsForTopic, programsForYear } = await import(pathToFileURL(join(ssr, "entry-server.js")));
+const { render, ROUTES, SITE, RENDERED_AT, VERIFIED, resolvePage, PROGRAMS, GUIDES, currentPrograms, deadlineState, featuredPrograms, guidePath, hasPublishedCutoff, programHeading, programPath, programsForField, programsForTopic, programsForYear } = await import(pathToFileURL(join(ssr, "entry-server.js")));
 // Published cutoffs for the deadline hub's ItemList: still-open first, then passed,
 // each by date. Exact-instant and date-only cutoffs sort on the same scale.
 const renderedAt = Date.parse(RENDERED_AT);
@@ -25,7 +25,7 @@ const cutoffOrder = (a, b) => {
 };
 const template = await readFile(join(out, "index.html"), "utf8");
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-const organization = { "@type": "Organization", "@id": `${SITE}/#organization`, name: "FirstInternships", url: `${SITE}/` };
+const organization = { "@type": "Organization", "@id": `${SITE}/#organization`, name: "FirstInternships", url: `${SITE}/`, logo: { "@type": "ImageObject", url: `${SITE}/apple-touch-icon.png` } };
 function metadata(page) {
   const canonical = `${SITE}${page.path === "/" ? "/" : page.path}`;
   const title = page.path === "/" ? `FirstInternships: ${page.title}` : page.title;
@@ -61,22 +61,28 @@ async function copyPublic(directory) {
 }
 await copyPublic(join(root, "public"));
 const crawlable = ROUTES.filter(route => !["/saved", "/compare", "/account", "/404"].includes(route));
+const latestProgramReview = (programs, fallback = VERIFIED) => programs.reduce((latest, program) => {
+  const reviewed = program.updated || program.verified;
+  return reviewed > latest ? reviewed : latest;
+}, fallback);
 function lastmodForRoute(route) {
   const page = resolvePage(route);
   if (page.program?.verified) return page.program.updated || page.program.verified;
   if (page.guide?.updated) return page.guide.updated;
   if (page.type === "guides") return GUIDES.reduce((latest, guide) => guide.updated > latest ? guide.updated : latest, VERIFIED);
-  if (page.type === "deadlines") return PROGRAMS.filter(hasPublishedCutoff).reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, VERIFIED);
+  if (page.type === "deadlines") return latestProgramReview(PROGRAMS.filter(hasPublishedCutoff));
+  // Collection pages change when the programs they actually render change.
+  // Derive freshness from that inventory instead of leaving old blanket dates
+  // in the sitemap after a verified content expansion.
+  if (page.type === "home") return latestProgramReview([...featuredPrograms(), ...currentPrograms()], "2026-10-11");
+  if (page.type === "directory") return latestProgramReview(PROGRAMS, "2026-10-11");
+  const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
+  if (programs.length) return latestProgramReview(programs, page.field?.updated || page.topic?.updated || VERIFIED);
   const explicit = {
-    "/": "2026-09-28", "/internships": "2026-09-28",
-    "/freshman-internships": "2026-09-28", "/sophomore-internships": "2026-09-28", "/junior-internships": "2026-09-28", "/senior-internships": "2026-09-28",
-    "/undergraduate-research-internships": "2026-10-01", "/summer-2027-college-internships": "2026-10-01", "/community-college-internships": "2026-10-01",
-    "/application-timeline": "2026-09-20", "/about": "2026-10-07", "/contact": "2026-10-07", "/privacy": "2026-10-07", "/terms": "2026-10-07",
+    "/application-timeline": "2026-09-20", "/about": "2026-10-07", "/contact": "2026-10-07", "/privacy": "2026-10-09", "/terms": "2026-10-09",
   }[route];
   if (explicit) return explicit;
-  const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
-  // A hub's own editorial update counts too, without freezing it against newer programs.
-  return programs.reduce((latest, program) => (program.updated || program.verified) > latest ? (program.updated || program.verified) : latest, page.field?.updated || VERIFIED);
+  return VERIFIED;
 }
 const generatedPublic = {
   "sitemap.xml": `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...crawlable, "/privacy", "/terms"].map(route => `<url><loc>${SITE}${route}</loc><lastmod>${lastmodForRoute(route)}</lastmod></url>`).join("")}</urlset>`,

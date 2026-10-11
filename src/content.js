@@ -18,6 +18,7 @@ import { EMPLOYERS_HEALTH_PROGRAMS } from "./employers-health-expansion.js";
 import { EMPLOYERS_PUBLIC_MEDIA_PROGRAMS } from "./employers-public-media-expansion.js";
 import { EMPLOYERS_QUANT_TECH_PROGRAMS } from "./employers-quant-tech-expansion.js";
 import { EMPLOYERS_CAMPUS_PROGRAMS } from "./employers-campus-expansion.js";
+import { EMPLOYERS_FALL_2026_PROGRAMS } from "./employers-fall-2026-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -195,6 +196,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_PUBLIC_MEDIA_PROGRAMS,
   ...EMPLOYERS_QUANT_TECH_PROGRAMS,
   ...EMPLOYERS_CAMPUS_PROGRAMS,
+  ...EMPLOYERS_FALL_2026_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
@@ -314,6 +316,20 @@ export const FEATURED_PROGRAM_IDS = [
   "nasa-ostem",
   "fedex-college-connections",
 ];
+// A compact homepage link set for the program pages currently earning search
+// demand or carrying newly published 2027 information. Keep this deliberately
+// small and reviewed; it is an internal-priority signal, not a live ranking.
+export const CURRENT_PROGRAM_IDS = [
+  "world-bank-wbg-pioneers",
+  "nvidia-ignite",
+  "pfizer-futures-internship",
+  "capital-one-early-internship",
+  "paramount-internships",
+  "cleveland-clinic-lih-2027",
+  "smithsonian-air-space-summer-2027",
+  "whitney-marketing-spring-2027",
+  "port-authority-summer-2027",
+];
 export const FEATURED_GUIDE_SLUGS = ["email-templates-for-internships", "how-to-follow-up-on-an-internship-email", "how-to-apply-for-an-internship"];
 // Sitewide footer links to the guides that answer the broadest student
 // questions, labelled the way students phrase them.
@@ -327,6 +343,7 @@ export const FOOTER_GUIDE_LINKS = [
 ];
 export const footerGuides = () => FOOTER_GUIDE_LINKS.map(([slug, label]) => [GUIDES.find(guide => guide.slug === slug), label]).filter(([guide]) => guide);
 export const featuredPrograms = () => FEATURED_PROGRAM_IDS.map(id => PROGRAMS.find(program => program.id === id)).filter(Boolean);
+export const currentPrograms = () => CURRENT_PROGRAM_IDS.map(id => PROGRAMS.find(program => program.id === id)).filter(Boolean);
 export const featuredGuides = () => FEATURED_GUIDE_SLUGS.map(slug => GUIDES.find(guide => guide.slug === slug)).filter(Boolean);
 export function programHeading(program) {
   const title = program.title.toLowerCase().includes(program.company.toLowerCase()) ? program.title : `${program.company} ${program.title}`;

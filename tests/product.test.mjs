@@ -2,14 +2,14 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, featuredPrograms, fieldPath, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
+import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, currentPrograms, featuredPrograms, fieldPath, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
 import { LEGACY_REDIRECTS } from "../src/legacy.js";
 import { FIELD_INTERVIEW_PREP, GUIDE_INTERVIEW_PREP, INTERVIEW_PREP } from "../src/interview-prep.js";
 import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, hasPublishedCutoff, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 218, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 230, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 17, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -100,6 +100,7 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
     assert.ok(html.includes('<div id="root"><div class="site-shell">'), route);
     const json = JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
     assert.ok(json["@graph"].some(entry => entry["@type"] === "WebPage"));
+    assert.equal(json["@graph"].find(entry => entry["@type"] === "Organization")?.logo?.url, `${SITE}/apple-touch-icon.png`, `${route}: organization logo`);
     assert.ok(!json["@graph"].some(entry => entry["@type"] === "JobPosting"));
     if (["/saved", "/compare", "/account", "/404"].includes(route)) assert.ok(html.includes("noindex, follow"));
     else assert.ok(html.includes("index, follow, max-image-preview:large"));
@@ -119,6 +120,9 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-11</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-11</lastmod>`), "directory freshness should reflect the current inventory release");
+  for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
   // Guides carry their own date too, so a rewritten guide does not advertise the
@@ -324,6 +328,37 @@ test("expanded content preserves conditional years and unknown requirements", ()
   assert.ok(searchPrograms({ field: "consumer" }).some(p => p.id === "marriott-hotel-internship"));
   assert.ok(searchPrograms({ field: "manufacturing" }).some(p => p.id === "caterpillar-college-internships"));
   assert.equal(PROGRAMS.find(p => p.id === "ea-internships-coops").verified, "2026-09-20");
+});
+
+test("October growth batch preserves publisher-specific years, dates and application status", async () => {
+  const ids = [
+    "cleveland-clinic-lih-2027", "chop-arra-2027", "smithsonian-air-space-summer-2027", "whitney-marketing-spring-2027",
+    "estee-lauder-creative-2027", "usda-nrcs-pathways", "hershey-merchandiser-coop-2027", "padres-summer-internship",
+    "port-authority-summer-2027", "alaska-air-group-internships", "nba-hbcu-fellowship-2027", "amtrak-internships-coops",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-09"));
+  assert.deepEqual(PROGRAMS.find(p => p.id === "cleveland-clinic-lih-2027").years, [3, 4]);
+  assert.equal(PROGRAMS.find(p => p.id === "cleveland-clinic-lih-2027").deadline, "2027-01-01T04:59:00Z");
+  assert.deepEqual(PROGRAMS.find(p => p.id === "chop-arra-2027").years, [2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(p => p.id === "smithsonian-air-space-summer-2027").years, [1, 2, 3, 4]);
+  assert.equal(PROGRAMS.find(p => p.id === "whitney-marketing-spring-2027").deadlineDate, "2026-11-09");
+  assert.equal(PROGRAMS.find(p => p.id === "whitney-marketing-spring-2027").deadline, undefined, "a date-only Whitney cutoff must not become an invented instant");
+  assert.equal(PROGRAMS.find(p => p.id === "usda-nrcs-pathways").firstYear, null, "NRCS year preference is not an eligibility floor");
+  assert.equal(PROGRAMS.find(p => p.id === "alaska-air-group-internships").firstYear, null, "Alaska's typical junior guidance is not universal eligibility");
+  assert.match(PROGRAMS.find(p => p.id === "port-authority-summer-2027").status, /interest form/i);
+  assert.equal(PROGRAMS.find(p => p.id === "amtrak-internships-coops").firstYear, 2);
+  assert.deepEqual(currentPrograms().map(program => program.id), [
+    "world-bank-wbg-pioneers", "nvidia-ignite", "pfizer-futures-internship", "capital-one-early-internship", "paramount-internships",
+    "cleveland-clinic-lih-2027", "smithsonian-air-space-summer-2027", "whitney-marketing-spring-2027", "port-authority-summer-2027",
+  ]);
+  const home = await readFile(join("dist", "index.html"), "utf8");
+  assert.match(home, /High-interest and newly reviewed/);
+  for (const program of currentPrograms()) assert.ok(home.includes(`href="${programPath(program)}"`), `homepage priority link: ${program.id}`);
+  const capitalOne = await readFile(join("dist", "programs/capital-one-early-internship.html"), "utf8");
+  assert.match(capitalOne, /More Capital One internship guides/);
+  assert.ok(capitalOne.includes('href="/programs/capital-one-internship-programs"'));
 });
 
 test("all public content is reachable through ordinary homepage links", async () => {

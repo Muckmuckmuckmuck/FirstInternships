@@ -117,6 +117,20 @@ test("guide selection follows a matched program before generic fallback", () => 
   assert.equal(selectRelevantGuide(matches, guides).slug, "internship-interview-guide");
 });
 
+test("guide selection never falls back through retired outreach slugs", () => {
+  const guides = [
+    { slug: "how-to-apply-for-an-internship", title: "Apply" },
+    { slug: "internship-cover-letter", title: "Cover letter" },
+    { slug: "email-templates-for-internships", title: "Email templates" },
+  ];
+  const mediaMatches = [{ program: { ...baseProgram, fields: ["media"], guideSlugs: [] } }];
+  const researchMatches = [{ program: { ...baseProgram, fields: ["research"], guideSlugs: [] } }];
+  const withoutCoverLetter = guides.filter(guide => guide.slug !== "internship-cover-letter");
+
+  assert.equal(selectRelevantGuide(mediaMatches, withoutCoverLetter).slug, "email-templates-for-internships");
+  assert.equal(selectRelevantGuide(researchMatches, withoutCoverLetter).slug, "email-templates-for-internships");
+});
+
 test("unsubscribe action tokens are purpose-bound and reject tampering", () => {
   const secret = "x".repeat(32);
   const token = createActionToken({ purpose: "unsubscribe", userId: "user-123" }, secret);

@@ -60,7 +60,7 @@ export const EMPLOYERS_TECH_PROGRAMS = [
   {
     id: "google-business-undergraduate-intern", company: "Google", title: "Business Undergraduate Internship, Summer 2027", initials: "GO", color: "#3b6fb6",
     seoTitle: "Google Business Undergraduate Internship 2027",
-    seoDescription: "Google's paid Business Undergraduate Internship places students on sales, marketing or finance teams for 12 weeks in summer 2027. Applications are due by October 9, 2026.",
+    seoDescription: "Google's Summer 2027 Business Undergraduate Internship deadline was Oct. 9, 2026. Review eligibility, transcript steps, teams, locations and pay.",
     fields: ["business", "finance"],
     firstYear: null, years: [], yearLabel: "Penultimate year intended", pay: "Paid", location: "Mountain View, Chicago, New York, San Bruno, San Francisco, Sunnyvale", mode: "Office preference stated in the application",
     summary: "A paid 12-week summer internship that places undergraduates on Google's sales, marketing and finance teams, matched by background and skills.",
@@ -69,8 +69,8 @@ export const EMPLOYERS_TECH_PROGRAMS = [
       "Participation requires being located in, and legally authorized to work in, the United States for the whole internship. Preferred qualifications include attending a US bachelor's program, returning to it after the internship, and being available for a full-time, consecutive 12-week internship between May and September 2027.",
       "Applicants need an updated resume listing the anticipated graduation date in MM/YY form and a current unofficial or official transcript in English.",
     ],
-    timing: "The posting asks applicants to complete the application by October 9th. It is a Summer 2027 posting that was live in September 2026, with interviews on a rolling basis through Q1 2027, so the date is October 9, 2026; no time of day is given. The internship runs 12 consecutive weeks starting in May or June 2027, with exact dates provided later. The posting publishes a US pay range of $58,000 to $77,000 plus a 0% bonus target, and says individual pay depends on skills, experience and education.",
-    status: "Summer 2027 posting available at review",
+    timing: "The posting asked applicants to complete the application by October 9, 2026, and that published deadline has passed. Interviews run on a rolling basis through Q1 2027. The internship runs 12 consecutive weeks starting in May or June 2027, with exact dates provided later. The posting publishes a US pay range of $58,000 to $77,000 plus a 0% bonus target, and says individual pay depends on skills, experience and education.",
+    status: "Published Summer 2027 deadline passed Oct. 9",
     deadlineDate: "2026-10-09", deadlineDateLabel: "Summer 2027 · Oct 9",
     url: "https://www.google.com/about/careers/applications/jobs/results/100460871561421510-business-undergraduate-intern-summer-2027",
     sources: [
@@ -79,7 +79,7 @@ export const EMPLOYERS_TECH_PROGRAMS = [
     ],
     steps: [
       "Update your resume so the anticipated graduation date appears in MM/YY form, and download a current transcript in English. The posting asks for both and prefers PDFs.",
-      "Apply through the posting by October 9, 2026. Attach the resume in the Resume section, then select \"Now attending\" under Degree Status in the Education section so the transcript upload appears.",
+      "The published October 9, 2026 deadline has passed. Check Google's current internship search before preparing a new submission; if the role is available, attach the resume in the Resume section, then select \"Now attending\" under Degree Status so the transcript upload appears.",
       "Choose your preferred office from the six listed. Google says that after the application period closes it may ask for more background information and let you state preferences among the sales, marketing and finance functions.",
     ],
     prepare: [
@@ -89,14 +89,14 @@ export const EMPLOYERS_TECH_PROGRAMS = [
     pitfall: "The transcript is a requested document, not an extra. The upload field only appears after you select \"Now attending\" under Degree Status, so a resume-only submission is missing something the posting asks for.",
     materials: ["Resume with graduation date in MM/YY", "Current transcript in English (PDF)", "Ranked preference among sales, marketing and finance", "Preferred office from the six listed", "Submission confirmation before Oct 9, 2026"],
     faqs: [
-      ["When is the Google Business Undergraduate Internship deadline?", "The Summer 2027 posting asks applicants to complete their application by October 9. It is a Summer 2027 posting that was live in September and October 2026, so that means October 9, 2026. No time of day is given."],
+      ["When was the Google Business Undergraduate Internship deadline?", "The Summer 2027 posting asked applicants to complete their application by October 9, 2026. That published deadline has passed; check the current Google Careers internship search for any available role or later cycle."],
       ["Who is the Google business internship for?", "Students currently enrolled in a full-time bachelor's program. Google says the program is intended for students in the penultimate year of their degree, depending on their program and circumstances, and prefers students returning to a bachelor's program after the internship."],
       ["Which teams and locations does it cover?", "Interns are placed on Sales, Marketing and Finance teams. Google considers each application for several business functions across the US, may collect more information after the application period closes, and then lets you state function preferences. You can name a preferred location from Mountain View, Chicago, New York, San Bruno, San Francisco and Sunnyvale."],
       ["What do I need to apply?", "An updated resume showing your anticipated graduation date as MM/YY, and a current unofficial or official transcript in English. The transcript upload appears only after you select 'Now attending' under Degree Status."],
       ["How much does the Google business internship pay?", "The posting lists 'US: $58,000 – $77,000 (USD) + 0% bonus target', with individual pay set by job-related skills, experience and education. Google describes the program as a paid summer internship with 1:1 mentorship and a speaker series with company leaders."],
     ],
     guideSlugs: [G.apply, G.files, G.interview],
-    verified: "2026-10-06", updated: "2026-10-06",
+    verified: "2026-10-11", updated: "2026-10-11",
   },
   {
     id: "google-bsms-technical-internships", company: "Google", title: "BS/MS Technical Internships, Summer 2027", initials: "GO", color: "#2f7d52",

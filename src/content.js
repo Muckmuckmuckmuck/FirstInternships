@@ -23,6 +23,7 @@ import { EMPLOYERS_OCTOBER_2026_INSURANCE_PROGRAMS } from "./employers-october-2
 import { OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS } from "./employers-october-2026-public-service-expansion.js";
 import { EMPLOYERS_OCTOBER_2026_CONSUMER_MEDIA_PROGRAMS } from "./employers-october-2026-consumer-media-expansion.js";
 import { EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS } from "./employers-october-2026-growth-expansion.js";
+import { EMPLOYERS_OCTOBER_2026_GROWTH_WAVE_2_PROGRAMS } from "./employers-october-2026-growth-wave-2.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -205,6 +206,7 @@ export const PROGRAMS = [
   ...OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS,
   ...EMPLOYERS_OCTOBER_2026_CONSUMER_MEDIA_PROGRAMS,
   ...EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS,
+  ...EMPLOYERS_OCTOBER_2026_GROWTH_WAVE_2_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
@@ -281,7 +283,7 @@ export const GUIDES = [
     ["Check the practical details beforehand", "Confirm the time and time zone, the meeting link or the address, who you are meeting, and anything you were asked to bring or prepare. For a remote interview, test the platform, camera, microphone, and connection on the actual device you will use, and have a fallback — a phone number or a second network — in case something fails. Ask in advance if you need an accommodation. Arrive a few minutes early and treat everyone you meet as part of the process, because they are."],
     ["Close it out and learn from it", "Write down what you were asked and anything you learned about the role while it is fresh; it is the best preparation for the next round and for other interviews. A brief thank-you note is optional unless the employer says otherwise, and it should be short and specific rather than a second pitch. Then carry on with your other applications while you wait. If you are turned down, you can ask politely whether feedback is available — many employers cannot give it at internship volume, and that is not a reflection on your application."],
   ] },
-  { slug: "how-to-follow-up-on-an-internship-email", updated: "2026-09-28", title: "Internship Follow-Up Email: Timing & Template", description: "Learn when to send an internship follow-up email, who to contact, what to include, and how to use a concise application-status template without being pushy.", intro: "A follow-up should clarify a next step, not create pressure. Check the employer portal and any timeline you were given first, then use the short template below only when an appropriate contact route exists.", sections: [
+  { slug: "how-to-follow-up-on-an-internship-email", updated: "2026-10-11", title: "Internship Follow-Up Email: When to Send + Template", description: "Use a concise internship follow-up email template after applying. Learn when to send it, who to contact, what to include, and when to stop following up.", intro: "A follow-up should clarify a next step, not create pressure. Check the employer portal and any timeline you were given first, then use the short template below only when an appropriate contact route exists.", sections: [
     ["Check before you send anything", "Most follow-up emails are answered by information the applicant already has. Look for a confirmation message, a status in the employer's portal, an assessment request, or a published decision timeline in the original posting. Check your spam and promotions folders, since automated recruiting mail lands there routinely. If the posting or the employer's careers FAQ says not to contact recruiters directly, or gives a specific support form, follow that instruction — it is part of the process, not a formality. Silence is not a rejection, and it is not an invitation to escalate."],
     ["Wait long enough to be worth answering", "If the employer gave a decision date, wait for it. If it gave none, a reasonable gap after applying is usually a few weeks rather than a few days, and longer around the busiest points of a recruiting cycle or a university term. A message sent too early signals that you did not read the process; one sent after a stated date has passed is entirely reasonable. Send one, and if it goes unanswered, let the next move be theirs."],
     ["Use the right contact, once", "Reply to the recruiter already handling your application, or use the applicant-support route the employer publishes. Do not look up individual employees' addresses, guess an address format, or send the same question to several people at the organization — it is easy to spot and it reliably works against you. Include the role title and its identifier so whoever opens the message can find your application without asking you for it."],

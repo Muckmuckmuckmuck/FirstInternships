@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 265, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 272, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 17, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -450,6 +450,34 @@ test("high-interest growth batch keeps role-specific eligibility and honest 2027
   for (const id of ["mckinsey-business-analyst-intern", "american-airlines-college-internships", "united-airlines-student-internships", "northrop-grumman-college-internships", "snap-summer-internship-program"]) {
     assert.ok(!summer2027.includes(id), `${id}: an undated recurring program must not be relabeled as Summer 2027`);
   }
+});
+
+test("second October growth wave keeps college-only rules and live 2027 dates", () => {
+  const ids = [
+    "the-athletic-leon-carter-internship-2027", "cardinal-health-operations-internship-2027",
+    "centene-technology-internship-2027", "oklo-general-internship-2027",
+    "harvey-software-engineering-internship-2027", "steadily-future-graduate-internship-2027",
+    "talos-software-engineer-internship-2027",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-11"));
+  assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 4));
+  assert.ok(batch.every(program => program.pay === "Paid"));
+
+  assert.deepEqual(PROGRAMS.find(p => p.id === "the-athletic-leon-carter-internship-2027").years, [1, 2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(p => p.id === "steadily-future-graduate-internship-2027").years, [4]);
+  for (const id of ids.filter(id => !["the-athletic-leon-carter-internship-2027", "steadily-future-graduate-internship-2027"].includes(id))) {
+    const program = PROGRAMS.find(p => p.id === id);
+    assert.equal(program.firstYear, null, `${id}: graduation or enrollment wording is not a universal class-year rule`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.equal(PROGRAMS.find(p => p.id === "the-athletic-leon-carter-internship-2027").deadlineDate, "2026-10-30");
+  assert.equal(PROGRAMS.find(p => p.id === "cardinal-health-operations-internship-2027").deadlineDate, "2027-02-28");
+  assert.equal(PROGRAMS.find(p => p.id === "harvey-software-engineering-internship-2027").deadline, "2026-10-25T07:00:00Z");
+
+  const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
+  for (const id of ids) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
 });
 
 test("all public content is reachable through ordinary homepage links", async () => {

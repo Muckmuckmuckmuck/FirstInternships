@@ -10,7 +10,7 @@ Do not weaken tests, overwrite another agent's changes, bulk-reformat the reposi
 
 An independent, free internship directory for current undergraduate college students. Organize confirmed pathways by earliest accepted college year, and use exact accepted-year sets. First-year/sophomore-only programs do not automatically accept juniors or seniors. Unknown minimums must stay unknown; never manufacture four full year buckets from employer brand names. Browsing and the browser-local planner require no account. An isolated optional Supabase account can store newsletter preferences and send explicitly consented, personalized directory updates through Resend.
 
-The directory includes 265 sourced program application guides, four college-year hubs, 17 field hubs, four focused opportunity collections, 17 original preparation guides, editorial/contact pages, and a browser-local planner. These are curated pathways, not a real-time vacancies feed. Applications take place on official employer sites.
+The directory includes 272 sourced program application guides, four college-year hubs, 17 field hubs, four focused opportunity collections, 17 original preparation guides, editorial/contact pages, and a browser-local planner. These are curated pathways, not a real-time vacancies feed. Applications take place on official employer sites.
 
 ## Code and content
 

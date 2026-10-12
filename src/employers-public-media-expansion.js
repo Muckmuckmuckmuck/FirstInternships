@@ -185,8 +185,8 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
   },
   {
     id: "nsa-summer-internships", company: "National Security Agency", title: "Summer Internship Programs", initials: "NS", color: "#27405e",
-    seoTitle: "NSA Internships: Who Qualifies & When to Apply",
-    seoDescription: "NSA's 30+ paid summer internships take US citizens from freshmen to PhD students. Summer 2027 postings opened Aug 15–19 and closed Sept 5–6, 2026, eight months before the start.",
+    seoTitle: "NSA Summer Internships 2027: Eligibility & Dates",
+    seoDescription: "NSA's paid Summer 2027 internships took applications Aug. 15–Sept. 6, 2026. See citizenship, clearance, GPA, housing and Summer 2028 planning.",
     fields: ["public-service", "technology", "engineering", "research"],
     firstYear: null, years: [], yearLabel: "Freshman to PhD · program-specific", pay: "Paid", location: "Fort Meade, MD, plus sites in CO, GA, HI, TX and UT", mode: "In person; 10–12 weeks",
     summary: "More than thirty paid summer internship programs in cybersecurity, computer science, mathematics, engineering, languages, intelligence analysis and business, at NSA sites that require a TS/SCI clearance.",
@@ -224,7 +224,7 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
       ["How do NSA interviews work?", "NSA says most interviews happen virtually or by phone, often on HireVue, which can be live or recorded. For student programs it expedites processing so students can start on time, and it may consider someone for a permanent role if their processing cannot finish in time."],
     ],
     guideSlugs: [G.assessment, G.interview, G.when],
-    verified: "2026-10-06", updated: "2026-10-06",
+    verified: "2026-10-11", updated: "2026-10-11",
   },
   {
     id: "white-house-internship", company: "The White House", title: "White House Internship Program", initials: "WH", color: "#3b4a6b",
@@ -367,8 +367,8 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
   },
   {
     id: "world-bank-wbg-pioneers", company: "World Bank Group", title: "WBG Pioneers Internship Program", initials: "WB", color: "#00538a",
-    seoTitle: "World Bank Internship: Eligibility, Pay & Dates",
-    seoDescription: "World Bank internships (WBG Pioneers) take final-year undergrads and master's or PhD students from member countries. Summer applications run Jan–Feb; you may apply to 3 roles.",
+    seoTitle: "World Bank Internship: WBG Pioneers Guide",
+    seoDescription: "The World Bank's WBG Pioneers internship has a final-year undergraduate track. See Jan.–Feb. summer timing, pay types, documents and the 3-application limit.",
     fields: ["public-service", "finance", "research", "engineering"],
     firstYear: null, years: [], yearLabel: "Final-year undergraduates", pay: "Check opening", location: "Washington, DC and country offices", mode: "Position-specific",
     summary: "The World Bank Group's structured internship program, with separate undergraduate and postgraduate tracks and placements in Washington, DC and country offices.",
@@ -406,7 +406,7 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
       ["Is WBG Explorers an internship for students?", "No. WBG Explorers is a two-year contract in country offices for people who already hold a bachelor's degree and are nationals of a donor or developed country. A current student looking for an internship should use WBG Pioneers."],
     ],
     guideSlugs: [G.cover, G.international, G.files],
-    verified: "2026-10-06", updated: "2026-10-06",
+    verified: "2026-10-06", updated: "2026-10-11",
   },
   {
     id: "nytimes-internships-outside-newsroom", company: "The New York Times", title: "Internships Outside the Newsroom", initials: "NT", color: "#333333",

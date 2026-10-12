@@ -243,11 +243,11 @@ export function accountAuthRedirect({ source = "account", intentId = "", origin 
   return redirect.toString();
 }
 
-export async function signInWithGoogle(client, { source = "account" } = {}) {
+export async function signInWithGoogle(client, { source = "account", intentId = "" } = {}) {
   if (!client?.auth?.signInWithOAuth) throw new Error("Google sign-in is not available right now.");
   const { data, error } = await client.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: accountAuthRedirect({ source }) },
+    options: { redirectTo: accountAuthRedirect({ source, intentId }) },
   });
   if (error) throw error;
   return data;

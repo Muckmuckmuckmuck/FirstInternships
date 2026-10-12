@@ -22,6 +22,7 @@ import { EMPLOYERS_FALL_2026_PROGRAMS } from "./employers-fall-2026-expansion.js
 import { EMPLOYERS_OCTOBER_2026_INSURANCE_PROGRAMS } from "./employers-october-2026-insurance-expansion.js";
 import { OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS } from "./employers-october-2026-public-service-expansion.js";
 import { EMPLOYERS_OCTOBER_2026_CONSUMER_MEDIA_PROGRAMS } from "./employers-october-2026-consumer-media-expansion.js";
+import { EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS } from "./employers-october-2026-growth-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -203,6 +204,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_OCTOBER_2026_INSURANCE_PROGRAMS,
   ...OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS,
   ...EMPLOYERS_OCTOBER_2026_CONSUMER_MEDIA_PROGRAMS,
+  ...EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,

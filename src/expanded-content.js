@@ -234,7 +234,9 @@ export const TOPICS = [
       "breakthrough-teaching-fellowship-2027", "health-career-connection-summer-2027", "kp-launch-college-program-2027",
       "chci-congressional-internship-2027", "apaics-congressional-internship-summer-2027", "ccai-foster-youth-internship-2027",
       "noaa-lapenta-internship-2027", "nps-scientists-in-parks-summer-2027", "la-times-summer-internships-2027",
-      "nascar-next-internship-2027", "kohls-apparel-design-intern-2027", "nordstrom-corporate-internships-2027"],
+      "nascar-next-internship-2027", "kohls-apparel-design-intern-2027", "nordstrom-corporate-internships-2027",
+      // Added 2026-10-11: these official postings and searches explicitly name live Summer 2027 programs.
+      "morgan-stanley-technology-calgary-2027", "tiktok-ai-engineer-intern-summer-2027", "blue-origin-summer-internships-2027"],
     guideSlugs: ["when-to-apply-for-summer-internships", "how-to-apply-for-an-internship", "internship-offer-checklist"],
     sections: [
       ["What counts as a Summer 2027 listing", "Every program in this collection has an official source that identifies a Summer 2027 cycle, term, or application route. That does not mean every role remains available today. Some employers close a posting as soon as a hiring target is reached, while research programs can keep an information page live before or after the submission window. Read the status and timing on each guide, then open the employer source before preparing an application. We do not advance a 2026 date by one year or label an undated recurring program as Summer 2027 just because it usually returns."],

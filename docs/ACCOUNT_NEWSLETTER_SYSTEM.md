@@ -64,9 +64,9 @@ The public directory and its SEO pages must continue to render without an accoun
 ## 3. Account and consent flow
 
 1. The student may continue with Google or enter an email address on `/account` and request a passwordless magic link. Google OAuth is handled by the configured Supabase Auth provider; the site does not request Gmail, Drive, contacts, or other elevated Google scopes.
-2. Google OAuth or the Supabase magic link establishes the normal Supabase session; no password is stored by FirstInternships. Google sign-in creates or enters the account only and never carries a newsletter opt-in.
+2. Google OAuth or the Supabase magic link establishes the normal Supabase session; no password is stored by FirstInternships. A plain Google sign-in creates or enters the account only. When the public prompt or `/account` form shows a separate, initially unchecked newsletter choice, the visitor may affirm it and provide a valid year plus field before opening Google; only that explicit choice may be carried through the existing nonce-bound callback handoff.
 3. Creating or signing into an account does **not** subscribe the person. Newsletter opt-in is an optional, unchecked choice.
-4. If a person selects the newsletter before completing email-link sign-in, the browser may temporarily retain the chosen preferences so the flow can continue after authentication. It must not retain the email in that temporary object. A cryptographically random intent nonce must appear in both the temporary object and that specific callback URL; a missing or mismatched nonce cannot consume the intent. Clear the object and nonce after a successful handoff. Google shortcuts deliberately clear pending intent and leave newsletter consent off.
+4. If a person selects the newsletter before completing email-link or Google sign-in, the browser may temporarily retain the chosen preferences so the flow can continue after authentication. It must not retain the email in that temporary object. A cryptographically random intent nonce must appear in both the temporary object and that specific callback URL; a missing or mismatched nonce cannot consume the intent. Clear the object and nonce after a successful handoff. A Google shortcut with no separate affirmative newsletter choice clears pending intent and leaves newsletter consent off.
 5. An authenticated `POST /api/newsletter-subscribe` requires an explicit affirmative consent value and a valid preference payload. If Supabase has already verified the email through the magic-link flow, the explicit opt-in activates the subscription and records confirmation against that verified address.
 6. If the authenticated address is not yet verified, the request remains pending and Resend sends a separate single-use link. `GET /api/newsletter-confirm?token=...` activates the subscription and records the confirmation event. The current token expires after 24 hours.
 7. Settings can be read for the signed-in user through `get_my_newsletter_settings()`. Preferences may be changed without creating a second subscription. A previously unsubscribed user must take a new affirmative action before reactivation.
@@ -82,7 +82,7 @@ The allowed subscription states are:
 
 Never infer consent from an existing `profiles.marketing_consent` value, an existing account, planner activity, site visits, saved programs, or silence. Never preselect the opt-in checkbox. Existing users start at `needs_consent` and are not emailed to ask whether they want marketing email.
 
-Public directory pages may show one non-modal signup prompt per browser session after either 12 seconds or four seconds plus meaningful scroll depth. The prompt has no overlay or scroll lock, requires a deliberate CTA, and has a visible close button. Closing it records a 30-day browser-local dismissal. It must never auto-submit, preselect newsletter consent, show to a signed-in person, or appear on `/account`, utility, legal, or error pages. If auth availability cannot be checked, do not show the prompt.
+Public directory pages may show one non-modal signup prompt per browser session after either eight seconds or three seconds plus at least 20% scroll depth. The prompt has no overlay or scroll lock, requires a deliberate CTA, and has a visible close button. Closing it records a 14-day browser-local dismissal. It may prefill the visible year-page or field/program-page context, but the visitor must still choose or confirm the values and the newsletter checkbox always begins unchecked. It must never auto-submit, show to a signed-in person, or appear on `/account`, utility, legal, or error pages. If auth availability cannot be checked, do not show the prompt.
 
 Every promotional newsletter must include a visible unsubscribe link and standards-compliant one-click headers. The public unsubscribe endpoint accepts RFC 8058 `POST` requests. A `GET` displays a confirmation screen and must not unsubscribe immediately, because security scanners often open every link in an email. An unsubscribe must not require login and must take effect before any later send is selected.
 
@@ -241,8 +241,8 @@ Roll out in stages; the send gates should default off.
 ### Stage 1 — internal accounts
 
 - Enable `/account` for controlled test accounts.
-- Verify Google login, magic links, nonce-bound pending preference handoff, settings reads/updates, sign-out, confirmation expiry/replay protection, and unsubscribe behavior.
-- Verify the prompt appears once per session on an eligible page, closes only by an explicit action, honors its 30-day dismissal, stays absent for signed-in users, and remains usable on mobile and with keyboard focus.
+- Verify account-only Google login, explicit-consent Google login, magic links, nonce-bound pending preference handoff, settings reads/updates, sign-out, confirmation expiry/replay protection, and unsubscribe behavior.
+- Verify the prompt appears once per session on an eligible page, closes only by an explicit action, honors its 14-day dismissal, stays absent for signed-in users, and remains usable on mobile and with keyboard focus.
 - Keep `NEWSLETTER_ENABLED=false`.
 
 ### Stage 2 — dry-run matching
@@ -339,7 +339,7 @@ An account/newsletter change is not complete until all applicable items are true
 - Existing Supabase users and profile data are preserved.
 - An account remains separate from optional, explicit newsletter consent.
 - Double opt-in, token expiry/single use, unsubscribe, bounce, and complaint paths are tested.
-- Google account creation and the public signup prompt never imply or transfer newsletter consent.
+- Google account creation and the public signup prompt never imply newsletter consent; only a separately checked consent choice with valid preferences may transfer through the nonce-bound callback.
 - Only confirmed `active` subscribers can be selected for a send.
 - Preferences are validated against allowlists and arrays/lengths are bounded.
 - Matching preserves exact college-year, compensation, location, status, and source semantics.

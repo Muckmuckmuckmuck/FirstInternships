@@ -245,20 +245,32 @@ export function AccountProvider({ children, active = false, settingsActive = fal
     }
   }, [patchState]);
 
-  const requestGoogleSignIn = useCallback(async ({ source = "account" } = {}) => {
+  const requestGoogleSignIn = useCallback(async ({ source = "account", consent = false, preferences = EMPTY_PREFERENCES } = {}) => {
+    const cleanPreferences = cleanNewsletterPreferences(preferences, FIELD_IDS);
+    if (consent) {
+      const validationError = validateNewsletterPreferences(cleanPreferences);
+      if (validationError) {
+        patchState({ feedback: { kind: "error", message: validationError } });
+        return false;
+      }
+    }
     if (authRequestRef.current) return false;
     authRequestRef.current = "google";
     patchState({ busy: "google", feedback: null, magicLinkSentTo: "" });
     try {
-      // Google creates or signs into the account only. Newsletter consent stays
-      // separate and unchecked on the account page after the redirect.
-      clearPendingNewsletterPreferences();
+      // A plain Google shortcut creates or enters an account only. If the
+      // visitor separately checked the newsletter box and supplied valid match
+      // preferences, bind that explicit choice to this callback with the same
+      // nonce-protected handoff used by email-link sign-in.
+      const pendingIntent = consent ? savePendingNewsletterPreferences(cleanPreferences) : null;
+      if (!consent) clearPendingNewsletterPreferences();
       const client = clientRef.current || await getAccountClient();
       clientRef.current = client;
-      await signInWithGoogle(client, { source });
+      await signInWithGoogle(client, { source, intentId: pendingIntent?.intentId || "" });
       patchState({ busy: "" });
       return true;
     } catch (error) {
+      if (consent) clearPendingNewsletterPreferences();
       patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error) } });
       return false;
     } finally {
@@ -357,15 +369,16 @@ function GoogleMark() {
   </svg>;
 }
 
-function GoogleSignInButton({ source, label = "Continue with Google", className = "" }) {
+function GoogleSignInButton({ source, label = "Continue with Google", className = "", consent = false, preferences = EMPTY_PREFERENCES }) {
   const account = useAccount();
   const busy = account.busy === "google";
   const blocked = Boolean(account.busy);
   return <button
     className={`account-google-button ${className}`.trim()}
     type="button"
-    onClick={() => account.requestGoogleSignIn({ source })}
+    onClick={() => account.requestGoogleSignIn({ source, consent, preferences })}
     disabled={blocked}
+    aria-busy={busy}
   >
     {busy ? <Loader2 size={18} className="account-spinner" /> : <GoogleMark />}
     <span>{busy ? "Opening Google…" : label}</span>
@@ -512,8 +525,13 @@ function SignedOutPanel({ source }) {
     <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
     <form onSubmit={submit} className="account-form">
       <div className="account-fast-signin">
-        <GoogleSignInButton source={queryDefaults.source || source} />
-        <p>Google creates or signs into your free account. Newsletter email stays off until you choose it.</p>
+        <GoogleSignInButton
+          source={queryDefaults.source || source}
+          label={draft.consent ? "Create with Google + turn on alerts" : "Create account with Google"}
+          consent={draft.consent}
+          preferences={formPreferences(draft)}
+        />
+        <p>Google creates or signs into your free account. If you fill out the profile below and separately check the email box, this same button also saves that explicit choice.</p>
       </div>
       <div className="account-or-divider"><span>or use email</span></div>
       <label className="account-control account-email-control">
@@ -544,6 +562,10 @@ const STATUS_COPY = {
 function SignedInPanel() {
   const account = useAccount();
   const [draft, setDraft] = useState(() => settingsDraft(account.settings));
+  const [welcome] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).get("welcome") === "1";
+  });
   useEffect(() => setDraft(settingsDraft(account.settings)), [account.settings]);
 
   const status = account.settings?.subscription?.status || "needs_consent";
@@ -564,6 +586,11 @@ function SignedInPanel() {
       <div><small>Signed in as</small><strong>{account.user?.email}</strong></div>
       <button type="button" className="button secondary small" onClick={account.signOut} disabled={account.busy === "sign-out"}>{account.busy === "sign-out" ? <Loader2 size={14} className="account-spinner" /> : <LogOut size={14} />} Sign out</button>
     </section>
+    {welcome && status === "needs_consent" && <aside className="account-onboarding-nudge" aria-labelledby="account-onboarding-title">
+      <span aria-hidden="true"><BellRing size={21} /></span>
+      <div><p className="eyebrow">Your Google account is ready</p><h2 id="account-onboarding-title">Finish your match profile to turn on alerts.</h2><p>Choose your college year and at least one field below, then check the email consent box. Nothing is sent until you save that explicit choice.</p></div>
+      <a className="button small" href="#preferences">Choose my matches <ArrowRight size={15} /></a>
+    </aside>}
     <div className="account-dashboard-grid">
       <aside className="account-status-card">
         <span className={`account-status-dot is-${status}`} aria-hidden="true" />
@@ -600,16 +627,32 @@ function SignedInPanel() {
 
 const SIGNUP_PROMPT_DISMISSED_KEY = "fi_signup_prompt_dismissed_v1";
 const SIGNUP_PROMPT_SESSION_KEY = "fi_signup_prompt_seen_v1";
-const SIGNUP_PROMPT_DISMISS_MS = 30 * 24 * 60 * 60 * 1000;
+const SIGNUP_PROMPT_DISMISS_MS = 14 * 24 * 60 * 60 * 1000;
+const SIGNUP_PROMPT_REVEAL_MS = 8000;
+const SIGNUP_PROMPT_SCROLL_WAIT_MS = 3000;
+const SIGNUP_PROMPT_SCROLL_DEPTH = 0.2;
 const SIGNUP_PROMPT_PAGES = new Set(["home", "directory", "year", "field", "topic", "program", "guide", "guides", "deadlines"]);
 
-export function SignupPrompt({ pageType = "", pathname = "/" }) {
+export function SignupPrompt({ pageType = "", pathname = "/", year = null, field = "", programId = "" }) {
   const account = useAccount();
   const [open, setOpen] = useState(false);
+  const [showAlertOptions, setShowAlertOptions] = useState(false);
+  const [draft, setDraft] = useState(() => ({
+    collegeYear: Number(year) >= 1 && Number(year) <= 4 ? Number(year) : null,
+    field: FIELD_IDS.includes(field) ? field : "",
+    consent: false,
+  }));
 
   const dismiss = useCallback(() => {
     try { window.localStorage.setItem(SIGNUP_PROMPT_DISMISSED_KEY, String(Date.now())); } catch { /* already shown only once this session */ }
+    account.dismissFeedback();
     setOpen(false);
+  }, [account.dismissFeedback]);
+
+  useEffect(() => {
+    // Keep the server and first client render identical, then expose the full
+    // matcher by default where it fits without crowding the underlying page.
+    if (window.matchMedia("(min-width: 621px)").matches) setShowAlertOptions(true);
   }, []);
 
   useEffect(() => {
@@ -644,9 +687,9 @@ export function SignupPrompt({ pageType = "", pathname = "/" }) {
     const startedAt = Date.now();
     const onScroll = () => {
       const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-      if (Date.now() - startedAt >= 4000 && window.scrollY / scrollable >= 0.28) reveal();
+      if (Date.now() - startedAt >= SIGNUP_PROMPT_SCROLL_WAIT_MS && window.scrollY / scrollable >= SIGNUP_PROMPT_SCROLL_DEPTH) reveal();
     };
-    const timer = window.setTimeout(reveal, 12000);
+    const timer = window.setTimeout(reveal, SIGNUP_PROMPT_REVEAL_MS);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       cancelled = true;
@@ -672,16 +715,62 @@ export function SignupPrompt({ pageType = "", pathname = "/" }) {
 
   if (!open) return null;
   const source = `signup-prompt-${pageType}`.slice(0, 60);
+  const preferences = cleanNewsletterPreferences({
+    ...EMPTY_PREFERENCES,
+    collegeYear: draft.collegeYear,
+    fields: draft.field ? [draft.field] : [],
+  }, FIELD_IDS);
+  const accountQuery = new URLSearchParams({ source });
+  if (draft.collegeYear) accountQuery.set("year", String(draft.collegeYear));
+  if (draft.field) accountQuery.set("field", draft.field);
+  if (PROGRAMS.some(program => program.id === programId)) accountQuery.set("program", programId);
   return <aside className="signup-prompt" role="complementary" aria-live="polite" aria-labelledby="signup-prompt-title">
     <button className="signup-prompt-close" type="button" onClick={dismiss} aria-label="Dismiss account signup prompt"><X size={18} /></button>
     <div className="signup-prompt-icon" aria-hidden="true"><BellRing size={20} /></div>
-    <p className="eyebrow">Free for college students</p>
-    <h2 id="signup-prompt-title">Let the right internships find you.</h2>
-    <p>Create an account in seconds, choose your year and interests, and turn on a focused digest only if you want it.</p>
+    <p className="eyebrow">{PROGRAMS.length} sourced paths · free for students</p>
+    <h2 id="signup-prompt-title">Stop starting every internship search from zero.</h2>
+    <p>Create a free account with Google in seconds. Add your year and interest if you also want a focused internship digest.</p>
+    <button className="signup-prompt-alert-toggle" type="button" aria-expanded={showAlertOptions} aria-controls="signup-prompt-alert-options" onClick={() => {
+      setShowAlertOptions(current => {
+        if (current) setDraft(value => ({ ...value, consent: false }));
+        return !current;
+      });
+      account.dismissFeedback();
+    }}>
+      <span><BellRing size={16} /> Personalized email alerts <small>Optional</small></span>
+      <ArrowRight size={16} aria-hidden="true" />
+    </button>
+    {showAlertOptions && <div className="signup-prompt-alert-options" id="signup-prompt-alert-options">
+      <div className="signup-prompt-match" aria-label="Optional newsletter match preferences">
+        <label>
+          <span>My college year</span>
+          <select value={draft.collegeYear || ""} onChange={event => setDraft(current => ({ ...current, collegeYear: event.target.value ? Number(event.target.value) : null }))}>
+            <option value="">Choose year</option>
+            {YEARS.map(item => <option value={item.id} key={item.id}>{item.short}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>My main interest</span>
+          <select value={draft.field} onChange={event => setDraft(current => ({ ...current, field: event.target.value }))}>
+            <option value="">Choose field</option>
+            {FIELDS.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
+          </select>
+        </label>
+      </div>
+      <label className="account-check-row signup-prompt-consent">
+        <input type="checkbox" checked={draft.consent} onChange={event => setDraft(current => ({ ...current, consent: event.target.checked }))} />
+        <span><strong>Email me personalized internship alerts</strong><small>Use the choices above for a focused weekly digest. Unsubscribe anytime. <a href="/privacy">Privacy details</a>.</small></span>
+      </label>
+    </div>}
     <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
-    <GoogleSignInButton source={source} label="Sign up with Google" />
-    <a className="signup-prompt-email" href={`${ACCOUNT_PATH}?source=${encodeURIComponent(source)}`}>Use email instead <ArrowRight size={14} /></a>
-    <small>Creating an account never opts you into newsletter email.</small>
+    <GoogleSignInButton
+      source={source}
+      label={draft.consent ? "Create with Google + turn on alerts" : "Create account with Google"}
+      consent={draft.consent}
+      preferences={preferences}
+    />
+    <a className="signup-prompt-email" href={`${ACCOUNT_PATH}?${accountQuery.toString()}`}>Use email instead <ArrowRight size={14} /></a>
+    <small>The alert box starts unchecked. A Google account alone never subscribes you.</small>
   </aside>;
 }
 

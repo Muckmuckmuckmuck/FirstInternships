@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 256, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 265, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 17, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -175,9 +175,17 @@ test("account state is site-wide without loading newsletter settings on organic 
   assert.match(promptSource, /account\.status !== "signed-out"/, "only a confirmed signed-out visitor may see the prompt");
   assert.match(promptSource, /account\.status === "signed-in"\) setOpen\(false\)/, "a cross-tab sign-in must close an open prompt");
   assert.doesNotMatch(promptSource, /auth\.getSession/, "the prompt should reuse the site-wide auth state instead of issuing a second session check");
-  assert.match(promptSource, /setTimeout\(reveal, 12000\)/, "the prompt must remain delayed");
-  assert.match(promptSource, /startedAt >= 4000[\s\S]*>= 0\.28/, "scroll-triggered display must retain its time and depth thresholds");
+  assert.match(accountSource, /SIGNUP_PROMPT_DISMISS_MS = 14 \* 24 \* 60 \* 60 \* 1000/, "dismissal must be remembered without suppressing the prompt forever");
+  assert.match(accountSource, /SIGNUP_PROMPT_REVEAL_MS = 8000/, "the prompt must stay delayed rather than covering landing content immediately");
+  assert.match(promptSource, /setTimeout\(reveal, SIGNUP_PROMPT_REVEAL_MS\)/);
+  assert.match(promptSource, /startedAt >= SIGNUP_PROMPT_SCROLL_WAIT_MS[\s\S]*>= SIGNUP_PROMPT_SCROLL_DEPTH/, "scroll-triggered display must retain both time and depth gates");
   assert.match(promptSource, /event\.key === "Escape"/, "keyboard users must be able to dismiss the prompt");
+  assert.match(promptSource, /type="checkbox" checked=\{draft\.consent\}/, "newsletter consent must be a separate controlled checkbox that begins false");
+  assert.match(promptSource, /consent=\{draft\.consent\}[\s\S]*preferences=\{preferences\}/, "the Google handoff may use only the visible explicit consent and preferences");
+  assert.match(promptSource, /A Google account alone never subscribes you/, "the prompt must disclose the account-only path");
+  assert.doesNotMatch(promptSource, /aria-modal/, "the growth prompt must remain a non-blocking banner, not an intrusive search interstitial");
+  assert.match(appSource, /year=\{page\.type === "year" \? page\.year\?\.id : null\}/, "year pages should prefill only their visible year context");
+  assert.match(appSource, /field=\{page\.type === "field" \? page\.field\?\.id : page\.program\?\.fields\?\.\[0\] \|\| ""\}/, "field and program pages should preserve their visible field context");
 });
 
 test("account disclosures cover Google auth boundaries and separate newsletter consent", async () => {
@@ -193,6 +201,17 @@ test("account disclosures cover Google auth boundaries and separate newsletter c
     assert.match(document, /Google contacts/, `${name} must explain that contacts access is not requested`);
     assert.match(document, /does not (?:by itself |automatically )?(?:subscribe|enroll)/, `${name} must keep account creation separate from newsletter consent`);
   }
+});
+
+test("the account page can carry the visitor's explicit newsletter choice through Google", async () => {
+  const accountSource = await readFile("src/Account.jsx", "utf8");
+  const panelStart = accountSource.indexOf("function SignedOutPanel");
+  const panelEnd = accountSource.indexOf("const STATUS_COPY", panelStart);
+  const panelSource = accountSource.slice(panelStart, panelEnd);
+  assert.match(panelSource, /label=\{draft\.consent \? "Create with Google \+ turn on alerts" : "Create account with Google"\}/);
+  assert.match(panelSource, /consent=\{draft\.consent\}/);
+  assert.match(panelSource, /preferences=\{formPreferences\(draft\)\}/);
+  assert.match(panelSource, /separately check the email box/, "the Google shortcut must describe the separate consent boundary");
 });
 
 test("comparison validates IDs, preserves order, and caps the shortlist", () => {
@@ -396,6 +415,41 @@ test("October 11 expansion preserves sourced eligibility, cycle status and dates
   const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
   for (const id of ["aig-summer-internship-2027", "gallagher-sales-internship-2027", "breakthrough-teaching-fellowship-2027", "health-career-connection-summer-2027", "kp-launch-college-program-2027", "chci-congressional-internship-2027", "apaics-congressional-internship-summer-2027", "ccai-foster-youth-internship-2027", "noaa-lapenta-internship-2027", "nps-scientists-in-parks-summer-2027", "la-times-summer-internships-2027", "nascar-next-internship-2027", "kohls-apparel-design-intern-2027", "nordstrom-corporate-internships-2027"]) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
   assert.ok(!summer2027.includes("television-academy-spring-2027"), "a closed spring cycle is not a Summer 2027 listing");
+});
+
+test("high-interest growth batch keeps role-specific eligibility and honest 2027 status", () => {
+  const ids = [
+    "mckinsey-business-analyst-intern", "morgan-stanley-technology-calgary-2027",
+    "tiktok-ai-engineer-intern-summer-2027", "blue-origin-summer-internships-2027",
+    "loreal-research-innovation-internship-2027", "american-airlines-college-internships",
+    "united-airlines-student-internships", "northrop-grumman-college-internships",
+    "snap-summer-internship-program",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-11"));
+  assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(batch.every(program => program.sources.some(source => source.url === program.url)));
+
+  assert.deepEqual(PROGRAMS.find(p => p.id === "american-airlines-college-internships").years, [3, 4]);
+  for (const id of ids.filter(id => id !== "american-airlines-college-internships")) {
+    const program = PROGRAMS.find(p => p.id === id);
+    assert.equal(program.firstYear, null, `${id}: enrollment or a graduation window is not a universal class-year rule`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.equal(PROGRAMS.find(p => p.id === "morgan-stanley-technology-calgary-2027").deadlineDate, "2026-12-31");
+  assert.equal(PROGRAMS.find(p => p.id === "morgan-stanley-technology-calgary-2027").deadline, undefined, "Morgan Stanley publishes no closing time");
+  assert.equal(PROGRAMS.find(p => p.id === "loreal-research-innovation-internship-2027").deadlineDate, "2026-09-30");
+  assert.match(PROGRAMS.find(p => p.id === "loreal-research-innovation-internship-2027").status, /closed/i);
+
+  const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
+  for (const id of ["morgan-stanley-technology-calgary-2027", "tiktok-ai-engineer-intern-summer-2027", "blue-origin-summer-internships-2027"]) {
+    assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
+  }
+  assert.ok(!summer2027.includes("loreal-research-innovation-internship-2027"), "a closed 2027 window is useful as a guide but not a live shortlist entry");
+  for (const id of ["mckinsey-business-analyst-intern", "american-airlines-college-internships", "united-airlines-student-internships", "northrop-grumman-college-internships", "snap-summer-internship-program"]) {
+    assert.ok(!summer2027.includes(id), `${id}: an undated recurring program must not be relabeled as Summer 2027`);
+  }
 });
 
 test("all public content is reachable through ordinary homepage links", async () => {

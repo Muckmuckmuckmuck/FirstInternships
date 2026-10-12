@@ -124,6 +124,29 @@ test("Google sign-in uses the canonical account callback without newsletter cons
   assert.equal(redirect.searchParams.has("newsletter_intent"), false, "account creation must stay separate from newsletter consent");
 });
 
+test("Google sign-in can carry only an already-created explicit newsletter intent", async () => {
+  let request;
+  const client = {
+    auth: {
+      async signInWithOAuth(value) {
+        request = value;
+        return { data: { provider: "google" }, error: null };
+      },
+    },
+  };
+  const intentId = "g".repeat(48);
+
+  await signInWithGoogle(client, { source: "signup-prompt-field", intentId });
+
+  assert.equal(request.provider, "google");
+  assert.deepEqual(Object.keys(request.options), ["redirectTo"], "newsletter handoff must not add Google scopes or provider-token access");
+  const redirect = new URL(request.options.redirectTo);
+  assert.equal(redirect.origin, "https://firstinternships.com");
+  assert.equal(redirect.pathname, "/account");
+  assert.equal(redirect.searchParams.get("source"), "signup-prompt-field");
+  assert.equal(redirect.searchParams.get("newsletter_intent"), intentId);
+});
+
 test("settings RPC camelCase shape normalizes without losing status", () => {
   assert.deepEqual(normalizeNewsletterSettings({
     subscription: { status: "active", email: "student@example.edu", consentVersion: CONSENT_VERSION },

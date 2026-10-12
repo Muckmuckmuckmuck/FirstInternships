@@ -494,7 +494,13 @@ function SiteContent({ pathname = "/" }) {
       {page.type === "about" && <About />}
       {page.type === "contact" && <Contact />}
       {page.type === "404" && <div className="container section empty-state"><p className="eyebrow">404 / Let's find another way</p><h1>That page isn't here.</h1><p>Find college internship pathways or start with an application guide.</p><a className="button" href="/internships">Browse internships <ArrowRight size={16} /></a></div>}
-    </main><Footer /><SignupPrompt pageType={page.type} pathname={pathname} />
+    </main><Footer /><SignupPrompt
+      pageType={page.type}
+      pathname={pathname}
+      year={page.type === "year" ? page.year?.id : null}
+      field={page.type === "field" ? page.field?.id : page.program?.fields?.[0] || ""}
+      programId={page.program?.id || ""}
+    />
   </div>;
 }
 export default function FirstInternships({ pathname = "/" }) {

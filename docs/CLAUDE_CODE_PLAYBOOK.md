@@ -41,7 +41,7 @@ FirstInternships is not:
 - A reason to invent dates, pay, remote status, class years, or future cycles.
 - A license to create hundreds of near-duplicate keyword pages.
 
-As of October 11, 2026, the maintained baseline is 256 sourced program guides, 17 original preparation guides, 309 prerendered React routes, and 307 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
+As of October 11, 2026, the maintained baseline is 265 sourced program guides, 17 original preparation guides, 318 prerendered React routes, and 316 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
 
 ## 3. Non-negotiable invariants
 
@@ -82,7 +82,7 @@ Prefer a new, clearly named expansion module for a substantial researched batch.
 - `src/FirstInternships.jsx` owns route-driven pages and shared directory UI.
 - `src/DirectoryTools.jsx` owns filtering, comparison, and published-deadline experiences.
 - `src/SavedPlanner.jsx` owns the browser-local saved workspace.
-- `src/Account.jsx` owns the optional Google/email account, delayed dismissible signup prompt, and newsletter-preference interface. `src/account-client.js` owns Supabase browser configuration, nonce-bound pending preference handoff, settings normalization, and authenticated subscription calls. `src/account.css` is the account-specific visual layer. Google login creates or enters an account only; never pass a pending newsletter opt-in through the Google shortcut.
+- `src/Account.jsx` owns the optional Google/email account, delayed dismissible signup prompt, and newsletter-preference interface. `src/account-client.js` owns Supabase browser configuration, nonce-bound pending preference handoff, settings normalization, and authenticated subscription calls. `src/account.css` is the account-specific visual layer. A plain Google shortcut creates or enters an account only. The public prompt and `/account` form may carry a pending newsletter intent through Google only after the visitor separately checks an initially unchecked consent box and supplies a valid year plus field; bind that choice to the callback nonce and never encode the preferences or consent itself in the URL.
 - `src/ApplicationTimeline.jsx` owns the temporary preparation timeline builder.
 - `src/styles.css` and `src/polish.css` are the visual system. Preserve their cascade intentionally.
 - `src/index.jsx` hydrates prerendered HTML in production and performs a normal client render in development.
@@ -298,7 +298,7 @@ Preserve:
 - Program-specific sitemap review dates; do not replace them with one fabricated blanket date.
 - Concise search titles without a blanket `| FirstInternships` suffix on every route. Google can show the WebSite name separately. Keep the homepage brand-led and keep program titles within the tested content limit.
 - Employer-aware program H1s from `programHeading()`. Do not revert to generic title-only H1s that collide across different employers.
-- A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 256-card inventory belongs on `/internships`, not on the homepage. `CURRENT_PROGRAM_IDS` is the deliberately small link set for high-interest or newly reviewed program pages and must not become a second full directory.
+- A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 265-card inventory belongs on `/internships`, not on the homepage. `CURRENT_PROGRAM_IDS` is the deliberately small link set for high-interest or newly reviewed program pages and must not become a second full directory.
 - Exact-year cards on year hubs plus a compact sample of opening-specific pathways. Do not restore the same full unknown-minimum inventory to all four year pages.
 - Related programs from the catalog-wide assignment in `relatedPrograms()`: same-employer programs first, then six slots balanced across each page's most similar programs so every program is suggested from several others. Never reintroduce an alphabetical or array-order tie-break; it starved later programs of internal links. Keep the assignment cheap (pairs are scored once), because it runs during hydration on phones.
 - Guide "next read" links that rotate onward through `GUIDES`, and the footer's popular-guide links in `FOOTER_GUIDE_LINKS`.

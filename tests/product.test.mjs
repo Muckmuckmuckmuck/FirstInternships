@@ -10,7 +10,7 @@ import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstin
 
 test("content has unique routes and real official-source records", () => {
   assert.ok(PROGRAMS.length >= 272, "the college directory should not regress to a thin inventory");
-  assert.ok(GUIDES.length >= 17, "the preparation library should not regress");
+  assert.ok(GUIDES.length >= 23, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
       const rows = record[key];
@@ -51,6 +51,24 @@ test("college-year filtering uses accepted years, not just earliest year", () =>
   assert.equal(searchPrograms({ query: "no-matching-program-xyz" }).length, 0);
   assert.ok(searchPrograms({ paid: true }).every(p => p.pay === "Paid"));
   assert.deepEqual(searchPrograms({ ids: ["nasa-ostem"] }).map(p => p.id), ["nasa-ostem"]);
+});
+
+test("October 12 guide expansion adds complete high-intent student playbooks", () => {
+  const slugs = [
+    "how-many-internships-should-i-apply-to",
+    "internship-application-status-meanings",
+    "internship-career-fair-guide",
+    "internship-housing-and-relocation",
+    "remote-internship-guide",
+    "first-day-of-internship",
+  ];
+  const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
+  assert.ok(guides.every(Boolean));
+  assert.ok(guides.every(guide => guide.updated === "2026-10-12"));
+  assert.equal(guides.reduce((total, guide) => total + guide.sections.length, 0), 53);
+  assert.ok(guides.every(guide => guide.sections.length >= 8 && guide.example?.text));
+  assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
+  assert.ok(guides.every(guide => !guide.topicSlug || TOPICS.some(topic => topic.slug === guide.topicSlug)));
 });
 test("route resolution supports clean URLs and rejects unknown routes", () => {
   assert.equal(resolvePage("/programs/nasa-ostem.html").program.id, "nasa-ostem");
@@ -120,7 +138,7 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-11</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-12</lastmod>`), "homepage freshness should reflect the current content release");
   assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-11</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
@@ -186,6 +204,8 @@ test("account state is site-wide without loading newsletter settings on organic 
   assert.doesNotMatch(promptSource, /aria-modal/, "the growth prompt must remain a non-blocking banner, not an intrusive search interstitial");
   assert.match(appSource, /year=\{page\.type === "year" \? page\.year\?\.id : null\}/, "year pages should prefill only their visible year context");
   assert.match(appSource, /field=\{page\.type === "field" \? page\.field\?\.id : page\.program\?\.fields\?\.\[0\] \|\| ""\}/, "field and program pages should preserve their visible field context");
+  assert.doesNotMatch(appSource, /year=\{program\.firstYear\}/, "program eligibility must never be used as the visitor's college year");
+  assert.match(appSource, /source="deadline-page"/, "the deadline hub should carry one contextual email-alert CTA");
 });
 
 test("account disclosures cover Google auth boundaries and separate newsletter consent", async () => {
@@ -208,10 +228,37 @@ test("the account page can carry the visitor's explicit newsletter choice throug
   const panelStart = accountSource.indexOf("function SignedOutPanel");
   const panelEnd = accountSource.indexOf("const STATUS_COPY", panelStart);
   const panelSource = accountSource.slice(panelStart, panelEnd);
+  assert.match(panelSource, /<SignupEssentials[\s\S]*<GoogleSignInButton/, "signup should ask for the two useful match details before authentication");
+  assert.doesNotMatch(panelSource, /<PreferenceFields/, "advanced filters belong after account creation");
   assert.match(panelSource, /label=\{draft\.consent \? "Create with Google \+ turn on alerts" : "Create account with Google"\}/);
   assert.match(panelSource, /consent=\{draft\.consent\}/);
   assert.match(panelSource, /preferences=\{formPreferences\(draft\)\}/);
   assert.match(panelSource, /separately check the email box/, "the Google shortcut must describe the separate consent boundary");
+});
+
+test("signed-in email settings cannot imply an active digest before consent", async () => {
+  const accountSource = await readFile("src/Account.jsx", "utf8");
+  const panelStart = accountSource.indexOf("function SignedInPanel");
+  const panelEnd = accountSource.indexOf("const SIGNUP_PROMPT_DISMISSED_KEY", panelStart);
+  const panelSource = accountSource.slice(panelStart, panelEnd);
+  assert.match(panelSource, /active \? \(account\.settings\?\.preferences\?\.frequency === "biweekly" \? "Every two weeks" : "Weekly"\) : "Not active"/);
+  assert.match(panelSource, /disabled=\{busy \|\| !account\.settings \|\| suppressed \|\| !draft\.consent\}/);
+  assert.match(panelSource, /!draft\.consent \? <>Check consent to turn on email<\//);
+  assert.doesNotMatch(accountSource, /uniqueProgramYear/, "an opening's year eligibility must not become a student profile value");
+  assert.match(accountSource, /Your account is ready/, "auth onboarding copy should work for Google and email-link signups");
+});
+
+test("contextual signup keeps account creation separate and preserves an explicit email handoff", async () => {
+  const accountSource = await readFile("src/Account.jsx", "utf8");
+  const ctaStart = accountSource.indexOf("export function AccountConversionCTA");
+  const ctaEnd = accountSource.indexOf("export function AccountPage", ctaStart);
+  const ctaSource = accountSource.slice(ctaStart, ctaEnd);
+  assert.match(ctaSource, /requestGoogleSignIn\(\{ source, consent: draft\.consent, preferences \}\)/, "unchecked consent must still allow account-only Google signup");
+  assert.doesNotMatch(ctaSource, /type="checkbox"[^>]*required/, "newsletter consent must never be a required condition of account creation");
+  assert.match(ctaSource, /savePendingNewsletterPreferences\(preferences\)[\s\S]*newsletter_intent=/, "email fallback must carry an explicit choice only through the nonce-bound handoff");
+  assert.match(accountSource, /consent: Boolean\(pending\)/, "the account page may restore consent only from a matching local intent nonce");
+  assert.match(ctaSource, /aria-controls=\{formId\}/, "the expanding CTA must identify the form it reveals");
+  assert.match(ctaSource, /yearRef\.current\?\.focus\(\)/, "focus must move into the revealed form");
 });
 
 test("comparison validates IDs, preserves order, and caps the shortlist", () => {

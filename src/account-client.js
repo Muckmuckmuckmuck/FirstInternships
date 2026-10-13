@@ -195,6 +195,20 @@ export function clearNewsletterIntentFromUrl(intentId, history = typeof window =
   }
 }
 
+export function clearAccountWelcomeFromUrl(history = typeof window === "undefined" ? null : window.history, location = typeof window === "undefined" ? null : window.location) {
+  if (!history || !location) return false;
+  try {
+    const url = new URL(location.href);
+    if (!url.searchParams.has("welcome") && !url.searchParams.has("source")) return false;
+    url.searchParams.delete("welcome");
+    url.searchParams.delete("source");
+    history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function publicSupabaseConfig() {
   const url = cleanText(import.meta.env?.[SUPABASE_URL_KEY], 500);
   const anonKey = cleanText(import.meta.env?.[SUPABASE_ANON_KEY], 4000);

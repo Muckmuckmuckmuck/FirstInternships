@@ -41,7 +41,7 @@ FirstInternships is not:
 - A reason to invent dates, pay, remote status, class years, or future cycles.
 - A license to create hundreds of near-duplicate keyword pages.
 
-As of October 11, 2026, the maintained baseline is 272 sourced program guides, 17 original preparation guides, 325 prerendered React routes, and 323 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
+As of October 12, 2026, the maintained baseline is 272 sourced program guides, 23 original preparation guides, 331 prerendered React routes, and 329 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
 
 ## 3. Non-negotiable invariants
 

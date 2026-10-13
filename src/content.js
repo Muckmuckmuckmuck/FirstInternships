@@ -6,6 +6,7 @@ import { CONTENT_EXPANSION_2_PROGRAMS } from "./content-expansion-2.js";
 import { CONTENT_EXPANSION_3_PROGRAMS } from "./content-expansion-3.js";
 import { CONTENT_EXPANSION_4_PROGRAMS } from "./content-expansion-4.js";
 import { GUIDE_EXPANSION } from "./guide-expansion.js";
+import { GUIDE_EXPANSION_2 } from "./guide-expansion-2.js";
 import { SECTOR_PROGRAMS, INSURANCE_FIELD } from "./sector-expansion.js";
 import { RESEARCH_PROGRAMS } from "./research-expansion.js";
 // Employer batches researched in parallel; each lives in its own module so
@@ -250,6 +251,7 @@ const PAY_ANSWER = `Many do, but not all, and "paid" covers several different ar
 
 export const GUIDES = [
   ...GUIDE_EXPANSION,
+  ...GUIDE_EXPANSION_2,
   ...ADDITIONAL_GUIDES,
   { slug: "how-to-apply-for-an-internship", updated: "2026-09-20", title: "How to Apply for a College Internship", description: "A practical internship application process: verify eligibility, prepare evidence, submit through the official portal, and track the next step.", intro: "Start by checking whether you can actually participate. A polished application cannot fix an incompatible graduation date, required credit count, citizenship restriction, or work schedule.", sections: [
     ["1. Turn the listing into a checklist", "Before writing anything, copy the essentials out of the posting: employer, role title and identifier, term dates, location and work arrangement, deadline with its time zone, and the required documents. Separate required qualifications from preferred ones — they are not the same test, and many students disqualify themselves over a preferred item. Check whether class year is assessed when you apply or when the internship begins, because those can be different years for the same person. Where a mandatory rule is genuinely unclear, use the employer's published contact route rather than guessing."],
@@ -344,7 +346,7 @@ export const CURRENT_PROGRAM_IDS = [
   "kp-launch-college-program-2027",
   "nordstrom-corporate-internships-2027",
 ];
-export const FEATURED_GUIDE_SLUGS = ["email-templates-for-internships", "how-to-follow-up-on-an-internship-email", "how-to-apply-for-an-internship"];
+export const FEATURED_GUIDE_SLUGS = ["how-many-internships-should-i-apply-to", "internship-application-status-meanings", "email-templates-for-internships", "how-to-apply-for-an-internship"];
 // Sitewide footer links to the guides that answer the broadest student
 // questions, labelled the way students phrase them.
 export const FOOTER_GUIDE_LINKS = [
@@ -354,6 +356,8 @@ export const FOOTER_GUIDE_LINKS = [
   ["internship-resume-with-no-experience", "Internship resume with no experience"],
   ["email-templates-for-internships", "Internship email templates"],
   ["internship-interview-guide", "Internship interview prep"],
+  ["internship-application-status-meanings", "What internship application statuses mean"],
+  ["internship-housing-and-relocation", "Internship housing and relocation"],
 ];
 export const footerGuides = () => FOOTER_GUIDE_LINKS.map(([slug, label]) => [GUIDES.find(guide => guide.slug === slug), label]).filter(([guide]) => guide);
 export const featuredPrograms = () => FEATURED_PROGRAM_IDS.map(id => PROGRAMS.find(program => program.id === id)).filter(Boolean);
@@ -468,7 +472,7 @@ export function resolvePage(pathname) {
   const basic = {
     "/": ["home", "College Internships by Class Year", "College internship pathways with sourced eligibility, application guides, and a free personal application tracker. First-year students through seniors."],
     "/internships": ["directory", "College Internship Directory", "Browse sourced undergraduate internship pathways by college year and field. Check eligibility, learn how to apply, and visit the official employer."],
-    "/guides": ["guides", "College Internship Application Guides", "College internship playbooks for resumes, cover letters, research statements, recommendation requests, portfolios, interviews, timelines, and offer decisions."],
+    "/guides": ["guides", "College Internship Application Guides", "College internship guides for finding roles, application volume, resumes, career fairs, interviews, portal statuses, remote work, relocation, offers, and starting well."],
     "/internship-deadlines": ["deadlines", "College Internship Deadlines 2027: Application Calendar", "Published 2027 college internship deadlines from NASA, NIH, the White House, Pfizer, Novartis and more, with time zones, eligibility links and a downloadable calendar."],
     "/application-timeline": ["timeline", "College Internship Application Timeline Builder", "Build a personal college internship preparation timeline, plan references and documents, and download a checklist or all-day calendar. Free; no account needed."],
     "/compare": ["compare", "Compare College Internship Program Requirements", "Compare up to three college internship pathways side by side: class-year guidance, eligibility, pay, location, deadlines, and application preparation."],

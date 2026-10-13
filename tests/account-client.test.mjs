@@ -4,6 +4,7 @@ import {
   CONSENT_VERSION,
   PENDING_NEWSLETTER_KEY,
   accountAuthRedirect,
+  clearAccountWelcomeFromUrl,
   cleanNewsletterPreferences,
   normalizeNewsletterSettings,
   readPendingNewsletterPreferences,
@@ -100,6 +101,28 @@ test("account auth redirect keeps signup source and matching consent nonce on th
   assert.equal(redirect.pathname, "/account");
   assert.equal(redirect.searchParams.get("source"), "program-page");
   assert.equal(redirect.searchParams.get("newsletter_intent"), intentId);
+});
+
+test("consumed account welcome parameters are removed without losing consent state or the page anchor", () => {
+  const intentId = "f".repeat(48);
+  const calls = [];
+  const history = {
+    state: { preserved: true },
+    replaceState(...args) { calls.push(args); },
+  };
+  const location = {
+    href: `https://firstinternships.com/account?welcome=1&source=program-page&newsletter_intent=${intentId}#preferences`,
+  };
+
+  assert.equal(clearAccountWelcomeFromUrl(history, location), true);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(calls[0][0], { preserved: true });
+  const cleaned = new URL(calls[0][2], "https://firstinternships.com");
+  assert.equal(cleaned.pathname, "/account");
+  assert.equal(cleaned.searchParams.has("welcome"), false);
+  assert.equal(cleaned.searchParams.has("source"), false);
+  assert.equal(cleaned.searchParams.get("newsletter_intent"), intentId);
+  assert.equal(cleaned.hash, "#preferences");
 });
 
 test("Google sign-in uses the canonical account callback without newsletter consent or elevated scopes", async () => {

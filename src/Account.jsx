@@ -4,6 +4,7 @@ import { FIELDS, PROGRAMS, YEARS } from "./content.js";
 import {
   ACCOUNT_PATH,
   accountAuthRedirect,
+  clearAccountWelcomeFromUrl,
   clearPendingNewsletterPreferences,
   clearNewsletterIntentFromUrl,
   cleanNewsletterPreferences,
@@ -52,23 +53,28 @@ function formPreferences(draft) {
 }
 
 function accountQueryDefaults() {
-  if (typeof window === "undefined") return { preferences: EMPTY_PREFERENCES, source: "" };
+  if (typeof window === "undefined") return { preferences: EMPTY_PREFERENCES, source: "", consent: false };
   const params = new URLSearchParams(window.location.search);
   const requestedYear = Number(params.get("year"));
   const requestedField = params.get("field") || "";
   const program = PROGRAMS.find(item => item.id === params.get("program"));
+  const pending = readPendingNewsletterPreferences(newsletterIntentFromLocation());
   const fields = [
     ...(FIELD_IDS.includes(requestedField) ? [requestedField] : []),
     ...(program?.fields || []),
   ];
-  const uniqueProgramYear = program?.years?.length === 1 ? program.years[0] : null;
   return {
-    preferences: cleanNewsletterPreferences({
+    preferences: pending?.preferences || cleanNewsletterPreferences({
       ...EMPTY_PREFERENCES,
-      collegeYear: requestedYear >= 1 && requestedYear <= 4 ? requestedYear : uniqueProgramYear,
+      // A program's eligible years describe the opening, not the visitor. Only
+      // a year the visitor selected on a year hub or form may prefill this field.
+      collegeYear: requestedYear >= 1 && requestedYear <= 4 ? requestedYear : null,
       fields,
     }, FIELD_IDS),
     source: String(params.get("source") || "").slice(0, 60),
+    // This can only become true when this browser already holds the matching
+    // nonce-bound intent created by an explicit checkbox action on the prior page.
+    consent: Boolean(pending),
   };
 }
 
@@ -138,6 +144,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
       }
       const settings = await getMyNewsletterSettings(clientRef.current);
       if (sequence !== refreshSequence.current) return;
+      clearAccountWelcomeFromUrl();
       patchState(current => ({
         ...current,
         status: "signed-in",
@@ -489,10 +496,37 @@ function ConsentFields({ draft, setDraft, disabled = false, suppressed = false }
   </div>;
 }
 
+function SignupEssentials({ draft, setDraft, disabled = false }) {
+  const update = (key, value) => setDraft(current => ({ ...current, [key]: value }));
+  return <div className="account-signup-essentials">
+    <div className="account-form-grid">
+      <label className="account-control">
+        <span>Current college year</span>
+        <select value={draft.collegeYear || ""} onChange={event => update("collegeYear", event.target.value ? Number(event.target.value) : null)} disabled={disabled}>
+          <option value="">Choose your year</option>
+          {YEARS.map(year => <option value={year.id} key={year.id}>{year.short} · {year.name}</option>)}
+        </select>
+      </label>
+      <label className="account-control">
+        <span>Main internship interest</span>
+        <select value={draft.fields[0] || ""} onChange={event => update("fields", event.target.value ? [event.target.value] : [])} disabled={disabled}>
+          <option value="">Choose one field</option>
+          {FIELDS.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
+        </select>
+      </label>
+    </div>
+    <label className="account-check-row account-consent account-signup-consent">
+      <input type="checkbox" checked={draft.consent} onChange={event => update("consent", event.target.checked)} disabled={disabled} />
+      <span><strong>Email me personalized internship updates</strong><small>I agree to receive a focused weekly digest from FirstInternships. I can change the filters, frequency, or unsubscribe at any time. Read the <a href="/privacy">privacy policy</a>.</small></span>
+    </label>
+    <p className="account-signup-next">After sign-in, you can add locations, work arrangements, paid-only matching, and a biweekly cadence.</p>
+  </div>;
+}
+
 function SignedOutPanel({ source }) {
   const account = useAccount();
   const [queryDefaults] = useState(accountQueryDefaults);
-  const [draft, setDraft] = useState(() => ({ ...settingsDraft({ preferences: queryDefaults.preferences }), email: "" }));
+  const [draft, setDraft] = useState(() => ({ ...settingsDraft({ preferences: queryDefaults.preferences }), email: "", consent: queryDefaults.consent }));
   const magicBusy = account.busy === "magic-link";
   const authBusy = account.busy === "magic-link" || account.busy === "google";
 
@@ -511,19 +545,21 @@ function SignedOutPanel({ source }) {
       <span className="account-big-icon"><Mail size={28} /></span>
       <p className="eyebrow">One quick step</p>
       <h2 id="email-sent-title">Check your email.</h2>
+      <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
       <p>We sent a secure sign-in link to <strong>{account.magicLinkSentTo}</strong>. Open it in this browser to finish.</p>
-      <p className="account-fine-print">The link expires. If it does not arrive, check spam or request another one.</p>
+      <p className="account-fine-print">The link expires. If it does not arrive, check spam, then return here and try again.</p>
       <button className="button secondary" type="button" onClick={() => window.location.reload()}>Use a different email</button>
     </section>;
   }
 
   return <section className="account-panel" aria-labelledby="account-start-title">
     <div className="account-panel-heading">
-      <div><p className="eyebrow">Free student account</p><h2 id="account-start-title">Build your match profile.</h2><p>No password to remember. We will email a secure sign-in link.</p></div>
+      <div><p className="eyebrow">Free student account</p><h2 id="account-start-title">Choose your matches, then create your account.</h2><p>Start with your year and interests so the account is useful from day one. No password to remember.</p></div>
       <span><ShieldCheck size={18} /> Private by default</span>
     </div>
     <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
     <form onSubmit={submit} className="account-form">
+      <SignupEssentials draft={draft} setDraft={setDraft} disabled={authBusy} />
       <div className="account-fast-signin">
         <GoogleSignInButton
           source={queryDefaults.source || source}
@@ -531,15 +567,13 @@ function SignedOutPanel({ source }) {
           consent={draft.consent}
           preferences={formPreferences(draft)}
         />
-        <p>Google creates or signs into your free account. If you fill out the profile below and separately check the email box, this same button also saves that explicit choice.</p>
+        <p>Google is the fastest option. The newsletter is included only when you separately check the email box above and choose a valid year and field.</p>
       </div>
-      <div className="account-or-divider"><span>or use email</span></div>
+      <div className="account-or-divider"><span>or use a secure email link</span></div>
       <label className="account-control account-email-control">
         <span>College email or personal email</span>
         <input type="email" value={draft.email} onChange={event => setDraft(current => ({ ...current, email: event.target.value }))} placeholder="you@example.edu" autoComplete="email" required maxLength={320} disabled={authBusy} />
       </label>
-      <PreferenceFields draft={draft} setDraft={setDraft} disabled={authBusy} />
-      <ConsentFields draft={draft} setDraft={setDraft} disabled={authBusy} />
       <div className="account-submit-row">
         <button className="button account-primary-button" type="submit" disabled={authBusy}>
           {magicBusy ? <><Loader2 size={16} className="account-spinner" /> Sending secure link…</> : authBusy ? <>Please wait…</> : <>Create my account <ArrowRight size={16} /></>}
@@ -588,7 +622,7 @@ function SignedInPanel() {
     </section>
     {welcome && status === "needs_consent" && <aside className="account-onboarding-nudge" aria-labelledby="account-onboarding-title">
       <span aria-hidden="true"><BellRing size={21} /></span>
-      <div><p className="eyebrow">Your Google account is ready</p><h2 id="account-onboarding-title">Finish your match profile to turn on alerts.</h2><p>Choose your college year and at least one field below, then check the email consent box. Nothing is sent until you save that explicit choice.</p></div>
+      <div><p className="eyebrow">Your account is ready</p><h2 id="account-onboarding-title">Finish your match profile to turn on alerts.</h2><p>Choose your college year and at least one field below, then check the email consent box. Nothing is sent until you save that explicit choice.</p></div>
       <a className="button small" href="#preferences">Choose my matches <ArrowRight size={15} /></a>
     </aside>}
     <div className="account-dashboard-grid">
@@ -598,7 +632,7 @@ function SignedInPanel() {
         <h2>{statusTitle}</h2>
         <p>{statusDescription}</p>
         <dl>
-          <div><dt>Cadence</dt><dd>{account.settings?.preferences?.frequency === "biweekly" ? "Every two weeks" : "Weekly"}</dd></div>
+          <div><dt>Cadence</dt><dd>{active ? (account.settings?.preferences?.frequency === "biweekly" ? "Every two weeks" : "Weekly") : "Not active"}</dd></div>
           <div><dt>Account</dt><dd>{account.user?.email}</dd></div>
         </dl>
         <div className="account-local-note"><ShieldCheck size={17} /><p><strong>Your planner stays local.</strong> Saved internships, notes, stages, and action dates remain in this browser and are never uploaded to this account.</p></div>
@@ -614,8 +648,8 @@ function SignedInPanel() {
           <PreferenceFields draft={draft} setDraft={setDraft} disabled={busy} />
           <ConsentFields draft={draft} setDraft={setDraft} disabled={busy} suppressed={suppressed} />
           <div className="account-submit-row">
-            <button className="button account-primary-button" type="submit" disabled={busy || !account.settings || suppressed}>
-              {busy ? <><Loader2 size={16} className="account-spinner" /> Saving…</> : suppressed ? <>Email suppressed <ShieldCheck size={16} /></> : <>Save preferences <Check size={16} /></>}
+            <button className="button account-primary-button" type="submit" disabled={busy || !account.settings || suppressed || !draft.consent}>
+              {busy ? <><Loader2 size={16} className="account-spinner" /> Saving…</> : suppressed ? <>Email suppressed <ShieldCheck size={16} /></> : !draft.consent ? <>Check consent to turn on email</> : <>Save preferences <Check size={16} /></>}
             </button>
             {active && <button className="account-unsubscribe-button" type="button" onClick={() => account.unsubscribeNewsletter(preferences)} disabled={busy}>Turn off all emails</button>}
           </div>
@@ -637,23 +671,26 @@ export function SignupPrompt({ pageType = "", pathname = "/", year = null, field
   const account = useAccount();
   const [open, setOpen] = useState(false);
   const [showAlertOptions, setShowAlertOptions] = useState(false);
+  const [localError, setLocalError] = useState("");
+  const yearRef = useRef(null);
+  const fieldRef = useRef(null);
   const [draft, setDraft] = useState(() => ({
     collegeYear: Number(year) >= 1 && Number(year) <= 4 ? Number(year) : null,
     field: FIELD_IDS.includes(field) ? field : "",
     consent: false,
   }));
 
+  useEffect(() => {
+    // Keep the initial render stable. The fuller conversion form opens by
+    // default only where it does not become a near-full-screen interstitial.
+    if (window.matchMedia("(min-width: 621px)").matches) setShowAlertOptions(true);
+  }, []);
+
   const dismiss = useCallback(() => {
     try { window.localStorage.setItem(SIGNUP_PROMPT_DISMISSED_KEY, String(Date.now())); } catch { /* already shown only once this session */ }
     account.dismissFeedback();
     setOpen(false);
   }, [account.dismissFeedback]);
-
-  useEffect(() => {
-    // Keep the server and first client render identical, then expose the full
-    // matcher by default where it fits without crowding the underlying page.
-    if (window.matchMedia("(min-width: 621px)").matches) setShowAlertOptions(true);
-  }, []);
 
   useEffect(() => {
     if (!accountFeatureEnabled() || account.status !== "signed-out" || !SIGNUP_PROMPT_PAGES.has(pageType) || pathname === ACCOUNT_PATH) return undefined;
@@ -724,34 +761,59 @@ export function SignupPrompt({ pageType = "", pathname = "/", year = null, field
   if (draft.collegeYear) accountQuery.set("year", String(draft.collegeYear));
   if (draft.field) accountQuery.set("field", draft.field);
   if (PROGRAMS.some(program => program.id === programId)) accountQuery.set("program", programId);
+  const emailHref = `${ACCOUNT_PATH}?${accountQuery.toString()}`;
+  const beginEmailSignup = event => {
+    if (!draft.consent) return;
+    event.preventDefault();
+    const validationError = validateNewsletterPreferences(preferences);
+    if (validationError) {
+      setLocalError(validationError);
+      window.requestAnimationFrame(() => (!draft.collegeYear ? yearRef : fieldRef).current?.focus());
+      return;
+    }
+    try {
+      const pending = savePendingNewsletterPreferences(preferences);
+      accountQuery.set("newsletter_intent", pending.intentId);
+      window.location.assign(`${ACCOUNT_PATH}?${accountQuery.toString()}`);
+    } catch (error) {
+      setLocalError(friendlyAccountError(error));
+    }
+  };
   return <aside className="signup-prompt" role="complementary" aria-live="polite" aria-labelledby="signup-prompt-title">
     <button className="signup-prompt-close" type="button" onClick={dismiss} aria-label="Dismiss account signup prompt"><X size={18} /></button>
     <div className="signup-prompt-icon" aria-hidden="true"><BellRing size={20} /></div>
-    <p className="eyebrow">{PROGRAMS.length} sourced paths · free for students</p>
-    <h2 id="signup-prompt-title">Stop starting every internship search from zero.</h2>
-    <p>Create a free account with Google in seconds. Add your year and interest if you also want a focused internship digest.</p>
+    <p className="eyebrow">{PROGRAMS.length} sourced paths · one focused digest</p>
+    <h2 id="signup-prompt-title">{showAlertOptions ? "Get the right internships sent to you." : "Make your internship search remember you."}</h2>
+    <p>{showAlertOptions ? "Choose your year and one interest, then create a free account in seconds. We will send a small set of relevant paths—not the whole directory." : "Create a free account in seconds, or add a focused weekly digest matched to your year and interests."}</p>
+    <ul className="signup-prompt-benefits" aria-label="Personalized alert benefits">
+      <li><Check size={14} /> Matched to your college year</li>
+      <li><Check size={14} /> Weekly by default</li>
+      <li><Check size={14} /> Unsubscribe anytime</li>
+    </ul>
     <button className="signup-prompt-alert-toggle" type="button" aria-expanded={showAlertOptions} aria-controls="signup-prompt-alert-options" onClick={() => {
       setShowAlertOptions(current => {
         if (current) setDraft(value => ({ ...value, consent: false }));
         return !current;
       });
+      setLocalError("");
       account.dismissFeedback();
     }}>
       <span><BellRing size={16} /> Personalized email alerts <small>Optional</small></span>
       <ArrowRight size={16} aria-hidden="true" />
     </button>
     {showAlertOptions && <div className="signup-prompt-alert-options" id="signup-prompt-alert-options">
+      <p className="signup-prompt-step"><BellRing size={15} /> Choose what belongs in your digest</p>
       <div className="signup-prompt-match" aria-label="Optional newsletter match preferences">
         <label>
           <span>My college year</span>
-          <select value={draft.collegeYear || ""} onChange={event => setDraft(current => ({ ...current, collegeYear: event.target.value ? Number(event.target.value) : null }))}>
+          <select ref={yearRef} value={draft.collegeYear || ""} onChange={event => setDraft(current => ({ ...current, collegeYear: event.target.value ? Number(event.target.value) : null }))}>
             <option value="">Choose year</option>
             {YEARS.map(item => <option value={item.id} key={item.id}>{item.short}</option>)}
           </select>
         </label>
         <label>
           <span>My main interest</span>
-          <select value={draft.field} onChange={event => setDraft(current => ({ ...current, field: event.target.value }))}>
+          <select ref={fieldRef} value={draft.field} onChange={event => setDraft(current => ({ ...current, field: event.target.value }))}>
             <option value="">Choose field</option>
             {FIELDS.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
           </select>
@@ -762,14 +824,15 @@ export function SignupPrompt({ pageType = "", pathname = "/", year = null, field
         <span><strong>Email me personalized internship alerts</strong><small>Use the choices above for a focused weekly digest. Unsubscribe anytime. <a href="/privacy">Privacy details</a>.</small></span>
       </label>
     </div>}
+    {localError && <p className="account-cta-error" role="alert">{localError}</p>}
     <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
     <GoogleSignInButton
       source={source}
-      label={draft.consent ? "Create with Google + turn on alerts" : "Create account with Google"}
+      label={draft.consent ? "Get my matches with Google" : "Create free account with Google"}
       consent={draft.consent}
       preferences={preferences}
     />
-    <a className="signup-prompt-email" href={`${ACCOUNT_PATH}?${accountQuery.toString()}`}>Use email instead <ArrowRight size={14} /></a>
+    <a className="signup-prompt-email" href={emailHref} onClick={beginEmailSignup}>Use email instead <ArrowRight size={14} /></a>
     <small>The alert box starts unchecked. A Google account alone never subscribes you.</small>
   </aside>;
 }
@@ -777,26 +840,106 @@ export function SignupPrompt({ pageType = "", pathname = "/", year = null, field
 export function AccountConversionCTA({ source = "site", compact = false, className = "", year = null, field = "", programId = "" }) {
   const account = useAccount();
   const titleId = useId();
-  if (!accountFeatureEnabled()) return null;
-  const signedIn = account.status === "signed-in";
   const validYear = Number(year) >= 1 && Number(year) <= 4 ? Number(year) : null;
   const validField = FIELD_IDS.includes(field) ? field : "";
   const validProgram = PROGRAMS.some(program => program.id === programId) ? programId : "";
+  const [draft, setDraft] = useState(() => ({ collegeYear: validYear, field: validField, consent: false }));
+  const [expanded, setExpanded] = useState(false);
+  const [started, setStarted] = useState(false);
+  const [localError, setLocalError] = useState("");
+  const yearRef = useRef(null);
+  const fieldRef = useRef(null);
+  const consentRef = useRef(null);
+  const formId = `${titleId}-signup`;
+  useEffect(() => {
+    if (!expanded) return undefined;
+    const frame = window.requestAnimationFrame(() => yearRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [expanded]);
+  if (!accountFeatureEnabled()) return null;
+  const signedIn = account.status === "signed-in";
+  const ready = account.status === "signed-out";
+  if (account.status === "unavailable") return null;
+  const selectedYear = YEARS.find(item => item.id === draft.collegeYear);
+  const selectedField = FIELDS.find(item => item.id === draft.field);
   const query = [
     ["source", source],
-    ["year", validYear],
-    ["field", validField],
+    ["year", draft.collegeYear],
+    ["field", draft.field],
     ["program", validProgram],
   ].filter(([, value]) => value !== null && value !== "").map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&");
   const href = signedIn ? `${ACCOUNT_PATH}#preferences` : `${ACCOUNT_PATH}?${query}`;
-  return <aside className={`account-conversion-cta ${compact ? "is-compact" : ""} ${className}`.trim()} aria-labelledby={titleId}>
+  const preferences = cleanNewsletterPreferences({
+    ...EMPTY_PREFERENCES,
+    collegeYear: draft.collegeYear,
+    fields: draft.field ? [draft.field] : [],
+  }, FIELD_IDS);
+  const beginGoogleSignup = async event => {
+    event.preventDefault();
+    setStarted(true);
+    if (draft.consent && (!draft.collegeYear || !draft.field)) {
+      setLocalError("Choose your college year and one field to turn on personalized alerts.");
+      window.requestAnimationFrame(() => (!draft.collegeYear ? yearRef : !draft.field ? fieldRef : consentRef).current?.focus());
+      return;
+    }
+    setLocalError("");
+    await account.requestGoogleSignIn({ source, consent: draft.consent, preferences });
+  };
+  const beginEmailSignup = event => {
+    if (!draft.consent) return;
+    event.preventDefault();
+    if (!draft.collegeYear || !draft.field) {
+      setLocalError("Choose your college year and one field to turn on personalized alerts.");
+      window.requestAnimationFrame(() => (!draft.collegeYear ? yearRef : fieldRef).current?.focus());
+      return;
+    }
+    try {
+      const pending = savePendingNewsletterPreferences(preferences);
+      window.location.assign(`${href}&newsletter_intent=${encodeURIComponent(pending.intentId)}`);
+    } catch (error) {
+      setLocalError(friendlyAccountError(error));
+    }
+  };
+  const contextTitle = selectedYear && selectedField
+    ? `Get ${selectedField.name.toLowerCase()} matches for ${selectedYear.name.toLowerCase()} students.`
+    : selectedYear
+      ? `Get internship matches for ${selectedYear.name.toLowerCase()} students.`
+      : selectedField
+        ? `Get ${selectedField.name.toLowerCase()} internship matches.`
+        : "Get internship matches shaped around you.";
+  return <aside className={`account-conversion-cta ${compact ? "is-compact" : ""} ${ready && !signedIn && expanded ? "is-signup" : ""} ${className}`.trim()} aria-labelledby={titleId}>
     <span className="account-cta-icon" aria-hidden="true">{signedIn ? <BellRing size={22} /> : <Sparkles size={22} />}</span>
     <div>
       <p className="eyebrow">{signedIn ? "Your internship alerts" : "Stop searching from zero"}</p>
-      <h2 id={titleId}>{signedIn ? "Fine-tune what reaches your inbox." : "Get internship matches shaped around you."}</h2>
-      {!compact && <p>{signedIn ? "Change your year, fields, locations, or email cadence in one place." : "Create a free account, choose what fits, and opt in to a focused weekly or biweekly digest."}</p>}
+      <h2 id={titleId}>{signedIn ? "Fine-tune what reaches your inbox." : contextTitle}</h2>
+      {!compact && <p>{signedIn ? "Change your year, fields, locations, or email cadence in one place." : "Choose two details and opt in. We will send a small weekly set of sourced paths that fit—not a generic job blast."}</p>}
     </div>
-    <a className="button" href={href}>{signedIn ? "Manage alerts" : "Build my match profile"} <ArrowRight size={16} /></a>
+    {ready && !signedIn && expanded ? <form className="account-cta-form" id={formId} onSubmit={beginGoogleSignup}>
+      <div className="account-cta-fields">
+        <label><span>College year</span><select ref={yearRef} value={draft.collegeYear || ""} onChange={event => setDraft(current => ({ ...current, collegeYear: event.target.value ? Number(event.target.value) : null }))} required={draft.consent}>
+          <option value="">Choose year</option>{YEARS.map(item => <option value={item.id} key={item.id}>{item.short}</option>)}
+        </select></label>
+        <label><span>Main interest</span><select ref={fieldRef} value={draft.field} onChange={event => setDraft(current => ({ ...current, field: event.target.value }))} required={draft.consent}>
+          <option value="">Choose field</option>{FIELDS.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
+        </select></label>
+      </div>
+      <label className="account-check-row account-cta-consent">
+        <input ref={consentRef} type="checkbox" checked={draft.consent} onChange={event => setDraft(current => ({ ...current, consent: event.target.checked }))} />
+        <span><strong>Email me personalized internship updates</strong><small>Weekly by default. Unsubscribe anytime. <a href="/privacy">Privacy details</a>.</small></span>
+      </label>
+      {localError && <p className="account-cta-error" role="alert">{localError}</p>}
+      <Feedback feedback={started ? account.feedback : null} onDismiss={account.dismissFeedback} />
+      <div className="account-cta-actions">
+        <button className="account-google-button" type="submit" disabled={Boolean(account.busy)} aria-busy={account.busy === "google"}>
+          {account.busy === "google" ? <Loader2 size={18} className="account-spinner" /> : <GoogleMark />}
+          <span>{account.busy === "google" ? "Opening Google…" : draft.consent ? "Get my matches with Google" : "Create free account with Google"}</span>
+        </button>
+        <a href={href} onClick={beginEmailSignup}>Use email instead <ArrowRight size={14} /></a>
+      </div>
+      <small className="account-cta-disclosure">The consent box starts unchecked. Creating an account alone never subscribes you.</small>
+    </form> : signedIn || !ready
+      ? <a className="button" href={href}>{signedIn ? "Manage alerts" : "Build my match profile"} <ArrowRight size={16} /></a>
+      : <button className="button" type="button" aria-expanded={expanded} aria-controls={formId} onClick={() => setExpanded(true)}>Build my match profile <ArrowRight size={16} /></button>}
   </aside>;
 }
 

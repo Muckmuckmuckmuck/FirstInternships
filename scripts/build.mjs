@@ -74,7 +74,7 @@ function lastmodForRoute(route) {
   // Collection pages change when the programs they actually render change.
   // Derive freshness from that inventory instead of leaving old blanket dates
   // in the sitemap after a verified content expansion.
-  if (page.type === "home") return latestProgramReview([...featuredPrograms(), ...currentPrograms()], "2026-10-11");
+  if (page.type === "home") return latestProgramReview([...featuredPrograms(), ...currentPrograms()], "2026-10-12");
   if (page.type === "directory") return latestProgramReview(PROGRAMS, "2026-10-11");
   const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
   if (programs.length) return latestProgramReview(programs, page.field?.updated || page.topic?.updated || VERIFIED);

@@ -18,3 +18,37 @@
 @keyframes signup-prompt-in{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:620px){.signup-prompt{right:max(12px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));width:calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right));max-height:calc(100vh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));padding:23px;border-radius:16px}.signup-prompt h2{font-size:22px}.signup-prompt-match{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.signup-prompt{animation:none}.account-google-button,.signup-prompt-alert-toggle>svg{transition:none}}
+
+/* Consent-forward conversion forms on high-intent directory and guide pages. */
+.account-conversion-cta.is-signup{grid-template-columns:auto minmax(220px,1fr) minmax(360px,430px);align-items:start;background:linear-gradient(135deg,var(--lime),#dff4b5)}
+.account-conversion-cta.is-signup .account-cta-icon{margin-top:2px}
+.account-cta-form{display:grid;width:100%;gap:10px;padding:14px;border:1px solid #a9c58f;border-radius:13px;background:#f9fcf3;box-shadow:0 9px 24px #173f2c0d}
+.account-cta-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.account-cta-fields label{display:grid;gap:5px;color:#405342;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.035em}
+.account-cta-fields select{width:100%;min-height:42px;padding:8px 10px;border:1px solid #bac9b4;border-radius:8px;background:#fff;color:var(--ink);font-size:12px;text-transform:none;letter-spacing:0}
+.account-cta-fields select:focus-visible{outline:3px solid #467cbd;outline-offset:2px}
+.account-cta-consent{padding:9px 10px;border:1px solid #c8d7bd;border-radius:9px;background:#eff6e6}
+.account-cta-consent>span>strong{font-size:11px}
+.account-conversion-cta .account-cta-consent small{color:#586a58;font-size:11px;line-height:1.5}
+.account-cta-error{margin:0!important;padding:8px 10px;border-radius:8px;background:#fff0e8;color:#7f3825!important;font-size:10px!important;font-weight:700}
+.account-cta-form .account-feedback{margin:0;padding:9px 10px;font-size:10px}
+.account-cta-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.account-cta-actions .account-google-button{min-height:44px;padding:9px 12px;font-size:11px}
+.account-cta-actions>a{display:inline-flex;align-items:center;gap:4px;color:var(--forest);font-size:10px;font-weight:800;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.account-cta-disclosure{color:#657365;font-size:11px;line-height:1.5}
+.signup-prompt-step{display:flex;align-items:center;gap:6px;margin:0 0 9px!important;color:var(--forest)!important;font-size:10px!important;font-weight:800}
+.account-deadline-cta{margin-top:32px}
+.account-signup-essentials{display:grid;max-width:720px;gap:14px;padding:18px;border:1px solid #c4d4b8;border-radius:12px;background:#f3f8ec}
+.account-signup-consent{padding-top:14px;border-top:1px solid #cfdbc6}
+.account-signup-consent>span>strong{font-size:12px}
+.account-signup-next{margin:0;color:#657365;font-size:9px;line-height:1.55}
+.account-email-sent .account-feedback{max-width:620px;margin:0 auto 20px;text-align:left}
+.signup-prompt-benefits{display:flex;flex-wrap:wrap;gap:6px 12px;margin:0 0 15px;padding:0;list-style:none;color:#526552;font-size:9px;font-weight:800}
+.signup-prompt-benefits li{display:flex;align-items:center;gap:4px}
+.signup-prompt-benefits svg{color:#4e7b3e}
+.guide-library-toolbar+.account-conversion-cta{margin:24px 0 40px}
+.article-layout+.account-conversion-cta{margin:42px 0 10px}
+.field-links+.account-conversion-cta{margin-top:28px}
+
+@media(max-width:960px){.account-conversion-cta.is-signup{grid-template-columns:auto 1fr}.account-cta-form{grid-column:1/-1;max-width:none}.account-cta-actions{grid-template-columns:minmax(0,1fr) auto}}
+@media(max-width:620px){.account-cta-fields,.account-cta-actions{grid-template-columns:1fr}.account-cta-actions>a{justify-content:center;min-height:34px}.account-conversion-cta.is-signup{display:grid}.account-cta-disclosure{text-align:center}.signup-prompt-benefits{display:grid;grid-template-columns:1fr 1fr;gap:6px}}

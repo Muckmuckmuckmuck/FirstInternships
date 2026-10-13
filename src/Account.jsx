@@ -200,17 +200,17 @@ export function AccountProvider({ children, active = false, settingsActive = fal
     };
   }, [active, loadSession, patchState]);
 
-  const requestMagicLink = useCallback(async ({ email, consent, preferences, source = "account" }) => {
+  const requestMagicLink = useCallback(async ({ email, consent, preferences, source = "account", feedbackTarget = "account-panel" }) => {
     const cleanEmail = String(email || "").trim().toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(cleanEmail)) {
-      patchState({ feedback: { kind: "error", message: "Enter a valid email address." } });
+      patchState({ feedback: { kind: "error", message: "Enter a valid email address.", target: feedbackTarget } });
       return false;
     }
     const cleanPreferences = cleanNewsletterPreferences(preferences, FIELD_IDS);
     if (consent) {
       const validationError = validateNewsletterPreferences(cleanPreferences);
       if (validationError) {
-        patchState({ feedback: { kind: "error", message: validationError } });
+        patchState({ feedback: { kind: "error", message: validationError, target: feedbackTarget } });
         return false;
       }
     }
@@ -237,6 +237,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
         magicLinkSentTo: cleanEmail,
         feedback: {
           kind: "success",
+          target: feedbackTarget,
           message: consent
             ? "Check your inbox to finish your account and turn on personalized internship emails."
             : "Check your inbox for your secure sign-in link. Newsletter email remains off.",
@@ -245,19 +246,19 @@ export function AccountProvider({ children, active = false, settingsActive = fal
       return true;
     } catch (error) {
       if (consent) clearPendingNewsletterPreferences();
-      patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error) } });
+      patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error), target: feedbackTarget } });
       return false;
     } finally {
       if (authRequestRef.current === "magic-link") authRequestRef.current = "";
     }
   }, [patchState]);
 
-  const requestGoogleSignIn = useCallback(async ({ source = "account", consent = false, preferences = EMPTY_PREFERENCES } = {}) => {
+  const requestGoogleSignIn = useCallback(async ({ source = "account", consent = false, preferences = EMPTY_PREFERENCES, feedbackTarget = "account-google" } = {}) => {
     const cleanPreferences = cleanNewsletterPreferences(preferences, FIELD_IDS);
     if (consent) {
       const validationError = validateNewsletterPreferences(cleanPreferences);
       if (validationError) {
-        patchState({ feedback: { kind: "error", message: validationError } });
+        patchState({ feedback: { kind: "error", message: validationError, target: feedbackTarget } });
         return false;
       }
     }
@@ -278,7 +279,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
       return true;
     } catch (error) {
       if (consent) clearPendingNewsletterPreferences();
-      patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error) } });
+      patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error), target: feedbackTarget } });
       return false;
     } finally {
       if (authRequestRef.current === "google") authRequestRef.current = "";
@@ -358,8 +359,8 @@ export function useAccount() {
   return value;
 }
 
-function Feedback({ feedback, onDismiss }) {
-  if (!feedback) return null;
+function Feedback({ feedback, onDismiss, target = "" }) {
+  if (!feedback || (target && feedback.target !== target)) return null;
   return <div className={`account-feedback is-${feedback.kind}`} role={feedback.kind === "error" ? "alert" : "status"}>
     <span>{feedback.kind === "success" ? <Check size={17} /> : <span aria-hidden="true">!</span>}</span>
     <p>{feedback.message}</p>
@@ -376,14 +377,15 @@ function GoogleMark() {
   </svg>;
 }
 
-function GoogleSignInButton({ source, label = "Continue with Google", className = "", consent = false, preferences = EMPTY_PREFERENCES }) {
+function GoogleSignInButton({ source, label = "Continue with Google", className = "", consent = false, preferences = EMPTY_PREFERENCES, buttonRef = null, feedbackTarget = "account-google" }) {
   const account = useAccount();
   const busy = account.busy === "google";
   const blocked = Boolean(account.busy);
   return <button
+    ref={buttonRef}
     className={`account-google-button ${className}`.trim()}
     type="button"
-    onClick={() => account.requestGoogleSignIn({ source, consent, preferences })}
+    onClick={() => account.requestGoogleSignIn({ source, consent, preferences, feedbackTarget })}
     disabled={blocked}
     aria-busy={busy}
   >
@@ -392,7 +394,9 @@ function GoogleSignInButton({ source, label = "Continue with Google", className 
   </button>;
 }
 
-function AccountHero() {
+function AccountHero({ showSignup = false, source = "account-hero" }) {
+  const account = useAccount();
+  const feedbackTarget = "account-hero-google";
   return <section className="account-hero">
     <div className="account-hero-copy">
       <p className="eyebrow">A shorter path to the right opening</p>
@@ -403,6 +407,15 @@ function AccountHero() {
         <li><Check size={16} /> Fields, locations, work modes, and pay preferences</li>
         <li><Check size={16} /> One-click email opt-out whenever you want</li>
       </ul>
+      {showSignup && <div className="account-hero-signup">
+        <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} target={feedbackTarget} />
+        <GoogleSignInButton
+          source={source}
+          label="Continue with Google — it’s free"
+          feedbackTarget={feedbackTarget}
+        />
+        <small>Account creation takes one Google step. Personalized emails remain a separate choice.</small>
+      </div>}
     </div>
     <div className="account-hero-card" aria-hidden="true">
       <span className="account-mail-icon"><Mail size={25} /></span>
@@ -523,10 +536,12 @@ function SignupEssentials({ draft, setDraft, disabled = false }) {
   </div>;
 }
 
-function SignedOutPanel({ source }) {
+function SignedOutPanel({ source, initialDefaults = null }) {
   const account = useAccount();
-  const [queryDefaults] = useState(accountQueryDefaults);
+  const feedbackTarget = "account-panel";
+  const [queryDefaults] = useState(() => initialDefaults || accountQueryDefaults());
   const [draft, setDraft] = useState(() => ({ ...settingsDraft({ preferences: queryDefaults.preferences }), email: "", consent: queryDefaults.consent }));
+  const [showPersonalization, setShowPersonalization] = useState(queryDefaults.consent);
   const magicBusy = account.busy === "magic-link";
   const authBusy = account.busy === "magic-link" || account.busy === "google";
 
@@ -537,6 +552,7 @@ function SignedOutPanel({ source }) {
       consent: draft.consent,
       preferences: formPreferences(draft),
       source: queryDefaults.source || source,
+      feedbackTarget,
     });
   };
 
@@ -545,7 +561,7 @@ function SignedOutPanel({ source }) {
       <span className="account-big-icon"><Mail size={28} /></span>
       <p className="eyebrow">One quick step</p>
       <h2 id="email-sent-title">Check your email.</h2>
-      <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
+      <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} target={feedbackTarget} />
       <p>We sent a secure sign-in link to <strong>{account.magicLinkSentTo}</strong>. Open it in this browser to finish.</p>
       <p className="account-fine-print">The link expires. If it does not arrive, check spam, then return here and try again.</p>
       <button className="button secondary" type="button" onClick={() => window.location.reload()}>Use a different email</button>
@@ -554,21 +570,31 @@ function SignedOutPanel({ source }) {
 
   return <section className="account-panel" aria-labelledby="account-start-title">
     <div className="account-panel-heading">
-      <div><p className="eyebrow">Free student account</p><h2 id="account-start-title">Choose your matches, then create your account.</h2><p>Start with your year and interests so the account is useful from day one. No password to remember.</p></div>
+      <div><p className="eyebrow">Free student account</p><h2 id="account-start-title">Create your account in one click.</h2><p>Google is the fastest route. There is no password, resume, or application to complete.</p></div>
       <span><ShieldCheck size={18} /> Private by default</span>
     </div>
-    <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
+    <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} target={feedbackTarget} />
     <form onSubmit={submit} className="account-form">
-      <SignupEssentials draft={draft} setDraft={setDraft} disabled={authBusy} />
-      <div className="account-fast-signin">
+      <div className="account-fast-signin account-fast-signin-primary">
         <GoogleSignInButton
           source={queryDefaults.source || source}
-          label={draft.consent ? "Create with Google + turn on alerts" : "Create account with Google"}
+          label={draft.consent ? "Continue with Google + turn on alerts" : "Continue with Google — it’s free"}
           consent={draft.consent}
           preferences={formPreferences(draft)}
+          feedbackTarget={feedbackTarget}
         />
-        <p>Google is the fastest option. The newsletter is included only when you separately check the email box above and choose a valid year and field.</p>
+        <p>Google is used only to sign you in. We do not request access to Gmail, Drive, contacts, or your applications.</p>
       </div>
+      <button className="account-personalize-toggle" type="button" aria-expanded={showPersonalization} aria-controls="account-signup-personalization" onClick={() => {
+        setShowPersonalization(current => {
+          if (current) setDraft(value => ({ ...value, consent: false }));
+          return !current;
+        });
+      }}>
+        <span><BellRing size={17} /> Add personalized weekly matches <small>Optional</small></span>
+        <ArrowRight size={17} aria-hidden="true" />
+      </button>
+      {showPersonalization && <div id="account-signup-personalization"><SignupEssentials draft={draft} setDraft={setDraft} disabled={authBusy} /></div>}
       <div className="account-or-divider"><span>or use a secure email link</span></div>
       <label className="account-control account-email-control">
         <span>College email or personal email</span>
@@ -578,7 +604,7 @@ function SignedOutPanel({ source }) {
         <button className="button account-primary-button" type="submit" disabled={authBusy}>
           {magicBusy ? <><Loader2 size={16} className="account-spinner" /> Sending secure link…</> : authBusy ? <>Please wait…</> : <>Create my account <ArrowRight size={16} /></>}
         </button>
-        <p>Creating an account does not subscribe you unless the email consent box is checked. Your match choices are submitted only when you opt in.</p>
+        <p>Creating an account does not subscribe you. Personalized emails turn on only if you open the optional section and check its consent box.</p>
       </div>
     </form>
   </section>;
@@ -659,99 +685,277 @@ function SignedInPanel() {
   </div>;
 }
 
-const SIGNUP_PROMPT_DISMISSED_KEY = "fi_signup_prompt_dismissed_v1";
-const SIGNUP_PROMPT_SESSION_KEY = "fi_signup_prompt_seen_v1";
-const SIGNUP_PROMPT_DISMISS_MS = 14 * 24 * 60 * 60 * 1000;
-const SIGNUP_PROMPT_REVEAL_MS = 8000;
-const SIGNUP_PROMPT_SCROLL_WAIT_MS = 3000;
-const SIGNUP_PROMPT_SCROLL_DEPTH = 0.2;
+const SIGNUP_PROMPT_DISMISSED_KEY = "fi_signup_prompt_dismissed_v2";
+const SIGNUP_PROMPT_SESSION_KEY = "fi_signup_prompt_seen_v2";
+const SIGNUP_PROMPT_DISMISS_MS = 72 * 60 * 60 * 1000;
+const SIGNUP_PROMPT_DESKTOP_REVEAL_MS = 3500;
+const SIGNUP_PROMPT_MOBILE_REVEAL_MS = 8000;
+const SIGNUP_PROMPT_SCROLL_WAIT_MS = 1200;
+const SIGNUP_PROMPT_DESKTOP_SCROLL_DEPTH = 0.12;
+const SIGNUP_PROMPT_MOBILE_SCROLL_DEPTH = 0.2;
 const SIGNUP_PROMPT_PAGES = new Set(["home", "directory", "year", "field", "topic", "program", "guide", "guides", "deadlines"]);
+
+function promptStorageIsWritable(storage, key) {
+  const probe = `${key}_write_test`;
+  try {
+    storage.setItem(probe, "1");
+    const written = storage.getItem(probe) === "1";
+    storage.removeItem(probe);
+    return written;
+  } catch {
+    try { storage.removeItem(probe); } catch { /* storage is unavailable */ }
+    return false;
+  }
+}
 
 export function SignupPrompt({ pageType = "", pathname = "/", year = null, field = "", programId = "" }) {
   const account = useAccount();
   const [open, setOpen] = useState(false);
+  const [showLauncher, setShowLauncher] = useState(false);
+  const [mobileSheet, setMobileSheet] = useState(false);
+  const [adInView, setAdInView] = useState(false);
   const [showAlertOptions, setShowAlertOptions] = useState(false);
   const [localError, setLocalError] = useState("");
   const yearRef = useRef(null);
   const fieldRef = useRef(null);
+  const dialogRef = useRef(null);
+  const googleButtonRef = useRef(null);
+  const launcherRef = useRef(null);
+  const adInViewRef = useRef(false);
+  const previousFocusRef = useRef(null);
+  const openedFromLauncherRef = useRef(false);
   const [draft, setDraft] = useState(() => ({
     collegeYear: Number(year) >= 1 && Number(year) <= 4 ? Number(year) : null,
     field: FIELD_IDS.includes(field) ? field : "",
     consent: false,
   }));
-
-  useEffect(() => {
-    // Keep the initial render stable. The fuller conversion form opens by
-    // default only where it does not become a near-full-screen interstitial.
-    if (window.matchMedia("(min-width: 621px)").matches) setShowAlertOptions(true);
-  }, []);
+  const eligible = accountFeatureEnabled() && account.status === "signed-out" && SIGNUP_PROMPT_PAGES.has(pageType) && pathname !== ACCOUNT_PATH;
 
   const dismiss = useCallback(() => {
-    try { window.localStorage.setItem(SIGNUP_PROMPT_DISMISSED_KEY, String(Date.now())); } catch { /* already shown only once this session */ }
+    try {
+      const dismissedAt = String(Date.now());
+      window.localStorage.setItem(SIGNUP_PROMPT_DISMISSED_KEY, dismissedAt);
+      if (window.localStorage.getItem(SIGNUP_PROMPT_DISMISSED_KEY) !== dismissedAt) throw new Error("Prompt dismissal was not stored.");
+    } catch { /* the session marker still prevents another interruption this visit */ }
     account.dismissFeedback();
+    setLocalError("");
     setOpen(false);
+    setShowLauncher(true);
   }, [account.dismissFeedback]);
 
   useEffect(() => {
-    if (!accountFeatureEnabled() || account.status !== "signed-out" || !SIGNUP_PROMPT_PAGES.has(pageType) || pathname === ACCOUNT_PATH) return undefined;
+    const media = window.matchMedia("(max-width: 620px)");
+    const sync = () => setMobileSheet(media.matches);
+    sync();
+    if (media.addEventListener) media.addEventListener("change", sync);
+    else media.addListener(sync);
+    return () => {
+      if (media.removeEventListener) media.removeEventListener("change", sync);
+      else media.removeListener(sync);
+    };
+  }, []);
+
+  useEffect(() => {
+    adInViewRef.current = false;
+    setAdInView(false);
+    if (!eligible || typeof IntersectionObserver === "undefined") return undefined;
+    const visibleAds = new Set();
+    const observedAds = new Set();
+    const publishVisibility = () => {
+      visibleAds.forEach(ad => { if (!ad.isConnected) visibleAds.delete(ad); });
+      const next = visibleAds.size > 0;
+      adInViewRef.current = next;
+      setAdInView(next);
+    };
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) visibleAds.add(entry.target);
+        else visibleAds.delete(entry.target);
+      });
+      publishVisibility();
+    }, { rootMargin: "12px 0px" });
+    const observeAds = () => {
+      [...document.querySelectorAll(".ad-slot")].forEach(ad => {
+        if (observedAds.has(ad)) return;
+        observedAds.add(ad);
+        observer.observe(ad);
+      });
+      publishVisibility();
+    };
+    observeAds();
+    const mutations = typeof MutationObserver === "undefined" ? null : new MutationObserver(observeAds);
+    mutations?.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("fi:ads-loaded", observeAds);
+    return () => {
+      window.removeEventListener("fi:ads-loaded", observeAds);
+      mutations?.disconnect();
+      observer.disconnect();
+    };
+  }, [eligible, pathname]);
+
+  useEffect(() => {
+    if (adInView && open) {
+      setOpen(false);
+      setShowLauncher(true);
+    }
+  }, [adInView, open]);
+
+  useEffect(() => {
+    if (!eligible) {
+      setOpen(false);
+      setShowLauncher(false);
+      return undefined;
+    }
+    const mobile = window.matchMedia("(max-width: 620px)").matches;
     let persistent;
     let session;
     try {
       persistent = window.localStorage;
-      session = window.sessionStorage;
+      if (!promptStorageIsWritable(persistent, SIGNUP_PROMPT_DISMISSED_KEY)) throw new Error("Persistent prompt storage is read-only.");
       const dismissedAt = Number(persistent.getItem(SIGNUP_PROMPT_DISMISSED_KEY) || 0);
-      if (dismissedAt > 0 && Date.now() - dismissedAt < SIGNUP_PROMPT_DISMISS_MS) return undefined;
-      if (session.getItem(SIGNUP_PROMPT_SESSION_KEY)) return undefined;
+      if (dismissedAt > 0 && Date.now() - dismissedAt < SIGNUP_PROMPT_DISMISS_MS) {
+        setShowLauncher(true);
+        return undefined;
+      }
     } catch {
-      // If dismissal cannot be remembered, avoid repeatedly interrupting the
-      // visitor across pages in the same browsing session.
+      // If the cooldown cannot be honored, keep signup available through the
+      // voluntary launcher instead of risking a repeated interruption.
+      setShowLauncher(true);
+      return undefined;
+    }
+    try {
+      session = window.sessionStorage;
+      if (!promptStorageIsWritable(session, SIGNUP_PROMPT_SESSION_KEY)) throw new Error("Session prompt storage is read-only.");
+      if (session.getItem(SIGNUP_PROMPT_SESSION_KEY)) {
+        setShowLauncher(true);
+        return undefined;
+      }
+    } catch {
+      // A once-per-session cap cannot be guaranteed without session storage.
+      setShowLauncher(true);
       return undefined;
     }
 
     let cancelled = false;
-    let checking = false;
+    let revealed = false;
     const reveal = () => {
-      if (cancelled || checking) return;
-      checking = true;
+      if (cancelled || revealed || adInViewRef.current) return;
+      const seenAt = String(Date.now());
       try {
-        session.setItem(SIGNUP_PROMPT_SESSION_KEY, String(Date.now()));
-        if (!cancelled) setOpen(true);
+        session.setItem(SIGNUP_PROMPT_SESSION_KEY, seenAt);
+        if (session.getItem(SIGNUP_PROMPT_SESSION_KEY) !== seenAt) throw new Error("Session prompt marker was not stored.");
       } catch {
-        // If the once-per-session marker cannot be written, fail quiet rather
-        // than risk showing the prompt again on every page.
+        setShowLauncher(true);
+        return;
       }
+      revealed = true;
+      setShowLauncher(false);
+      setOpen(true);
     };
+    const revealDelay = mobile ? SIGNUP_PROMPT_MOBILE_REVEAL_MS : SIGNUP_PROMPT_DESKTOP_REVEAL_MS;
+    const scrollDepth = mobile ? SIGNUP_PROMPT_MOBILE_SCROLL_DEPTH : SIGNUP_PROMPT_DESKTOP_SCROLL_DEPTH;
     const startedAt = Date.now();
     const onScroll = () => {
       const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-      if (Date.now() - startedAt >= SIGNUP_PROMPT_SCROLL_WAIT_MS && window.scrollY / scrollable >= SIGNUP_PROMPT_SCROLL_DEPTH) reveal();
+      if (Date.now() - startedAt >= SIGNUP_PROMPT_SCROLL_WAIT_MS && window.scrollY / scrollable >= scrollDepth) reveal();
     };
-    const timer = window.setTimeout(reveal, SIGNUP_PROMPT_REVEAL_MS);
+    const onExitIntent = event => {
+      if (!mobile && event.relatedTarget === null && event.clientY <= 0 && Date.now() - startedAt >= SIGNUP_PROMPT_SCROLL_WAIT_MS) reveal();
+    };
+    const timer = window.setTimeout(reveal, revealDelay);
     window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("mouseout", onExitIntent);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
       window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("mouseout", onExitIntent);
     };
-  }, [account.status, pageType, pathname]);
+  }, [eligible, mobileSheet]);
 
   useEffect(() => {
-    // Supabase broadcasts auth changes between tabs. If the visitor completes
-    // sign-in elsewhere while this card is open, remove the now-stale prompt.
-    if (account.status === "signed-in") setOpen(false);
+    if (account.status === "signed-in") {
+      setOpen(false);
+      setShowLauncher(false);
+    }
   }, [account.status]);
 
   useEffect(() => {
+    if (!open || openedFromLauncherRef.current) return;
+    previousFocusRef.current = document.activeElement;
+  }, [open]);
+
+  useEffect(() => {
+    if (open || !previousFocusRef.current) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      if (openedFromLauncherRef.current) launcherRef.current?.focus();
+      else previousFocusRef.current?.focus?.();
+      openedFromLauncherRef.current = false;
+      previousFocusRef.current = null;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [open, showLauncher]);
+
+  useEffect(() => {
     if (!open) return undefined;
+    const originalOverflow = document.body.style.overflow;
+    if (!mobileSheet) document.body.style.overflow = "hidden";
+    const background = mobileSheet ? [] : [...document.querySelectorAll(".skip-link, .site-header, #main, footer, .compare-tray")].map(element => ({
+      element,
+      ariaHidden: element.getAttribute("aria-hidden"),
+      inert: element.inert,
+    }));
+    background.forEach(({ element }) => {
+      element.setAttribute("aria-hidden", "true");
+      element.inert = true;
+    });
+    const frame = mobileSheet ? null : window.requestAnimationFrame(() => {
+      if (googleButtonRef.current) googleButtonRef.current.focus();
+      else dialogRef.current?.focus();
+    });
     const onKeyDown = event => {
-      if (event.key === "Escape") dismiss();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        dismiss();
+        return;
+      }
+      if (mobileSheet || event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = [...dialogRef.current.querySelectorAll('button:not([disabled]), a[href], select:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])')];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [dismiss, open]);
+    return () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      window.removeEventListener("keydown", onKeyDown);
+      if (!mobileSheet) document.body.style.overflow = originalOverflow;
+      background.forEach(({ element, ariaHidden, inert }) => {
+        if (ariaHidden === null) element.removeAttribute("aria-hidden");
+        else element.setAttribute("aria-hidden", ariaHidden);
+        element.inert = inert;
+      });
+    };
+  }, [dismiss, mobileSheet, open]);
 
-  if (!open) return null;
+  if (!open) {
+    if (!eligible || !showLauncher || adInView) return null;
+    return <button ref={launcherRef} className="signup-prompt-launcher" type="button" onClick={event => {
+      openedFromLauncherRef.current = true;
+      previousFocusRef.current = event.currentTarget;
+      setShowLauncher(false);
+      setOpen(true);
+    }} aria-haspopup="dialog"><Sparkles size={17} /> Create free account</button>;
+  }
   const source = `signup-prompt-${pageType}`.slice(0, 60);
+  const feedbackTarget = "signup-prompt-dialog";
   const preferences = cleanNewsletterPreferences({
     ...EMPTY_PREFERENCES,
     collegeYear: draft.collegeYear,
@@ -779,62 +983,71 @@ export function SignupPrompt({ pageType = "", pathname = "/", year = null, field
       setLocalError(friendlyAccountError(error));
     }
   };
-  return <aside className="signup-prompt" role="complementary" aria-live="polite" aria-labelledby="signup-prompt-title">
-    <button className="signup-prompt-close" type="button" onClick={dismiss} aria-label="Dismiss account signup prompt"><X size={18} /></button>
-    <div className="signup-prompt-icon" aria-hidden="true"><BellRing size={20} /></div>
-    <p className="eyebrow">{PROGRAMS.length} sourced paths · one focused digest</p>
-    <h2 id="signup-prompt-title">{showAlertOptions ? "Get the right internships sent to you." : "Make your internship search remember you."}</h2>
-    <p>{showAlertOptions ? "Choose your year and one interest, then create a free account in seconds. We will send a small set of relevant paths—not the whole directory." : "Create a free account in seconds, or add a focused weekly digest matched to your year and interests."}</p>
-    <ul className="signup-prompt-benefits" aria-label="Personalized alert benefits">
-      <li><Check size={14} /> Matched to your college year</li>
-      <li><Check size={14} /> Weekly by default</li>
-      <li><Check size={14} /> Unsubscribe anytime</li>
-    </ul>
-    <button className="signup-prompt-alert-toggle" type="button" aria-expanded={showAlertOptions} aria-controls="signup-prompt-alert-options" onClick={() => {
-      setShowAlertOptions(current => {
-        if (current) setDraft(value => ({ ...value, consent: false }));
-        return !current;
-      });
-      setLocalError("");
-      account.dismissFeedback();
-    }}>
-      <span><BellRing size={16} /> Personalized email alerts <small>Optional</small></span>
-      <ArrowRight size={16} aria-hidden="true" />
-    </button>
-    {showAlertOptions && <div className="signup-prompt-alert-options" id="signup-prompt-alert-options">
-      <p className="signup-prompt-step"><BellRing size={15} /> Choose what belongs in your digest</p>
-      <div className="signup-prompt-match" aria-label="Optional newsletter match preferences">
-        <label>
-          <span>My college year</span>
-          <select ref={yearRef} value={draft.collegeYear || ""} onChange={event => setDraft(current => ({ ...current, collegeYear: event.target.value ? Number(event.target.value) : null }))}>
-            <option value="">Choose year</option>
-            {YEARS.map(item => <option value={item.id} key={item.id}>{item.short}</option>)}
-          </select>
+  return <div className={`signup-prompt-layer ${mobileSheet ? "is-mobile-sheet" : ""} ${showAlertOptions ? "has-alert-options" : ""}`.trim()} role="presentation" onMouseDown={event => {
+    if (event.target === event.currentTarget) dismiss();
+  }}>
+    <section ref={dialogRef} className="signup-prompt" role="dialog" aria-modal={mobileSheet ? undefined : "true"} aria-labelledby="signup-prompt-title" aria-describedby="signup-prompt-description" tabIndex={-1} onMouseDown={event => event.stopPropagation()}>
+      <button className="signup-prompt-close" type="button" onClick={dismiss} aria-label="Close account signup"><X size={19} /></button>
+      <div className="signup-prompt-icon" aria-hidden="true"><Sparkles size={21} /></div>
+      <p className="eyebrow">Free student account · about 10 seconds</p>
+      <h2 id="signup-prompt-title">Stop missing internships that fit you.</h2>
+      <p id="signup-prompt-description">Create your free FirstInternships account with Google in one tap. No password, resume, or application required.</p>
+      <ul className="signup-prompt-benefits" aria-label="Account benefits">
+        <li><Check size={14} /> Free to create</li>
+        <li><Check size={14} /> No password</li>
+        <li><Check size={14} /> Student-focused</li>
+      </ul>
+      {localError && <p className="account-cta-error" role="alert">{localError}</p>}
+      <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} target={feedbackTarget} />
+      <GoogleSignInButton
+        source={source}
+        label={draft.consent ? "Continue with Google + email my matches" : "Continue with Google"}
+        className="signup-prompt-google"
+        consent={draft.consent}
+        preferences={preferences}
+        buttonRef={googleButtonRef}
+        feedbackTarget={feedbackTarget}
+      />
+      <p className="signup-prompt-trust"><ShieldCheck size={15} /> Google sign-in only. No Gmail, Drive, contacts, or application access.</p>
+      <a className="signup-prompt-email" href={emailHref} onClick={beginEmailSignup}>Use email instead <ArrowRight size={14} /></a>
+      <button className="signup-prompt-alert-toggle" type="button" aria-expanded={showAlertOptions} aria-controls="signup-prompt-alert-options" onClick={() => {
+        setShowAlertOptions(current => {
+          if (current) setDraft(value => ({ ...value, consent: false }));
+          return !current;
+        });
+        setLocalError("");
+        account.dismissFeedback();
+      }}>
+        <span><BellRing size={16} /> Add weekly internship matches <small>Optional</small></span>
+        <ArrowRight size={16} aria-hidden="true" />
+      </button>
+      {showAlertOptions && <div className="signup-prompt-alert-options" id="signup-prompt-alert-options">
+        <p className="signup-prompt-step"><BellRing size={15} /> Choose what belongs in your digest</p>
+        <div className="signup-prompt-match" aria-label="Optional newsletter match preferences">
+          <label>
+            <span>My college year</span>
+            <select ref={yearRef} value={draft.collegeYear || ""} onChange={event => setDraft(current => ({ ...current, collegeYear: event.target.value ? Number(event.target.value) : null }))}>
+              <option value="">Choose year</option>
+              {YEARS.map(item => <option value={item.id} key={item.id}>{item.short}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>My main interest</span>
+            <select ref={fieldRef} value={draft.field} onChange={event => setDraft(current => ({ ...current, field: event.target.value }))}>
+              <option value="">Choose field</option>
+              {FIELDS.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
+            </select>
+          </label>
+        </div>
+        <label className="account-check-row signup-prompt-consent">
+          <input type="checkbox" checked={draft.consent} onChange={event => setDraft(current => ({ ...current, consent: event.target.checked }))} />
+          <span><strong>Email me personalized internship alerts</strong><small>I agree to receive a focused weekly digest using the choices above. Unsubscribe anytime. <a href="/privacy">Privacy details</a>.</small></span>
         </label>
-        <label>
-          <span>My main interest</span>
-          <select ref={fieldRef} value={draft.field} onChange={event => setDraft(current => ({ ...current, field: event.target.value }))}>
-            <option value="">Choose field</option>
-            {FIELDS.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
-          </select>
-        </label>
-      </div>
-      <label className="account-check-row signup-prompt-consent">
-        <input type="checkbox" checked={draft.consent} onChange={event => setDraft(current => ({ ...current, consent: event.target.checked }))} />
-        <span><strong>Email me personalized internship alerts</strong><small>Use the choices above for a focused weekly digest. Unsubscribe anytime. <a href="/privacy">Privacy details</a>.</small></span>
-      </label>
-    </div>}
-    {localError && <p className="account-cta-error" role="alert">{localError}</p>}
-    <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
-    <GoogleSignInButton
-      source={source}
-      label={draft.consent ? "Get my matches with Google" : "Create free account with Google"}
-      consent={draft.consent}
-      preferences={preferences}
-    />
-    <a className="signup-prompt-email" href={emailHref} onClick={beginEmailSignup}>Use email instead <ArrowRight size={14} /></a>
-    <small>The alert box starts unchecked. A Google account alone never subscribes you.</small>
-  </aside>;
+      </div>}
+      <button className="signup-prompt-not-now" type="button" onClick={dismiss}>Not now — continue browsing</button>
+      <small>Creating an account never turns on email by itself. The optional alert box starts unchecked.</small>
+    </section>
+  </div>;
 }
 
 export function AccountConversionCTA({ source = "site", compact = false, className = "", year = null, field = "", programId = "" }) {
@@ -851,6 +1064,7 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
   const fieldRef = useRef(null);
   const consentRef = useRef(null);
   const formId = `${titleId}-signup`;
+  const feedbackTarget = `${titleId}-google`;
   useEffect(() => {
     if (!expanded) return undefined;
     const frame = window.requestAnimationFrame(() => yearRef.current?.focus());
@@ -883,7 +1097,7 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
       return;
     }
     setLocalError("");
-    await account.requestGoogleSignIn({ source, consent: draft.consent, preferences });
+    await account.requestGoogleSignIn({ source, consent: draft.consent, preferences, feedbackTarget });
   };
   const beginEmailSignup = event => {
     if (!draft.consent) return;
@@ -910,9 +1124,9 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
   return <aside className={`account-conversion-cta ${compact ? "is-compact" : ""} ${ready && !signedIn && expanded ? "is-signup" : ""} ${className}`.trim()} aria-labelledby={titleId}>
     <span className="account-cta-icon" aria-hidden="true">{signedIn ? <BellRing size={22} /> : <Sparkles size={22} />}</span>
     <div>
-      <p className="eyebrow">{signedIn ? "Your internship alerts" : "Stop searching from zero"}</p>
+      <p className="eyebrow">{signedIn ? "Your internship alerts" : "Free student account"}</p>
       <h2 id={titleId}>{signedIn ? "Fine-tune what reaches your inbox." : contextTitle}</h2>
-      {!compact && <p>{signedIn ? "Change your year, fields, locations, or email cadence in one place." : "Choose two details and opt in. We will send a small weekly set of sourced paths that fit—not a generic job blast."}</p>}
+      {!compact && <p>{signedIn ? "Change your year, fields, locations, or email cadence in one place." : "Create your account with Google in one tap. Personalized weekly matches are available as a separate option."}</p>}
     </div>
     {ready && !signedIn && expanded ? <form className="account-cta-form" id={formId} onSubmit={beginGoogleSignup}>
       <div className="account-cta-fields">
@@ -928,30 +1142,36 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
         <span><strong>Email me personalized internship updates</strong><small>Weekly by default. Unsubscribe anytime. <a href="/privacy">Privacy details</a>.</small></span>
       </label>
       {localError && <p className="account-cta-error" role="alert">{localError}</p>}
-      <Feedback feedback={started ? account.feedback : null} onDismiss={account.dismissFeedback} />
+      <Feedback feedback={started ? account.feedback : null} onDismiss={account.dismissFeedback} target={feedbackTarget} />
       <div className="account-cta-actions">
         <button className="account-google-button" type="submit" disabled={Boolean(account.busy)} aria-busy={account.busy === "google"}>
           {account.busy === "google" ? <Loader2 size={18} className="account-spinner" /> : <GoogleMark />}
-          <span>{account.busy === "google" ? "Opening Google…" : draft.consent ? "Get my matches with Google" : "Create free account with Google"}</span>
+          <span>{account.busy === "google" ? "Opening Google…" : draft.consent ? "Continue with Google + email my matches" : "Continue with Google"}</span>
         </button>
         <a href={href} onClick={beginEmailSignup}>Use email instead <ArrowRight size={14} /></a>
       </div>
       <small className="account-cta-disclosure">The consent box starts unchecked. Creating an account alone never subscribes you.</small>
     </form> : signedIn || !ready
       ? <a className="button" href={href}>{signedIn ? "Manage alerts" : "Build my match profile"} <ArrowRight size={16} /></a>
-      : <button className="button" type="button" aria-expanded={expanded} aria-controls={formId} onClick={() => setExpanded(true)}>Build my match profile <ArrowRight size={16} /></button>}
+      : <div className="account-cta-quick">
+        <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} target={feedbackTarget} />
+        <GoogleSignInButton source={source} label="Continue with Google" feedbackTarget={feedbackTarget} />
+        <button className="account-cta-personalize" type="button" aria-expanded={expanded} aria-controls={formId} onClick={() => setExpanded(true)}>Add personalized weekly matches <ArrowRight size={14} /></button>
+        <small>Free account. No password. Email alerts stay off unless you separately opt in.</small>
+      </div>}
   </aside>;
 }
 
 export function AccountPage({ source = "account-page" }) {
   const account = useAccount();
+  const [queryDefaults] = useState(accountQueryDefaults);
   return <div className="account-page container">
     <nav className="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span><span aria-hidden="true">/</span><span aria-current="page">Account & alerts</span></span></nav>
-    <AccountHero />
+    <AccountHero showSignup={account.status === "signed-out" && !queryDefaults.consent} source={queryDefaults.source || `${source}-hero`} />
     {account.status === "inactive" && <section className="account-panel account-unavailable" role="status"><p className="eyebrow">Personalized alerts</p><h2>Account access is being prepared.</h2><p>The internship directory and private browser planner remain fully available while account setup is completed.</p><a className="button secondary" href="/internships">Browse internships</a></section>}
     {account.status === "loading" && <LoadingPanel />}
     {account.status === "unavailable" && <section className="account-panel account-unavailable" role="alert"><p className="eyebrow">Account service</p><h2>Sign-in is temporarily unavailable.</h2><Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} /><p>You can keep browsing every internship guide and using the private planner without an account.</p><a className="button secondary" href="/internships">Browse internships</a></section>}
-    {account.status === "signed-out" && <SignedOutPanel source={source} />}
+    {account.status === "signed-out" && <SignedOutPanel source={source} initialDefaults={queryDefaults} />}
     {account.status === "signed-in" && <SignedInPanel />}
     <section className="account-trust-grid" aria-label="How personalized alerts work">
       <article><span><BellRing size={19} /></span><h2>Relevant by design</h2><p>Your year and chosen fields narrow what belongs in your digest. You can change them whenever your plans change.</p></article>

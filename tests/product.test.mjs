@@ -190,18 +190,31 @@ test("account state is site-wide without loading newsletter settings on organic 
 
   assert.match(appSource, /<AccountProvider active=\{accountFeatureEnabled\(\)\} settingsActive=\{page\.type === "account"\}>/);
   assert.match(accountSource, /if \(!settingsActive\) \{[\s\S]*status: "signed-in"[\s\S]*settings: null[\s\S]*return;/);
-  assert.match(promptSource, /account\.status !== "signed-out"/, "only a confirmed signed-out visitor may see the prompt");
-  assert.match(promptSource, /account\.status === "signed-in"\) setOpen\(false\)/, "a cross-tab sign-in must close an open prompt");
+  assert.match(promptSource, /account\.status === "signed-out"/, "only a confirmed signed-out visitor may see the prompt");
+  assert.match(promptSource, /account\.status === "signed-in"[\s\S]*setOpen\(false\)[\s\S]*setShowLauncher\(false\)/, "a cross-tab sign-in must close every account prompt");
   assert.doesNotMatch(promptSource, /auth\.getSession/, "the prompt should reuse the site-wide auth state instead of issuing a second session check");
-  assert.match(accountSource, /SIGNUP_PROMPT_DISMISS_MS = 14 \* 24 \* 60 \* 60 \* 1000/, "dismissal must be remembered without suppressing the prompt forever");
-  assert.match(accountSource, /SIGNUP_PROMPT_REVEAL_MS = 8000/, "the prompt must stay delayed rather than covering landing content immediately");
-  assert.match(promptSource, /setTimeout\(reveal, SIGNUP_PROMPT_REVEAL_MS\)/);
-  assert.match(promptSource, /startedAt >= SIGNUP_PROMPT_SCROLL_WAIT_MS[\s\S]*>= SIGNUP_PROMPT_SCROLL_DEPTH/, "scroll-triggered display must retain both time and depth gates");
+  assert.match(accountSource, /fi_signup_prompt_dismissed_v2/, "the stronger prompt must not inherit the old 14-day suppression key");
+  assert.match(accountSource, /SIGNUP_PROMPT_DISMISS_MS = 72 \* 60 \* 60 \* 1000/, "dismissal should cool down the modal without hiding the conversion route indefinitely");
+  assert.match(accountSource, /SIGNUP_PROMPT_DESKTOP_REVEAL_MS = 3500/);
+  assert.match(accountSource, /SIGNUP_PROMPT_MOBILE_REVEAL_MS = 8000/, "mobile organic visits need a less intrusive engagement window");
+  assert.match(promptSource, /setTimeout\(reveal, revealDelay\)/);
+  assert.match(promptSource, /startedAt >= SIGNUP_PROMPT_SCROLL_WAIT_MS[\s\S]*>= scrollDepth/, "scroll-triggered display must retain both time and depth gates");
   assert.match(promptSource, /event\.key === "Escape"/, "keyboard users must be able to dismiss the prompt");
+  assert.match(promptSource, /role="dialog" aria-modal=\{mobileSheet \? undefined : "true"\}/, "only the blocking desktop treatment should claim modal semantics");
+  assert.match(promptSource, /const frame = mobileSheet \? null : window\.requestAnimationFrame[\s\S]*googleButtonRef\.current\.focus/, "desktop focus should move to the primary Google action without stealing focus on mobile");
+  assert.match(promptSource, /openedFromLauncherRef\.current = true[\s\S]*previousFocusRef\.current = event\.currentTarget/, "launcher-triggered dialogs must retain their focus origin before the launcher unmounts");
+  assert.match(promptSource, /openedFromLauncherRef\.current\) launcherRef\.current\?\.focus\(\)/, "focus should return to the remounted launcher after the dialog closes");
+  assert.match(promptSource, /if \(!mobileSheet\) document\.body\.style\.overflow = "hidden"/, "only the desktop modal should lock background scrolling");
+  assert.match(promptSource, /background = mobileSheet \? \[\] : \[\.\.\.document\.querySelectorAll\("\.skip-link, \.site-header, #main, footer, \.compare-tray"\)/, "desktop containment should include every background surface while the mobile sheet stays nonmodal");
+  assert.match(promptSource, /promptStorageIsWritable\(persistent[\s\S]*If the cooldown cannot be honored[\s\S]*setShowLauncher\(true\)[\s\S]*promptStorageIsWritable\(session[\s\S]*A once-per-session cap cannot be guaranteed[\s\S]*setShowLauncher\(true\)/, "blocked or read-only browser storage must fail quiet to the voluntary launcher");
+  assert.match(promptSource, /session\.setItem\(SIGNUP_PROMPT_SESSION_KEY, seenAt\)[\s\S]*session\.getItem\(SIGNUP_PROMPT_SESSION_KEY\) !== seenAt[\s\S]*setShowLauncher\(true\)[\s\S]*setOpen\(true\)/, "the interruption must open only after its session cap is durably recorded");
+  assert.match(promptSource, /media\.addEventListener\("change", sync\)[\s\S]*media\.removeEventListener\("change", sync\)/, "orientation and breakpoint changes must keep behavior aligned with responsive styling");
+  assert.match(promptSource, /\}, \[eligible, mobileSheet\]\);/, "a breakpoint change must also re-arm the correct mobile or desktop trigger thresholds");
+  assert.match(promptSource, /signup-prompt-launcher/, "dismissal should leave a persistent, voluntary way to reopen signup");
+  assert.ok(promptSource.indexOf("<GoogleSignInButton") < promptSource.indexOf('className="signup-prompt-alert-toggle"'), "Google signup must appear before optional newsletter fields");
   assert.match(promptSource, /type="checkbox" checked=\{draft\.consent\}/, "newsletter consent must be a separate controlled checkbox that begins false");
   assert.match(promptSource, /consent=\{draft\.consent\}[\s\S]*preferences=\{preferences\}/, "the Google handoff may use only the visible explicit consent and preferences");
-  assert.match(promptSource, /A Google account alone never subscribes you/, "the prompt must disclose the account-only path");
-  assert.doesNotMatch(promptSource, /aria-modal/, "the growth prompt must remain a non-blocking banner, not an intrusive search interstitial");
+  assert.match(promptSource, /Creating an account never turns on email by itself/, "the prompt must disclose the account-only path");
   assert.match(appSource, /year=\{page\.type === "year" \? page\.year\?\.id : null\}/, "year pages should prefill only their visible year context");
   assert.match(appSource, /field=\{page\.type === "field" \? page\.field\?\.id : page\.program\?\.fields\?\.\[0\] \|\| ""\}/, "field and program pages should preserve their visible field context");
   assert.doesNotMatch(appSource, /year=\{program\.firstYear\}/, "program eligibility must never be used as the visitor's college year");
@@ -223,17 +236,26 @@ test("account disclosures cover Google auth boundaries and separate newsletter c
   }
 });
 
-test("the account page can carry the visitor's explicit newsletter choice through Google", async () => {
+test("the account page puts one-click Google signup before optional newsletter personalization", async () => {
   const accountSource = await readFile("src/Account.jsx", "utf8");
+  const heroStart = accountSource.indexOf("function AccountHero");
+  const heroEnd = accountSource.indexOf("function LoadingPanel", heroStart);
+  const heroSource = accountSource.slice(heroStart, heroEnd);
   const panelStart = accountSource.indexOf("function SignedOutPanel");
   const panelEnd = accountSource.indexOf("const STATUS_COPY", panelStart);
   const panelSource = accountSource.slice(panelStart, panelEnd);
-  assert.match(panelSource, /<SignupEssentials[\s\S]*<GoogleSignInButton/, "signup should ask for the two useful match details before authentication");
+  assert.ok(panelSource.indexOf("<GoogleSignInButton") < panelSource.indexOf("<SignupEssentials"), "Google signup should not be blocked by match fields");
   assert.doesNotMatch(panelSource, /<PreferenceFields/, "advanced filters belong after account creation");
-  assert.match(panelSource, /label=\{draft\.consent \? "Create with Google \+ turn on alerts" : "Create account with Google"\}/);
+  assert.match(panelSource, /label=\{draft\.consent \? "Continue with Google \+ turn on alerts" : "Continue with Google — it’s free"\}/);
   assert.match(panelSource, /consent=\{draft\.consent\}/);
   assert.match(panelSource, /preferences=\{formPreferences\(draft\)\}/);
-  assert.match(panelSource, /separately check the email box/, "the Google shortcut must describe the separate consent boundary");
+  assert.match(panelSource, /showPersonalization &&[\s\S]*<SignupEssentials/, "newsletter matching should be optional progressive disclosure");
+  assert.match(panelSource, /does not subscribe you/, "the Google shortcut must describe the separate consent boundary");
+  assert.match(heroSource, /showSignup &&[\s\S]*<GoogleSignInButton[\s\S]*Continue with Google — it’s free/, "the account hero should expose account-only Google signup immediately on direct signed-out visits");
+  assert.doesNotMatch(heroSource, /consent=|preferences=/, "the independent hero shortcut must never submit a stale newsletter choice");
+  assert.match(heroSource, /<Feedback feedback=\{account\.feedback\}[\s\S]*target=\{feedbackTarget\}/, "Google errors must render beside only the hero action that caused them");
+  assert.match(accountSource, /<AccountHero showSignup=\{account\.status === "signed-out" && !queryDefaults\.consent\}/, "a restored explicit newsletter intent must use the single editable panel, not an independent hero action");
+  assert.match(accountSource, /<SignedOutPanel source=\{source\} initialDefaults=\{queryDefaults\}/, "the editable panel must receive the restored intent");
 });
 
 test("signed-in email settings cannot imply an active digest before consent", async () => {
@@ -253,12 +275,24 @@ test("contextual signup keeps account creation separate and preserves an explici
   const ctaStart = accountSource.indexOf("export function AccountConversionCTA");
   const ctaEnd = accountSource.indexOf("export function AccountPage", ctaStart);
   const ctaSource = accountSource.slice(ctaStart, ctaEnd);
-  assert.match(ctaSource, /requestGoogleSignIn\(\{ source, consent: draft\.consent, preferences \}\)/, "unchecked consent must still allow account-only Google signup");
+  assert.match(ctaSource, /requestGoogleSignIn\(\{ source, consent: draft\.consent, preferences, feedbackTarget \}\)/, "unchecked consent must still allow account-only Google signup");
   assert.doesNotMatch(ctaSource, /type="checkbox"[^>]*required/, "newsletter consent must never be a required condition of account creation");
   assert.match(ctaSource, /savePendingNewsletterPreferences\(preferences\)[\s\S]*newsletter_intent=/, "email fallback must carry an explicit choice only through the nonce-bound handoff");
   assert.match(accountSource, /consent: Boolean\(pending\)/, "the account page may restore consent only from a matching local intent nonce");
   assert.match(ctaSource, /aria-controls=\{formId\}/, "the expanding CTA must identify the form it reveals");
   assert.match(ctaSource, /yearRef\.current\?\.focus\(\)/, "focus must move into the revealed form");
+  assert.match(ctaSource, /className="account-cta-quick">[\s\S]*<Feedback feedback=\{account\.feedback\}[\s\S]*target=\{feedbackTarget\}[\s\S]*<GoogleSignInButton/, "Google errors must render beside only the contextual action that caused them");
+});
+
+test("signup prompt styles keep mobile browsing available and avoid fixed-tray collisions", async () => {
+  const accountCss = await readFile("src/account.css", "utf8");
+  const accountSource = await readFile("src/Account.jsx", "utf8");
+  assert.match(accountCss, /\.signup-prompt-layer\.is-mobile-sheet\{pointer-events:none[\s\S]*background:transparent;backdrop-filter:none\}/, "the mobile layer must not block or obscure the rest of the page");
+  assert.match(accountCss, /\.signup-prompt-layer\.is-mobile-sheet \.signup-prompt\{pointer-events:auto\}/, "only the mobile sheet itself should receive pointer input");
+  assert.match(accountCss, /\.signup-prompt-layer\.is-mobile-sheet \.signup-prompt\{[\s\S]*max-height:30dvh/, "the automatic mobile banner should use only a minority of the organic landing page");
+  assert.match(accountCss, /\.signup-prompt-layer\.is-mobile-sheet\.has-alert-options \.signup-prompt\{[\s\S]*max-height:70dvh/, "the larger preference sheet should require a deliberate expansion action");
+  assert.match(accountCss, /\.site-shell:has\(\+\.compare-tray\) \.signup-prompt-launcher\{bottom:112px\}/, "the account launcher must sit above the comparison tray");
+  assert.match(accountSource, /IntersectionObserver[\s\S]*MutationObserver\(observeAds\)[\s\S]*fi:ads-loaded[\s\S]*!showLauncher \|\| adInView/, "dynamic ad slots must be observed and the floating launcher must disappear rather than overlap a visible ad");
 });
 
 test("comparison validates IDs, preserves order, and caps the shortlist", () => {

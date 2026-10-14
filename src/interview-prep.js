@@ -16,7 +16,8 @@
  * Fidelity) moved from a general guide to that firm's interview questions, which is what a
  * student reading the program page is preparing for; those five targets also returned 200.
  * The 2026-10-13 finance expansion adds only program-specific links to verified firm pages;
- * technology-only programs remain excluded.
+ * technology-only programs remain excluded. The 2026-10-14 finance wave follows the same
+ * rule for 18 finance-specific programs whose firms have a matching Prepalyst company page.
  */
 const PREPALYST = "https://prepalyst.com";
 
@@ -47,18 +48,36 @@ export const INTERVIEW_PREP = {
   "bofa-global-risk-2027": { href: `${PREPALYST}/recruiting/programs/bank-of-america-global-risk-summer-analyst`, label: "Global Risk Summer Analyst preparation guide" },
   "bofa-payments-2027": { href: `${PREPALYST}/interview-questions/corporate-finance`, label: "corporate finance and treasury interview questions" },
   "bofa-qdap-2027": QUANT,
+  "bofa-investment-banking-seoul-2027": firm("bank-of-america", "Bank of America"),
+  "bofa-global-markets-ficc-jakarta-2027": firm("bank-of-america", "Bank of America"),
   "blackrock-summer-2027": { href: `${PREPALYST}/recruiting/programs/blackrock-internships`, label: "BlackRock internship preparation guide" },
   "fidelity-undergraduate-internships": firm("fidelity", "Fidelity"),
   "schwab-internship-academy": ASSET_MANAGEMENT,
+  "vanguard-college-to-corporate-internship": firm("vanguard", "Vanguard"),
+  "pimco-summer-analyst-program": firm("pimco", "PIMCO"),
+  "wellington-undergraduate-summer-internship-2027": firm("wellington", "Wellington Management"),
+  "capital-group-cap-summer-associate": firm("capital-group", "Capital Group"),
   "moodys-summer-internship": { href: `${PREPALYST}/interview-questions/credit-analysis`, label: "credit analysis interview questions" },
   "point72-investment-services-internship": { href: `${PREPALYST}/guides/hedge-fund-interview-questions`, label: "hedge fund interview questions with worked answers" },
   "bridgewater-investment-associate-2027": firm("bridgewater", "Bridgewater"),
   "millennium-internship-program-2027": firm("millennium", "Millennium"),
   "citadel-associate-program-internship": firm("citadel", "Citadel"),
+  "citadel-securities-internship-program": firm("citadel-securities", "Citadel Securities"),
+  "balyasny-catalyst-equities-internship": firm("balyasny", "Balyasny"),
+  "aqr-research-summer-analyst-2027": firm("aqr", "AQR"),
   "jane-street-quantitative-trader-internship": firm("jane-street", "Jane Street"),
   "jane-street-strategy-product-internship": firm("jane-street", "Jane Street"),
   "blackstone-summer-analyst-program": firm("blackstone", "Blackstone"),
   "kkr-us-summer-internship": firm("kkr", "KKR"),
+  "apollo-credit-trading-summer-analyst-2027": firm("apollo", "Apollo"),
+  "ares-summer-internship-program-2027": firm("ares", "Ares"),
+  "oaktree-summer-internship-program-2027": firm("oaktree", "Oaktree"),
+  "brookfield-energy-fundraise-intern-2026-2027": firm("brookfield", "Brookfield"),
+  "general-atlantic-undergraduate-internships": firm("general-atlantic", "General Atlantic"),
+  "insight-partners-investment-summer-analyst-2027": firm("insight-partners", "Insight Partners"),
+  "hines-redi-undergraduate-internship": firm("hines", "Hines"),
+  "microsoft-finance-rotation-internship": firm("microsoft", "Microsoft"),
+  "danaher-idt-fpa-internship": firm("danaher", "Danaher"),
   "servicenow-finance-intern-2027": { href: `${PREPALYST}/guides/corporate-finance-fpa-interview-questions`, label: "corporate finance and FP&A interview questions" },
   "de-shaw-summer-internships-2027": QUANT,
   "two-sigma-internships": firm("two-sigma", "Two Sigma"),

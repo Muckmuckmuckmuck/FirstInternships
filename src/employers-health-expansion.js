@@ -47,7 +47,7 @@ const G = {
 export const EMPLOYERS_HEALTH_PROGRAMS = [
   {
     id: "pfizer-futures-internship", company: "Pfizer", title: "Pfizer Futures Internship", initials: "PF", color: "#0000c9",
-    seoTitle: "Pfizer Futures 2027: Dates, GPA & Application",
+    seoTitle: "Pfizer Internship 2027: Dates, GPA & Apply",
     seoDescription: "Pfizer Futures applications for summer 2027 are open Oct. 5–Nov. 8, 2026. Check GPA rules, work authorization, HireVue steps and how to apply.",
     fields: ["life-sciences", "healthcare", "business", "research"],
     firstYear: 1, years: [1, 2, 3, 4], yearLabel: "Current freshmen–seniors at application", pay: "Paid", location: "Multiple US Pfizer sites", mode: "On site at least 4 days a week",
@@ -88,7 +88,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
       ["What other Pfizer programs are there for students?", "Pfizer's early careers page also lists an MBA Summer Associate Program for first-year MBA students, several two-year rotational programs for recent graduates, including Digital, Global Supply, R&D and Global Regulatory Sciences, and postdoctoral training. For an undergraduate summer internship, Pfizer Futures is the program."],
     ],
     guideSlugs: [G.when, G.apply, G.interview],
-    verified: "2026-10-11", updated: "2026-10-11",
+    verified: "2026-10-11", updated: "2026-10-14",
   },
   {
     id: "merck-future-talent-program", company: "Merck", title: "Future Talent Program Internships", initials: "MK", color: "#00857c",

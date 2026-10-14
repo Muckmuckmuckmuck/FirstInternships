@@ -7,6 +7,7 @@ import { CONTENT_EXPANSION_3_PROGRAMS } from "./content-expansion-3.js";
 import { CONTENT_EXPANSION_4_PROGRAMS } from "./content-expansion-4.js";
 import { GUIDE_EXPANSION } from "./guide-expansion.js";
 import { GUIDE_EXPANSION_2 } from "./guide-expansion-2.js";
+import { GUIDE_EXPANSION_3 } from "./guide-expansion-3.js";
 import { SECTOR_PROGRAMS, INSURANCE_FIELD } from "./sector-expansion.js";
 import { RESEARCH_PROGRAMS } from "./research-expansion.js";
 // Employer batches researched in parallel; each lives in its own module so
@@ -29,6 +30,9 @@ import { EMPLOYERS_FINANCE_BANKS_WAVE_2_PROGRAMS } from "./employers-finance-ban
 import { EMPLOYERS_FINANCE_ALTERNATIVES_WAVE_2_PROGRAMS } from "./employers-finance-alternatives-wave-2-expansion.js";
 import { EMPLOYERS_FINANCE_ADVISORY_WAVE_2_PROGRAMS } from "./employers-finance-advisory-wave-2-expansion.js";
 import { EMPLOYERS_FINANCE_INVESTING_WAVE_2_PROGRAMS } from "./employers-finance-investing-wave-2-expansion.js";
+import { EMPLOYERS_FINANCE_MARKETS_WAVE_3_PROGRAMS } from "./employers-finance-markets-wave-3-expansion.js";
+import { EMPLOYERS_FINANCE_CORPORATE_WAVE_3_PROGRAMS } from "./employers-finance-corporate-wave-3-expansion.js";
+import { EMPLOYERS_FINANCE_PRIVATE_MARKETS_WAVE_3_PROGRAMS } from "./employers-finance-private-markets-wave-3-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -216,6 +220,9 @@ export const PROGRAMS = [
   ...EMPLOYERS_FINANCE_ALTERNATIVES_WAVE_2_PROGRAMS,
   ...EMPLOYERS_FINANCE_ADVISORY_WAVE_2_PROGRAMS,
   ...EMPLOYERS_FINANCE_INVESTING_WAVE_2_PROGRAMS,
+  ...EMPLOYERS_FINANCE_MARKETS_WAVE_3_PROGRAMS,
+  ...EMPLOYERS_FINANCE_CORPORATE_WAVE_3_PROGRAMS,
+  ...EMPLOYERS_FINANCE_PRIVATE_MARKETS_WAVE_3_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
@@ -260,6 +267,7 @@ const PAY_ANSWER = `Many do, but not all, and "paid" covers several different ar
 export const GUIDES = [
   ...GUIDE_EXPANSION,
   ...GUIDE_EXPANSION_2,
+  ...GUIDE_EXPANSION_3,
   ...ADDITIONAL_GUIDES,
   { slug: "how-to-apply-for-an-internship", updated: "2026-09-20", title: "How to Apply for a College Internship", description: "A practical internship application process: verify eligibility, prepare evidence, submit through the official portal, and track the next step.", intro: "Start by checking whether you can actually participate. A polished application cannot fix an incompatible graduation date, required credit count, citizenship restriction, or work schedule.", sections: [
     ["1. Turn the listing into a checklist", "Before writing anything, copy the essentials out of the posting: employer, role title and identifier, term dates, location and work arrangement, deadline with its time zone, and the required documents. Separate required qualifications from preferred ones — they are not the same test, and many students disqualify themselves over a preferred item. Check whether class year is assessed when you apply or when the internship begins, because those can be different years for the same person. Where a mandatory rule is genuinely unclear, use the employer's published contact route rather than guessing."],
@@ -340,6 +348,9 @@ export const FEATURED_PROGRAM_IDS = [
 // demand or carrying newly published 2027 information. Keep this deliberately
 // small and reviewed; it is an internal-priority signal, not a live ranking.
 export const CURRENT_PROGRAM_IDS = [
+  "aqr-research-summer-analyst-2027",
+  "apollo-credit-trading-summer-analyst-2027",
+  "brookfield-energy-fundraise-intern-2026-2027",
   "citadel-associate-program-internship",
   "bridgewater-investment-associate-2027",
   "millennium-internship-program-2027",

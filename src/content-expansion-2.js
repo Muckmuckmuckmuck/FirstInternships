@@ -33,8 +33,8 @@ export const CONTENT_EXPANSION_2_PROGRAMS = [
     materials: ["Program and graduation-window check", "Tailored resume", "Relevant project or analysis", "Assessment preparation"], guideSlugs: consultingGuides,
   },
   {
-    id: "capital-one-early-internship", company: "Capital One", title: "Early Internship Program", initials: "CE", color: "#5d7391", updated: "2026-10-11", verified: "2026-10-11",
-    seoTitle: "Capital One Early Internship: Eligibility & Housing", seoDescription: "Capital One's paid 10-week Early Internship is for second-year students graduating Aug. 2029–Aug. 2030. See eligibility, housing and application steps.",
+    id: "capital-one-early-internship", company: "Capital One", title: "Early Internship Program", initials: "CE", color: "#5d7391", updated: "2026-10-14", verified: "2026-10-11",
+    seoTitle: "Capital One Early Internship Program: Eligibility", seoDescription: "Capital One's paid 10-week Early Internship Program is for second-year students graduating Aug. 2029–Aug. 2030. See eligibility, housing and how to apply.",
     fields: ["finance", "business", "technology", "consulting"], firstYear: 2, years: [2], yearLabel: "Second-year undergraduates", pay: "Paid", location: "McLean, Virginia", mode: "Full-time and in person",
     summary: "A paid ten-week sophomore program in McLean with hands-on analyst work, mentorship, and corporate housing.",
     eligibility: ["Capital One explicitly designs the program for second-year undergraduate students.", "Capital One's Students & Grads page gives the early-program window as a bachelor's degree earned between August 2029 and August 2030; its main internship programs are for students earning a bachelor's by August 2028. Check your expected graduation month against both.", "The selected role controls authorization, degree, schedule, and any additional qualifications."],

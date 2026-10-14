@@ -15,6 +15,8 @@
  * programs at firms with their own Prepalyst page (Goldman Sachs, Citi, Wells Fargo, Two Sigma,
  * Fidelity) moved from a general guide to that firm's interview questions, which is what a
  * student reading the program page is preparing for; those five targets also returned 200.
+ * The 2026-10-13 finance expansion adds only program-specific links to verified firm pages;
+ * technology-only programs remain excluded.
  */
 const PREPALYST = "https://prepalyst.com";
 
@@ -26,8 +28,20 @@ const firm = (slug, name) => ({ href: `${PREPALYST}/companies/${slug}/prep`, lab
 
 export const INTERVIEW_PREP = {
   "goldman-sachs-summer-analyst": firm("goldman-sachs", "Goldman Sachs"),
+  "jpmorgan-investment-banking-summer-analyst": firm("j-p-morgan", "J.P. Morgan"),
+  "jpmorgan-markets-summer-analyst": firm("j-p-morgan", "J.P. Morgan"),
+  "morgan-stanley-investment-banking-london-2027": firm("morgan-stanley", "Morgan Stanley"),
+  "morgan-stanley-sales-trading-london-2027": firm("morgan-stanley", "Morgan Stanley"),
   "citi-summer-analyst-internships": firm("citi", "Citi"),
   "wells-fargo-summer-internships": firm("wells-fargo", "Wells Fargo"),
+  "barclays-banking-summer-internship-london-2027": firm("barclays", "Barclays"),
+  "barclays-capital-markets-london-2027": firm("barclays", "Barclays"),
+  "barclays-sales-trading-structuring-london-2027": firm("barclays", "Barclays"),
+  "evercore-investment-banking-summer-analyst": firm("evercore", "Evercore"),
+  "jefferies-investment-banking-summer-analyst": firm("jefferies", "Jefferies"),
+  "lazard-financial-advisory-summer-analyst": firm("lazard", "Lazard"),
+  "pjt-partners-summer-analyst": firm("pjt-partners", "PJT Partners"),
+  "houlihan-lokey-investment-banking-summer-financial-analyst": firm("houlihan-lokey", "Houlihan Lokey"),
   "ubs-us-summer-internship": INVESTMENT_BANKING,
   "bny-summer-internship-2027": FINANCE_HUB,
   "bofa-global-risk-2027": { href: `${PREPALYST}/recruiting/programs/bank-of-america-global-risk-summer-analyst`, label: "Global Risk Summer Analyst preparation guide" },
@@ -38,6 +52,13 @@ export const INTERVIEW_PREP = {
   "schwab-internship-academy": ASSET_MANAGEMENT,
   "moodys-summer-internship": { href: `${PREPALYST}/interview-questions/credit-analysis`, label: "credit analysis interview questions" },
   "point72-investment-services-internship": { href: `${PREPALYST}/guides/hedge-fund-interview-questions`, label: "hedge fund interview questions with worked answers" },
+  "bridgewater-investment-associate-2027": firm("bridgewater", "Bridgewater"),
+  "millennium-internship-program-2027": firm("millennium", "Millennium"),
+  "citadel-associate-program-internship": firm("citadel", "Citadel"),
+  "jane-street-quantitative-trader-internship": firm("jane-street", "Jane Street"),
+  "jane-street-strategy-product-internship": firm("jane-street", "Jane Street"),
+  "blackstone-summer-analyst-program": firm("blackstone", "Blackstone"),
+  "kkr-us-summer-internship": firm("kkr", "KKR"),
   "servicenow-finance-intern-2027": { href: `${PREPALYST}/guides/corporate-finance-fpa-interview-questions`, label: "corporate finance and FP&A interview questions" },
   "de-shaw-summer-internships-2027": QUANT,
   "two-sigma-internships": firm("two-sigma", "Two Sigma"),

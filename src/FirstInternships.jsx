@@ -240,9 +240,9 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
   }, [initialYear, initialField]);
   const filtered = useMemo(() => sortPrograms(searchPrograms({ query, year, field, paid, ids: savedOnly ? planner.saved : null }).filter(p => !onlyPublishedDeadlines || ["soon", "future"].includes(deadlineState(p, now).kind)), sort, now), [query, year, field, paid, savedOnly, planner.saved, onlyPublishedDeadlines, sort, now]);
   // Choosing a year hides every program whose publisher never states a minimum
-  // college year — 58 of 101. The year hub pages already surface those in a
-  // separate labeled group; the board now does the same instead of silently
-  // dropping most of the catalogue the moment someone answers question one.
+  // college year. The year hub pages already surface those in a separate labeled
+  // group; the board does the same instead of silently dropping a large share of
+  // the catalogue the moment someone answers question one.
   const alsoCheck = useMemo(() => year === "all" ? [] : sortPrograms(searchPrograms({ query, year: "all", field, paid, ids: savedOnly ? planner.saved : null })
     .filter(p => !p.firstYear && !p.preferredYears)
     .filter(p => !onlyPublishedDeadlines || ["soon", "future"].includes(deadlineState(p, now).kind)), sort, now), [query, year, field, paid, savedOnly, planner.saved, onlyPublishedDeadlines, sort, now]);

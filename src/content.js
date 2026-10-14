@@ -25,6 +25,10 @@ import { OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS } from "./employers-october-2026-p
 import { EMPLOYERS_OCTOBER_2026_CONSUMER_MEDIA_PROGRAMS } from "./employers-october-2026-consumer-media-expansion.js";
 import { EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS } from "./employers-october-2026-growth-expansion.js";
 import { EMPLOYERS_OCTOBER_2026_GROWTH_WAVE_2_PROGRAMS } from "./employers-october-2026-growth-wave-2.js";
+import { EMPLOYERS_FINANCE_BANKS_WAVE_2_PROGRAMS } from "./employers-finance-banks-wave-2-expansion.js";
+import { EMPLOYERS_FINANCE_ALTERNATIVES_WAVE_2_PROGRAMS } from "./employers-finance-alternatives-wave-2-expansion.js";
+import { EMPLOYERS_FINANCE_ADVISORY_WAVE_2_PROGRAMS } from "./employers-finance-advisory-wave-2-expansion.js";
+import { EMPLOYERS_FINANCE_INVESTING_WAVE_2_PROGRAMS } from "./employers-finance-investing-wave-2-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -208,6 +212,10 @@ export const PROGRAMS = [
   ...EMPLOYERS_OCTOBER_2026_CONSUMER_MEDIA_PROGRAMS,
   ...EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS,
   ...EMPLOYERS_OCTOBER_2026_GROWTH_WAVE_2_PROGRAMS,
+  ...EMPLOYERS_FINANCE_BANKS_WAVE_2_PROGRAMS,
+  ...EMPLOYERS_FINANCE_ALTERNATIVES_WAVE_2_PROGRAMS,
+  ...EMPLOYERS_FINANCE_ADVISORY_WAVE_2_PROGRAMS,
+  ...EMPLOYERS_FINANCE_INVESTING_WAVE_2_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
@@ -332,6 +340,10 @@ export const FEATURED_PROGRAM_IDS = [
 // demand or carrying newly published 2027 information. Keep this deliberately
 // small and reviewed; it is an internal-priority signal, not a live ranking.
 export const CURRENT_PROGRAM_IDS = [
+  "citadel-associate-program-internship",
+  "bridgewater-investment-associate-2027",
+  "millennium-internship-program-2027",
+  "evercore-investment-banking-summer-analyst",
   "world-bank-wbg-pioneers",
   "nvidia-ignite",
   "pfizer-futures-internship",

@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 272, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 291, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 23, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -138,8 +138,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-12</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-11</lastmod>`), "directory freshness should reflect the current inventory release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-13</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-13</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -451,6 +451,7 @@ test("October growth batch preserves publisher-specific years, dates and applica
   assert.match(PROGRAMS.find(p => p.id === "port-authority-summer-2027").status, /interest form/i);
   assert.equal(PROGRAMS.find(p => p.id === "amtrak-internships-coops").firstYear, 2);
   assert.deepEqual(currentPrograms().map(program => program.id), [
+    "citadel-associate-program-internship", "bridgewater-investment-associate-2027", "millennium-internship-program-2027", "evercore-investment-banking-summer-analyst",
     "world-bank-wbg-pioneers", "nvidia-ignite", "pfizer-futures-internship", "capital-one-early-internship", "paramount-internships",
     "cleveland-clinic-lih-2027", "smithsonian-air-space-summer-2027", "whitney-marketing-spring-2027", "port-authority-summer-2027",
     "aig-summer-internship-2027", "la-times-summer-internships-2027", "kp-launch-college-program-2027", "nordstrom-corporate-internships-2027",
@@ -461,6 +462,40 @@ test("October growth batch preserves publisher-specific years, dates and applica
   const capitalOne = await readFile(join("dist", "programs/capital-one-early-internship.html"), "utf8");
   assert.match(capitalOne, /More Capital One internship guides/);
   assert.ok(capitalOne.includes('href="/programs/capital-one-internship-programs"'));
+});
+
+test("October 13 finance expansion preserves official cycle facts and honest unknowns", () => {
+  const ids = [
+    "jpmorgan-investment-banking-summer-analyst", "jpmorgan-markets-summer-analyst",
+    "morgan-stanley-investment-banking-london-2027", "morgan-stanley-sales-trading-london-2027",
+    "barclays-banking-summer-internship-london-2027", "barclays-capital-markets-london-2027",
+    "barclays-sales-trading-structuring-london-2027", "citadel-associate-program-internship",
+    "jane-street-quantitative-trader-internship", "jane-street-strategy-product-internship",
+    "blackstone-summer-analyst-program", "evercore-investment-banking-summer-analyst",
+    "jefferies-investment-banking-summer-analyst", "lazard-financial-advisory-summer-analyst",
+    "pjt-partners-summer-analyst", "houlihan-lokey-investment-banking-summer-financial-analyst",
+    "bridgewater-investment-associate-2027", "millennium-internship-program-2027",
+    "kkr-us-summer-internship",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-13"));
+  assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(batch.every(program => program.sources.some(source => source.url === program.url)));
+
+  assert.deepEqual(PROGRAMS.find(p => p.id === "blackstone-summer-analyst-program").years, [3]);
+  for (const program of batch.filter(program => program.id !== "blackstone-summer-analyst-program")) {
+    assert.equal(program.firstYear, null, `${program.id}: graduation or opening-specific rules are not universal college-year filters`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.equal(PROGRAMS.find(p => p.id === "morgan-stanley-investment-banking-london-2027").deadlineDate, undefined, "conflicting official cutoff dates must not become one asserted deadline");
+  assert.equal(PROGRAMS.find(p => p.id === "morgan-stanley-sales-trading-london-2027").deadlineDate, "2026-10-19");
+  assert.equal(PROGRAMS.find(p => p.id === "evercore-investment-banking-summer-analyst").deadlineDate, "2026-11-15");
+  assert.match(PROGRAMS.find(p => p.id === "evercore-investment-banking-summer-analyst").status, /2028/);
+  assert.equal(PROGRAMS.find(p => p.id === "houlihan-lokey-investment-banking-summer-financial-analyst").deadlineDate, "2026-11-30");
+  assert.match(PROGRAMS.find(p => p.id === "citadel-associate-program-internship").status, /2028/);
+  assert.match(PROGRAMS.find(p => p.id === "bridgewater-investment-associate-2027").timing, /\$71,000/);
+  assert.match(PROGRAMS.find(p => p.id === "millennium-internship-program-2027").status, /open/i);
 });
 
 test("October 11 expansion preserves sourced eligibility, cycle status and dates", () => {
@@ -690,7 +725,7 @@ test("page-level review lines show the real span of program review dates", async
 
 test("interview-practice links are relevant, disclosed and limited to finance programs", async () => {
   const ids = Object.keys(INTERVIEW_PREP);
-  assert.ok(ids.length > 0 && ids.length <= 30, "a curated set, not a sitewide link");
+  assert.ok(ids.length > 0 && ids.length <= 50 && ids.length < PROGRAMS.length / 5, "a curated finance set, not a sitewide link");
   for (const id of ids) {
     const program = PROGRAMS.find(p => p.id === id);
     assert.ok(program, `${id} is not a program`);
@@ -704,6 +739,12 @@ test("interview-practice links are relevant, disclosed and limited to finance pr
   assert.match(linked, /href="https:\/\/prepalyst\.com\/companies\/goldman-sachs\/prep"/);
   assert.match(linked, /Goldman Sachs interview questions with worked answers/);
   assert.match(linked, /sister site from FirstInternships(&#x27;|&apos;|')? founder/);
+  const expanded = await readFile(`dist${programPath(PROGRAMS.find(p => p.id === "jpmorgan-investment-banking-summer-analyst"))}.html`, "utf8");
+  assert.match(expanded, /href="https:\/\/prepalyst\.com\/companies\/j-p-morgan\/prep"/);
+  assert.match(expanded, /J\.P\. Morgan interview questions with worked answers/);
+  for (const id of ["jpmc-software-engineer-summer", "jpmc-data-ai-summer", "morgan-stanley-technology-calgary-2027", "microsoft-explore", "salesforce-futureforce"]) {
+    assert.equal(INTERVIEW_PREP[id], undefined, `${id}: technology-only program must stay unlinked`);
+  }
   const unlinked = await readFile(`dist${programPath(PROGRAMS.find(p => p.id === "chicago-fed-summer-internships"))}.html`, "utf8");
   assert.doesNotMatch(unlinked, /prepalyst\.com/);
 });

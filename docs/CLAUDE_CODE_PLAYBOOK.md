@@ -41,7 +41,7 @@ FirstInternships is not:
 - A reason to invent dates, pay, remote status, class years, or future cycles.
 - A license to create hundreds of near-duplicate keyword pages.
 
-As of October 14, 2026, the maintained baseline is 309 sourced program guides, 27 original preparation guides, 372 prerendered React routes, and 370 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
+As of October 15, 2026, the maintained baseline is 324 sourced program guides, 31 original preparation guides, 391 prerendered React routes, and 389 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
 
 ## 3. Non-negotiable invariants
 
@@ -69,8 +69,8 @@ The following rules override convenience and growth pressure:
 
 - `src/content.js` is the composition root for programs, fields, years, guides, routes, filters, and route resolution.
 - `src/expanded-content.js` owns added fields, focused collections, and several editorial guides.
-- `src/inventory-expansion.js`, `src/variety-expansion.js`, `src/organic-expansion.js`, `src/content-expansion-*.js`, and `src/employers-*-expansion.js` contain sourced program batches. The October 13 finance wave is split across four `src/employers-finance-*-wave-2-expansion.js` modules so banking, markets, alternatives and advisory records remain independently reviewable. The October 14 follow-up is split across the markets, private-markets and corporate-finance `src/employers-finance-*-wave-3-expansion.js` modules; preserve their opening-specific treatment of graduation windows, college-year eligibility, deadlines, compensation and current availability.
-- `src/guide-expansion.js`, `src/guide-expansion-2.js`, and `src/guide-expansion-3.js` contain original preparation guides that are not tied to one employer. The third module answers four application-term questions: rolling-basis review, rising-class-year labels, transcript requests, and the internship-versus-co-op choice.
+- `src/inventory-expansion.js`, `src/variety-expansion.js`, `src/organic-expansion.js`, `src/content-expansion-*.js`, and `src/employers-*-expansion.js` contain sourced program batches. The October 13 finance wave is split across four `src/employers-finance-*-wave-2-expansion.js` modules so banking, markets, alternatives and advisory records remain independently reviewable. The October 14 follow-up is split across the markets, private-markets and corporate-finance `src/employers-finance-*-wave-3-expansion.js` modules; preserve their opening-specific treatment of graduation windows, college-year eligibility, deadlines, compensation and current availability. The October 14 wave-four expansion is split between `src/employers-tech-engineering-wave-4-expansion.js` and `src/employers-health-consumer-wave-4-expansion.js`; preserve opening-specific class years, deadlines, compensation, work arrangements, current availability, and explicit unknowns.
+- `src/guide-expansion.js`, `src/guide-expansion-2.js`, `src/guide-expansion-3.js`, and `src/guide-expansion-4.js` contain original preparation guides that are not tied to one employer. The third module answers four application-term questions: rolling-basis review, rising-class-year labels, transcript requests, and the internship-versus-co-op choice. The fourth covers GPA checks, post-graduation internships, internship duration and schedules, and professionally declining an offer.
 - `src/sector-expansion.js` contains the insurance/risk field and its sourced program batch.
 - `src/research-expansion.js` contains research programs chosen for their published cutoffs; its header documents the three date situations the schema handles differently.
 - `src/legacy.js` is the single source of truth for retired URL aliases.
@@ -298,7 +298,7 @@ Preserve:
 - Program-specific sitemap review dates; do not replace them with one fabricated blanket date.
 - Concise search titles without a blanket `| FirstInternships` suffix on every route. Google can show the WebSite name separately. Keep the homepage brand-led and keep program titles within the tested content limit.
 - Employer-aware program H1s from `programHeading()`. Do not revert to generic title-only H1s that collide across different employers.
-- A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 309-card inventory belongs on `/internships`, not on the homepage. `CURRENT_PROGRAM_IDS` is the deliberately small link set for high-interest or newly reviewed program pages and must not become a second full directory.
+- A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 324-card inventory belongs on `/internships`, not on the homepage. `CURRENT_PROGRAM_IDS` is the deliberately small link set for high-interest or newly reviewed program pages and must not become a second full directory.
 - Exact-year cards on year hubs plus a compact sample of opening-specific pathways. Do not restore the same full unknown-minimum inventory to all four year pages.
 - Related programs from the catalog-wide assignment in `relatedPrograms()`: same-employer programs first, then six slots balanced across each page's most similar programs so every program is suggested from several others. Never reintroduce an alphabetical or array-order tie-break; it starved later programs of internal links. Keep the assignment cheap (pairs are scored once), because it runs during hydration on phones.
 - Guide "next read" links that rotate onward through `GUIDES`, and the footer's popular-guide links in `FOOTER_GUIDE_LINKS`.

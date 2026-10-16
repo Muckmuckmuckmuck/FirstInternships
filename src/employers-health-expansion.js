@@ -127,7 +127,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
   },
   {
     id: "abbvie-summer-internship", company: "AbbVie", title: "Summer Internship Program", initials: "AV", color: "#071d49",
-    seoTitle: "AbbVie Summer Internship: Eligibility & How to Apply",
+    seoTitle: "AbbVie Internship 2027: Eligibility & How to Apply",
     seoDescription: "AbbVie's paid 10-12 week summer internship runs May to August at 10+ US sites. Third-year undergraduates are encouraged; each 2027 posting sets its own graduation rules.",
     fields: ["life-sciences", "research", "business", "operations", "technology"],
     firstYear: null, years: [], preferredYears: [3], yearLabel: "Third-year undergraduates encouraged · role-specific", pay: "Paid", location: "10+ US sites incl. Lake County, IL and Worcester, MA", mode: "Full time; site- or office-based by role",
@@ -158,7 +158,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
     pitfall: "The EXCEL externship and the Discover Accounting and Finance event are short programs for first- and second-year students, not summer internships, and the Discover posting states that it is unpaid. They are useful stepping stones toward an internship interview, but they are not the paid summer role itself.",
     materials: ["Expected graduation month and year", "Cumulative GPA", "Enrollment plan for the semester after the internship", "Chosen AbbVie function and posting", "Examples for behavioral, technical or case questions"],
     guideSlugs: [G.when, G.interview, G.resume],
-    verified: "2026-09-29", updated: "2026-09-29",
+    verified: "2026-09-29", updated: "2026-10-14",
   },
   {
     id: "bms-summer-internships", company: "Bristol Myers Squibb", title: "Summer Internships", initials: "BM", color: "#7b2a8c",
@@ -236,7 +236,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
   },
   {
     id: "novartis-summer-of-science", company: "Novartis", title: "Summer of Science Internship", initials: "NV", color: "#0460a9",
-    seoTitle: "Novartis Summer of Science Internship: Due Dec 7",
+    seoTitle: "Novartis Internship 2027: Deadline & Stipend",
     seoDescription: "A paid 10-week biomedical research internship in Cambridge, MA or San Diego with dorm housing. 2027 applications are due December 7, 2026, with three reference letters.",
     fields: ["research", "life-sciences", "healthcare"],
     firstYear: null, years: [], yearLabel: "Three semesters completed by start", pay: "Paid", location: "Cambridge, Massachusetts or San Diego, California", mode: "Full time, in person, residential cohort",
@@ -266,7 +266,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
     pitfall: "The Summer of Science page lists the three reference letters among the documents your application must upload — unlike the postbaccalaureate program on the same page, where referees get their own link. Have the letters in hand as PDFs well before December 7.",
     materials: ["Cover letter (PDF)", "Personal statement on PhD plans (PDF)", "Resume or CV (PDF)", "Three reference letters (PDF)", "Official transcript (PDF)"],
     guideSlugs: [G.statement, G.letter, G.files],
-    verified: "2026-09-29", updated: "2026-09-29",
+    verified: "2026-09-29", updated: "2026-10-14",
   },
   {
     id: "astrazeneca-us-summer-internship", company: "AstraZeneca", title: "US Summer Internship Program", initials: "AZ", color: "#830051",

@@ -8,6 +8,7 @@ import { CONTENT_EXPANSION_4_PROGRAMS } from "./content-expansion-4.js";
 import { GUIDE_EXPANSION } from "./guide-expansion.js";
 import { GUIDE_EXPANSION_2 } from "./guide-expansion-2.js";
 import { GUIDE_EXPANSION_3 } from "./guide-expansion-3.js";
+import { GUIDE_EXPANSION_4 } from "./guide-expansion-4.js";
 import { SECTOR_PROGRAMS, INSURANCE_FIELD } from "./sector-expansion.js";
 import { RESEARCH_PROGRAMS } from "./research-expansion.js";
 // Employer batches researched in parallel; each lives in its own module so
@@ -33,6 +34,8 @@ import { EMPLOYERS_FINANCE_INVESTING_WAVE_2_PROGRAMS } from "./employers-finance
 import { EMPLOYERS_FINANCE_MARKETS_WAVE_3_PROGRAMS } from "./employers-finance-markets-wave-3-expansion.js";
 import { EMPLOYERS_FINANCE_CORPORATE_WAVE_3_PROGRAMS } from "./employers-finance-corporate-wave-3-expansion.js";
 import { EMPLOYERS_FINANCE_PRIVATE_MARKETS_WAVE_3_PROGRAMS } from "./employers-finance-private-markets-wave-3-expansion.js";
+import { EMPLOYERS_TECH_ENGINEERING_WAVE_4_PROGRAMS } from "./employers-tech-engineering-wave-4-expansion.js";
+import { EMPLOYERS_HEALTH_CONSUMER_WAVE_4_PROGRAMS } from "./employers-health-consumer-wave-4-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -223,6 +226,8 @@ export const PROGRAMS = [
   ...EMPLOYERS_FINANCE_MARKETS_WAVE_3_PROGRAMS,
   ...EMPLOYERS_FINANCE_CORPORATE_WAVE_3_PROGRAMS,
   ...EMPLOYERS_FINANCE_PRIVATE_MARKETS_WAVE_3_PROGRAMS,
+  ...EMPLOYERS_TECH_ENGINEERING_WAVE_4_PROGRAMS,
+  ...EMPLOYERS_HEALTH_CONSUMER_WAVE_4_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
@@ -268,6 +273,7 @@ export const GUIDES = [
   ...GUIDE_EXPANSION,
   ...GUIDE_EXPANSION_2,
   ...GUIDE_EXPANSION_3,
+  ...GUIDE_EXPANSION_4,
   ...ADDITIONAL_GUIDES,
   { slug: "how-to-apply-for-an-internship", updated: "2026-09-20", title: "How to Apply for a College Internship", description: "A practical internship application process: verify eligibility, prepare evidence, submit through the official portal, and track the next step.", intro: "Start by checking whether you can actually participate. A polished application cannot fix an incompatible graduation date, required credit count, citizenship restriction, or work schedule.", sections: [
     ["1. Turn the listing into a checklist", "Before writing anything, copy the essentials out of the posting: employer, role title and identifier, term dates, location and work arrangement, deadline with its time zone, and the required documents. Separate required qualifications from preferred ones — they are not the same test, and many students disqualify themselves over a preferred item. Check whether class year is assessed when you apply or when the internship begins, because those can be different years for the same person. Where a mandatory rule is genuinely unclear, use the employer's published contact route rather than guessing."],
@@ -348,6 +354,10 @@ export const FEATURED_PROGRAM_IDS = [
 // demand or carrying newly published 2027 information. Keep this deliberately
 // small and reviewed; it is an internal-priority signal, not a live ranking.
 export const CURRENT_PROGRAM_IDS = [
+  "roblox-software-engineer-intern-2027",
+  "tsmc-arizona-engineering-internships-2027",
+  "rocket-lab-additive-manufacturing-intern-2027",
+  "applied-materials-internship-program",
   "aqr-research-summer-analyst-2027",
   "apollo-credit-trading-summer-analyst-2027",
   "brookfield-energy-fundraise-intern-2026-2027",
@@ -358,6 +368,8 @@ export const CURRENT_PROGRAM_IDS = [
   "world-bank-wbg-pioneers",
   "nvidia-ignite",
   "pfizer-futures-internship",
+  "abbvie-summer-internship",
+  "novartis-summer-of-science",
   "capital-one-early-internship",
   "paramount-internships",
   "cleveland-clinic-lih-2027",
@@ -381,6 +393,7 @@ export const FOOTER_GUIDE_LINKS = [
   ["internship-interview-guide", "Internship interview prep"],
   ["internship-application-status-meanings", "What internship application statuses mean"],
   ["internship-housing-and-relocation", "Internship housing and relocation"],
+  ["do-internships-check-gpa", "Do internships check GPA?"],
 ];
 export const footerGuides = () => FOOTER_GUIDE_LINKS.map(([slug, label]) => [GUIDES.find(guide => guide.slug === slug), label]).filter(([guide]) => guide);
 export const featuredPrograms = () => FEATURED_PROGRAM_IDS.map(id => PROGRAMS.find(program => program.id === id)).filter(Boolean);

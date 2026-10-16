@@ -238,7 +238,11 @@ export const TOPICS = [
       // Added 2026-10-11: these official postings and searches explicitly name live Summer 2027 programs.
       "morgan-stanley-technology-calgary-2027", "tiktok-ai-engineer-intern-summer-2027", "blue-origin-summer-internships-2027",
       // Added 2026-10-11: current college-only postings across media, health, energy, insurance and technology.
-      "the-athletic-leon-carter-internship-2027", "cardinal-health-operations-internship-2027", "centene-technology-internship-2027", "oklo-general-internship-2027", "harvey-software-engineering-internship-2027", "steadily-future-graduate-internship-2027", "talos-software-engineer-internship-2027"],
+      "the-athletic-leon-carter-internship-2027", "cardinal-health-operations-internship-2027", "centene-technology-internship-2027", "oklo-general-internship-2027", "harvey-software-engineering-internship-2027", "steadily-future-graduate-internship-2027", "talos-software-engineer-internship-2027",
+      // Added 2026-10-14: current official semiconductor, aerospace and software sources explicitly name Summer 2027.
+      "applied-materials-internship-program", "tsmc-arizona-engineering-internships-2027", "rocket-lab-additive-manufacturing-intern-2027", "roblox-software-engineer-intern-2027",
+      // Added 2026-10-14: current official pharmaceutical, consumer, food and retail sources explicitly name Summer 2027.
+      "sanofi-vaccines-marketing-sales-internship-2027", "amgen-us-value-access-internship-2027", "conagra-summer-internships-2027", "home-depot-summer-internship-2027", "ulta-beauty-distribution-center-internship-2027", "bath-body-works-summer-internship-2027"],
     guideSlugs: ["when-to-apply-for-summer-internships", "how-to-apply-for-an-internship", "internship-offer-checklist"],
     sections: [
       ["What counts as a Summer 2027 listing", "Every program in this collection has an official source that identifies a Summer 2027 cycle, term, or application route. That does not mean every role remains available today. Some employers close a posting as soon as a hiring target is reached, while research programs can keep an information page live before or after the submission window. Read the status and timing on each guide, then open the employer source before preparing an application. We do not advance a 2026 date by one year or label an undated recurring program as Summer 2027 just because it usually returns."],

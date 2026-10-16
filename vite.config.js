@@ -42,12 +42,19 @@ export default defineConfig(({ isSsrBuild }) => ({
             // the older employer catalog. This leaves room for future verified
             // additions without pushing one data chunk through the 500 kB limit.
             { name: "directory-employers-current", test: /\/src\/employers-(?:fall-2026|october-2026-[^/]+)-expansion\.js$/, priority: 21 },
+            // The finance and cross-sector wave modules now form a second
+            // independently cached catalog slice. Keeping them out of the
+            // established employer chunk avoids a single large parse task.
+            { name: "directory-employers-waves", test: /\/src\/employers-(?:finance-[^/]+-wave-[23]|tech-engineering-wave-4|health-consumer-wave-4)-expansion\.js$/, priority: 22 },
             // The established employer batches remain a long-cached parallel
             // chunk that does not churn when a current-cycle program is added.
             { name: "directory-employers", test: /\/src\/employers-[^/]+-expansion\.js$/, priority: 20 },
             // Laboratory, research and public-sector program batches grow alongside the
             // employer batches; a third data chunk keeps every chunk under 500 kB.
             { name: "directory-programs", test: /\/src\/programs-[^/]+-expansion\.js$/, priority: 15 },
+            // Long-form preparation guides change on a different cadence from
+            // company data and merit their own parallel browser chunk.
+            { name: "directory-guides", test: /\/src\/guide-expansion(?:-\d+)?\.js$/, priority: 16 },
             // Editorial data changes far more often than the interface. Keep it in
             // a parallel, independently parsed chunk as the directory grows.
             { name: "directory-content", test: /\/src\/(?:content|expanded-content|editorial-pages|[^/]+-expansion(?:-\d+)?)\.js$/, priority: 10 },

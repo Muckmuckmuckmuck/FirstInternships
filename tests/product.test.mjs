@@ -9,8 +9,8 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 309, "the college directory should not regress to a thin inventory");
-  assert.ok(GUIDES.length >= 27, "the preparation library should not regress");
+  assert.ok(PROGRAMS.length >= 324, "the college directory should not regress to a thin inventory");
+  assert.ok(GUIDES.length >= 31, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
       const rows = record[key];
@@ -86,6 +86,22 @@ test("October 14 guide expansion answers high-intent eligibility and timing ques
   assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
   assert.equal(GUIDES.find(guide => guide.slug === "what-does-rolling-basis-mean-internships").topicSlug, "summer-2027-college-internships");
 });
+test("October 14 guide wave four covers GPA, graduation, schedules and offer decisions", () => {
+  const slugs = [
+    "do-internships-check-gpa",
+    "can-you-get-an-internship-after-graduation",
+    "how-long-do-internships-last",
+    "how-to-decline-an-internship-offer",
+  ];
+  const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
+  assert.ok(guides.every(Boolean));
+  assert.ok(guides.every(guide => guide.updated === "2026-10-14"));
+  assert.ok(guides.every(guide => guide.sections.length === 8 && guide.example?.text));
+  assert.ok(guides.every(guide => guide.sections.flat().join(" ").split(/\s+/).length >= 600), "new search guides must remain substantive, not thin keyword pages");
+  assert.ok(guides.every(guide => guide.programIds.length >= 4));
+  assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
+  assert.equal(GUIDES.find(guide => guide.slug === "how-long-do-internships-last").topicSlug, "summer-2027-college-internships");
+});
 test("route resolution supports clean URLs and rejects unknown routes", () => {
   assert.equal(resolvePage("/programs/nasa-ostem.html").program.id, "nasa-ostem");
   assert.equal(resolvePage("/guides/").type, "guides");
@@ -155,7 +171,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
   assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-14</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-14</lastmod>`), "directory freshness should reflect the current inventory release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-15</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -467,9 +483,11 @@ test("October growth batch preserves publisher-specific years, dates and applica
   assert.match(PROGRAMS.find(p => p.id === "port-authority-summer-2027").status, /interest form/i);
   assert.equal(PROGRAMS.find(p => p.id === "amtrak-internships-coops").firstYear, 2);
   assert.deepEqual(currentPrograms().map(program => program.id), [
+    "roblox-software-engineer-intern-2027", "tsmc-arizona-engineering-internships-2027", "rocket-lab-additive-manufacturing-intern-2027", "applied-materials-internship-program",
     "aqr-research-summer-analyst-2027", "apollo-credit-trading-summer-analyst-2027", "brookfield-energy-fundraise-intern-2026-2027",
     "citadel-associate-program-internship", "bridgewater-investment-associate-2027", "millennium-internship-program-2027", "evercore-investment-banking-summer-analyst",
-    "world-bank-wbg-pioneers", "nvidia-ignite", "pfizer-futures-internship", "capital-one-early-internship", "paramount-internships",
+    "world-bank-wbg-pioneers", "nvidia-ignite", "pfizer-futures-internship", "abbvie-summer-internship", "novartis-summer-of-science",
+    "capital-one-early-internship", "paramount-internships",
     "cleveland-clinic-lih-2027", "smithsonian-air-space-summer-2027", "whitney-marketing-spring-2027", "port-authority-summer-2027",
     "aig-summer-internship-2027", "la-times-summer-internships-2027", "kp-launch-college-program-2027", "nordstrom-corporate-internships-2027",
   ]);
@@ -656,6 +674,66 @@ test("second October growth wave keeps college-only rules and live 2027 dates", 
 
   const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
   for (const id of ids) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
+});
+
+test("October 14 technology wave preserves live 2027 roles and unknown class years", () => {
+  const ids = [
+    "asml-us-internship-program", "applied-materials-internship-program",
+    "tsmc-arizona-engineering-internships-2027", "lam-research-internships-coops",
+    "micron-internship-program", "rocket-lab-additive-manufacturing-intern-2027",
+    "roblox-software-engineer-intern-2027",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-14"));
+  assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(batch.every(program => program.sources.some(source => source.url === program.url)));
+
+  assert.deepEqual(PROGRAMS.find(program => program.id === "roblox-software-engineer-intern-2027").years, [1, 2, 3, 4]);
+  for (const id of ids.filter(id => id !== "roblox-software-engineer-intern-2027")) {
+    const program = PROGRAMS.find(candidate => candidate.id === id);
+    assert.equal(program.firstYear, null, `${id}: enrollment or remaining-study rules are not a universal class-year filter`);
+    assert.deepEqual(program.years, []);
+  }
+
+  for (const id of ["applied-materials-internship-program", "tsmc-arizona-engineering-internships-2027", "rocket-lab-additive-manufacturing-intern-2027", "roblox-software-engineer-intern-2027"]) {
+    assert.ok(TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds.includes(id), `Summer 2027 collection: ${id}`);
+  }
+  for (const id of ["asml-us-internship-program", "lam-research-internships-coops", "micron-internship-program"]) {
+    assert.ok(!TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds.includes(id), `${id}: an evergreen program must not be relabeled as Summer 2027`);
+  }
+});
+
+test("October 14 health and consumer wave keeps opening-specific facts and honest early-program labels", () => {
+  const ids = [
+    "sanofi-vaccines-marketing-sales-internship-2027", "amgen-us-value-access-internship-2027",
+    "sephora-devops-sre-internship-2027", "conagra-summer-internships-2027",
+    "conagra-future-foodies", "home-depot-summer-internship-2027",
+    "ulta-beauty-distribution-center-internship-2027", "bath-body-works-summer-internship-2027",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-14"));
+  assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(batch.every(program => program.sources.some(source => source.url === program.url)));
+
+  assert.deepEqual(PROGRAMS.find(program => program.id === "conagra-future-foodies").years, [1, 2]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "bath-body-works-summer-internship-2027").years, [3]);
+  for (const id of ids.filter(id => !["conagra-future-foodies", "bath-body-works-summer-internship-2027"].includes(id))) {
+    const program = PROGRAMS.find(candidate => candidate.id === id);
+    assert.equal(program.firstYear, null, `${id}: graduation, enrollment or preferred-year wording is not a universal class-year filter`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.deepEqual(PROGRAMS.find(program => program.id === "ulta-beauty-distribution-center-internship-2027").preferredYears, [3, 4]);
+  assert.equal(PROGRAMS.find(program => program.id === "sanofi-vaccines-marketing-sales-internship-2027").deadlineDate, "2026-12-11");
+  assert.equal(PROGRAMS.find(program => program.id === "home-depot-summer-internship-2027").deadlineDate, "2026-10-23");
+  assert.match(PROGRAMS.find(program => program.id === "conagra-future-foodies").pitfall, /not .*internship/i);
+
+  const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
+  for (const id of ids.filter(id => !["conagra-future-foodies", "sephora-devops-sre-internship-2027"].includes(id))) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
+  assert.ok(!summer2027.includes("conagra-future-foodies"), "an undated early-insight program must not be relabeled as Summer 2027");
+  assert.ok(!summer2027.includes("sephora-devops-sre-internship-2027"), "a filled role should not remain in the live Summer 2027 shortlist");
+  assert.match(PROGRAMS.find(program => program.id === "sephora-devops-sre-internship-2027").status, /filled/i);
 });
 
 test("all public content is reachable through ordinary homepage links", async () => {

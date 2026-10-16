@@ -244,7 +244,9 @@ export const TOPICS = [
       // Added 2026-10-14: current official pharmaceutical, consumer, food and retail sources explicitly name Summer 2027.
       "sanofi-vaccines-marketing-sales-internship-2027", "amgen-us-value-access-internship-2027", "conagra-summer-internships-2027", "home-depot-summer-internship-2027", "ulta-beauty-distribution-center-internship-2027", "bath-body-works-summer-internship-2027",
       // Added 2026-10-15: the official employer sources show Summer 2027 roles or a named 2027 engineering cycle.
-      "honeywell-university-internships", "kimberly-clark-engineering-internships-2027"],
+      "honeywell-university-internships", "kimberly-clark-engineering-internships-2027",
+      // Added 2026-10-16: official employer pages and current postings explicitly describe Summer 2027 recruiting.
+      "ge-aerospace-us-internships-coops", "enterprise-mobility-management-internship"],
     guideSlugs: ["when-to-apply-for-summer-internships", "how-to-apply-for-an-internship", "internship-offer-checklist"],
     sections: [
       ["What counts as a Summer 2027 listing", "Every program in this collection has an official source that identifies a Summer 2027 cycle, term, or application route. That does not mean every role remains available today. Some employers close a posting as soon as a hiring target is reached, while research programs can keep an information page live before or after the submission window. Read the status and timing on each guide, then open the employer source before preparing an application. We do not advance a 2026 date by one year or label an undated recurring program as Summer 2027 just because it usually returns."],

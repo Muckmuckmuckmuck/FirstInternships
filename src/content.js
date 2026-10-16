@@ -37,6 +37,7 @@ import { EMPLOYERS_FINANCE_PRIVATE_MARKETS_WAVE_3_PROGRAMS } from "./employers-f
 import { EMPLOYERS_TECH_ENGINEERING_WAVE_4_PROGRAMS } from "./employers-tech-engineering-wave-4-expansion.js";
 import { EMPLOYERS_HEALTH_CONSUMER_WAVE_4_PROGRAMS } from "./employers-health-consumer-wave-4-expansion.js";
 import { EMPLOYERS_INDUSTRIAL_CONSUMER_WAVE_5_PROGRAMS } from "./employers-industrial-consumer-wave-5-expansion.js";
+import { EMPLOYERS_CONSUMER_INDUSTRIAL_WAVE_6_PROGRAMS } from "./employers-consumer-industrial-wave-6-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -230,6 +231,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_TECH_ENGINEERING_WAVE_4_PROGRAMS,
   ...EMPLOYERS_HEALTH_CONSUMER_WAVE_4_PROGRAMS,
   ...EMPLOYERS_INDUSTRIAL_CONSUMER_WAVE_5_PROGRAMS,
+  ...EMPLOYERS_CONSUMER_INDUSTRIAL_WAVE_6_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
@@ -356,6 +358,9 @@ export const FEATURED_PROGRAM_IDS = [
 // demand or carrying newly published 2027 information. Keep this deliberately
 // small and reviewed; it is an internal-priority signal, not a live ranking.
 export const CURRENT_PROGRAM_IDS = [
+  "ge-aerospace-us-internships-coops",
+  "enterprise-mobility-management-internship",
+  "mars-sophomore-experience",
   "kimberly-clark-engineering-internships-2027",
   "honeywell-university-internships",
   "roblox-software-engineer-intern-2027",

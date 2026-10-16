@@ -248,7 +248,9 @@ export const TOPICS = [
       // Added 2026-10-16: official employer pages and current postings explicitly describe Summer 2027 recruiting.
       "ge-aerospace-us-internships-coops", "enterprise-mobility-management-internship",
       // Added 2026-10-16: Edwards' official careers search names live Summer 2027 engineering and clinical/regulatory roles.
-      "edwards-lifesciences-summer-internships"],
+      "edwards-lifesciences-summer-internships",
+      // Added 2026-10-16: official pages name Summer 2027 North America intakes or current 2027 roles.
+      "adidas-north-america-internship-2027", "under-armour-rookie-program-2027", "wayfair-summer-internship-program-2027"],
     guideSlugs: ["when-to-apply-for-summer-internships", "how-to-apply-for-an-internship", "internship-offer-checklist"],
     sections: [
       ["What counts as a Summer 2027 listing", "Every program in this collection has an official source that identifies a Summer 2027 cycle, term, or application route. That does not mean every role remains available today. Some employers close a posting as soon as a hiring target is reached, while research programs can keep an information page live before or after the submission window. Read the status and timing on each guide, then open the employer source before preparing an application. We do not advance a 2026 date by one year or label an undated recurring program as Summer 2027 just because it usually returns."],

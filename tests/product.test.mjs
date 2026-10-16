@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 351, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 360, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -175,6 +175,30 @@ test("October 16 life-sciences wave adds rigorous official-source pathways", () 
   assert.equal(PROGRAMS.find(program => program.id === "intuitive-surgical-internships-coops").pay, "Paid");
   assert.match(PROGRAMS.find(program => program.id === "edwards-lifesciences-summer-internships").timing, /Summer 2027/);
   assert.ok(TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds.includes("edwards-lifesciences-summer-internships"));
+});
+test("October 16 student-brand wave adds exact 2027 and evergreen pathways", () => {
+  const ids = [
+    "adidas-north-america-internship-2027",
+    "under-armour-rookie-program-2027",
+    "abercrombie-corporate-sophomore-summit-2027",
+    "tjx-us-summer-internships",
+    "keurig-dr-pepper-internships-coops",
+    "campbells-internships-coops",
+    "chewy-campus-internship-program",
+    "wayfair-summer-internship-program-2027",
+    "aep-student-internship-program",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-16" && program.updated === "2026-10-16"));
+  assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(batch.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "abercrombie-corporate-sophomore-summit-2027").years, [2]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "wayfair-summer-internship-program-2027").years, [3]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "aep-student-internship-program").years, [2, 3, 4]);
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of ["adidas-north-america-internship-2027", "under-armour-rookie-program-2027", "wayfair-summer-internship-program-2027"]) assert.ok(summer.programIds.includes(id));
+  assert.ok(!summer.programIds.includes("abercrombie-corporate-sophomore-summit-2027"), "the three-day summit must not be labeled as an internship");
 });
 test("October 16 guide wave answers distinct interview, offer, resume and reference tasks", () => {
   const slugs = [

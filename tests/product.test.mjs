@@ -10,7 +10,7 @@ import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstin
 
 test("content has unique routes and real official-source records", () => {
   assert.ok(PROGRAMS.length >= 342, "the college directory should not regress to a thin inventory");
-  assert.ok(GUIDES.length >= 31, "the preparation library should not regress");
+  assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
       const rows = record[key];
@@ -153,6 +153,22 @@ test("October 16 consumer and industrial wave adds searchable college pathways",
   const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
   assert.ok(summer.programIds.includes("ge-aerospace-us-internships-coops"));
   assert.ok(summer.programIds.includes("enterprise-mobility-management-internship"));
+});
+test("October 16 guide wave answers distinct interview, offer, resume and reference tasks", () => {
+  const slugs = [
+    "internship-thank-you-email-after-interview",
+    "how-to-ask-for-internship-offer-extension",
+    "how-to-list-an-internship-on-resume",
+    "internship-references-guide",
+  ];
+  const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
+  assert.ok(guides.every(Boolean));
+  assert.ok(guides.every(guide => guide.updated === "2026-10-16"));
+  assert.ok(guides.every(guide => guide.sections.length === 8 && guide.example?.text));
+  assert.ok(guides.every(guide => guide.sections.flat().join(" ").split(/\s+/).length >= 600), "new search guides must remain substantive, not thin keyword pages");
+  assert.ok(guides.every(guide => guide.programIds.length >= 4));
+  assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
+  assert.equal(new Set(guides.map(guide => guide.category)).size, 4, "the wave should cover four distinct application stages");
 });
 test("route resolution supports clean URLs and rejects unknown routes", () => {
   assert.equal(resolvePage("/programs/nasa-ostem.html").program.id, "nasa-ostem");

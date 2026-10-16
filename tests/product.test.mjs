@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 342, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 351, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -153,6 +153,28 @@ test("October 16 consumer and industrial wave adds searchable college pathways",
   const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
   assert.ok(summer.programIds.includes("ge-aerospace-us-internships-coops"));
   assert.ok(summer.programIds.includes("enterprise-mobility-management-internship"));
+});
+test("October 16 life-sciences wave adds rigorous official-source pathways", () => {
+  const ids = [
+    "biogen-student-internship-program",
+    "novo-nordisk-internship-program",
+    "bayer-us-summer-internships",
+    "illumina-biotech-internships",
+    "intuitive-surgical-internships-coops",
+    "labcorp-global-internship-program",
+    "iqvia-internship-program",
+    "edwards-lifesciences-summer-internships",
+    "zoetis-summer-internship-program",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-16" && program.updated === "2026-10-16"));
+  assert.ok(batch.every(program => program.firstYear === null && program.years.length === 0), "program-wide evidence does not support fixed undergraduate-year filters");
+  assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(batch.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.equal(PROGRAMS.find(program => program.id === "intuitive-surgical-internships-coops").pay, "Paid");
+  assert.match(PROGRAMS.find(program => program.id === "edwards-lifesciences-summer-internships").timing, /Summer 2027/);
+  assert.ok(TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds.includes("edwards-lifesciences-summer-internships"));
 });
 test("October 16 guide wave answers distinct interview, offer, resume and reference tasks", () => {
   const slugs = [

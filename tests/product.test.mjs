@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 360, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 369, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -949,6 +949,30 @@ test("the Summer 2027 collection lists only records whose sources name a 2027 cy
   assert.equal(new Set(topic.programIds).size, topic.programIds.length);
   for (const p of programs) assert.match(`${p.title} ${p.status} ${p.timing} ${p.deadlineLabel || ""} ${p.deadlineDateLabel || ""}`, /2027/, `${p.id}: no 2027 cycle in its record`);
   for (const p of programs) assert.doesNotMatch(p.status, /closed/i, `${p.id}: a closed cycle does not belong in the Summer 2027 shortlist`);
+});
+test("October 16 travel and hospitality expansion stays source-backed and role-specific", () => {
+  const ids = [
+    "jetblue-emerging-talent-program",
+    "hyatt-us-corporate-internships",
+    "ihg-us-corporate-internships-2027",
+    "expedia-group-summer-internships",
+    "booking-com-software-engineering-internship-2027",
+    "carnival-cruise-line-summer-internship",
+    "wyndham-hotels-internship-program",
+    "four-seasons-undergraduate-internships",
+    "accor-global-student-internships",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-16"));
+  assert.ok(programs.every(program => program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.some(source => source.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "hyatt-us-corporate-internships").years, [2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "wyndham-hotels-internship-program").years, [4]);
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  assert.ok(summer.programIds.includes("ihg-us-corporate-internships-2027"));
+  assert.ok(summer.programIds.includes("booking-com-software-engineering-internship-2027"));
+  assert.ok(!summer.programIds.includes("jetblue-emerging-talent-program"), "undated recurring programs must stay out of the 2027 collection");
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

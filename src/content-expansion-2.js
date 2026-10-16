@@ -5,8 +5,8 @@ const consultingGuides = ["internship-resume-with-no-experience", "internship-in
 
 export const CONTENT_EXPANSION_2_PROGRAMS = [
   {
-    id: "bcg-consulting-internships", company: "Boston Consulting Group", title: "Consulting Internships", initials: "BC", color: "#39706f",
-    seoTitle: "BCG Consulting Internships: Application Guide", seoDescription: "Explore BCG undergraduate consulting, digital, technology and business-services internships, then check the office-specific cycle, deadline and interview process.",
+    id: "bcg-consulting-internships", company: "Boston Consulting Group", title: "Consulting Internships", initials: "BC", color: "#39706f", updated: "2026-10-15",
+    seoTitle: "BCG Internship 2027: Status & How to Apply", seoDescription: "BCG's US Summer 2027 Associate internship cycle is closed. Explore undergraduate consulting and technology routes, office deadlines and interview preparation.",
     fields: ["consulting", "business", "technology", "finance"], firstYear: null, years: [], yearLabel: "Undergraduates · office-specific", pay: "Check opening", location: "Global; office-specific", mode: "Role and office specific",
     summary: "Consulting, digital, technology, and business-services internships with mentored client work and office-specific recruiting.",
     eligibility: ["BCG offers core consulting internships to undergraduate students as well as separate advanced-degree and MBA routes; this guide covers the undergraduate route.", "Application windows, degree timing, location, authorization, and duration vary by role and office.", "For US Associate recruiting, BCG says Summer 2027 internship applications have closed; check the official page for a future cycle or other offices."],
@@ -33,8 +33,8 @@ export const CONTENT_EXPANSION_2_PROGRAMS = [
     materials: ["Program and graduation-window check", "Tailored resume", "Relevant project or analysis", "Assessment preparation"], guideSlugs: consultingGuides,
   },
   {
-    id: "capital-one-early-internship", company: "Capital One", title: "Early Internship Program", initials: "CE", color: "#5d7391", updated: "2026-10-14", verified: "2026-10-11",
-    seoTitle: "Capital One Early Internship Program: Eligibility", seoDescription: "Capital One's paid 10-week Early Internship Program is for second-year students graduating Aug. 2029–Aug. 2030. See eligibility, housing and how to apply.",
+    id: "capital-one-early-internship", company: "Capital One", title: "Early Internship Program", initials: "CE", color: "#5d7391", updated: "2026-10-15", verified: "2026-10-11",
+    seoTitle: "Capital One Early Internship 2027: Eligibility", seoDescription: "Capital One's paid ten-week Early Internship Program is for second-year students graduating August 2029–August 2030 and includes corporate housing.",
     fields: ["finance", "business", "technology", "consulting"], firstYear: 2, years: [2], yearLabel: "Second-year undergraduates", pay: "Paid", location: "McLean, Virginia", mode: "Full-time and in person",
     summary: "A paid ten-week sophomore program in McLean with hands-on analyst work, mentorship, and corporate housing.",
     eligibility: ["Capital One explicitly designs the program for second-year undergraduate students.", "Capital One's Students & Grads page gives the early-program window as a bachelor's degree earned between August 2029 and August 2030; its main internship programs are for students earning a bachelor's by August 2028. Check your expected graduation month against both.", "The selected role controls authorization, degree, schedule, and any additional qualifications."],
@@ -148,8 +148,8 @@ export const CONTENT_EXPANSION_2_PROGRAMS = [
     materials: ["Active internship opening", "Degree and GPA check", "Citizenship or clearance review", "Technical resume"], guideSlugs: portfolioGuides,
   },
   {
-    id: "paramount-internships", company: "Paramount", title: "College Internship Program", initials: "PM", color: "#425a83", updated: "2026-10-11", verified: "2026-10-06",
-    seoTitle: "Paramount Internships 2027: Eligibility & Status", seoDescription: "Check Paramount and Skydance internship status, student eligibility, where US roles appear and how to apply for the next published summer cycle.",
+    id: "paramount-internships", company: "Paramount", title: "College Internship Program", initials: "PM", color: "#425a83", updated: "2026-10-15", verified: "2026-10-06",
+    seoTitle: "Paramount Internships 2027: Dates & How to Apply", seoDescription: "See when Paramount internships open, current Summer 2027 status, college enrollment rules and where Paramount and Skydance publish official applications.",
     fields: ["media", "arts", "sports", "business", "finance", "technology"], firstYear: null, years: [], yearLabel: "Currently enrolled college students", pay: "Check opening", location: "US and global media hubs", mode: "Role and location specific",
     summary: "Paramount's summer internships, now presented on Skydance's careers site, across production, marketing, product, finance, legal, communications, research, sales and technology, with mentorship and speaker sessions.",
     eligibility: ["Skydance's internship FAQ says it hires only interns who are currently enrolled at an accredited college or university; recent graduates are pointed to post-graduate development programs and full-time roles instead.", "The internships page does not publish a minimum college year, GPA, compensation rule or deadline. Each posting sets its own department, location and qualifications.", "Postings come in two forms: some list a functional area, such as Marketing, which covers several openings in similar departments; others name one specific position, such as a CBS Sports Data Engineering Intern, which is a single opening."],

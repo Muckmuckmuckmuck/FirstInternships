@@ -69,9 +69,9 @@ export const GUIDE_EXPANSION = [
   // guide is the honest answer to that search: one message to one appropriate
   // person, no bulk sending, no promised response rates.
   {
-    slug: "email-templates-for-internships", updated: "2026-10-11",
-    title: "Internship Email Templates: Cold Email & Follow-Up Examples",
-    description: "Internship email templates for cold outreach, application follow-ups, professor research requests, interview thank-yous, recommendations, and offers.",
+    slug: "email-templates-for-internships", updated: "2026-10-15",
+    title: "How to Cold Email for an Internship: 6 Templates",
+    description: "Learn how to write a cold email for an internship with subject lines and six templates for outreach, follow-ups, professors, interviews, references and offers.",
     category: "Interviews & follow-ups",
     programIds: ["nih-sip", "caltech-surf", "nsf-reu", "leadership-alliance-sreip"],
     intro: "A cold email for an internship is a small, specific request to one appropriate person—not a replacement for an official application. These templates cover the messages college students most often need to write: asking about an unposted role, following up, contacting a professor, thanking an interviewer, requesting a recommendation, and replying to an offer. Rewrite every example in your own words; an email that could have been sent to anyone reads exactly that way.",

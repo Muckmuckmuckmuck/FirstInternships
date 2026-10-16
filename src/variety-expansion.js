@@ -75,8 +75,8 @@ export const VARIETY_PROGRAMS = [
     materials: ["Study-completion check", "Role-specific resume", "Project or analysis example", "Official application confirmation"], guideSlugs: applicationGuides,
   },
   {
-    id: "spotify-global-summer", company: "Spotify", title: "Global Summer Internship Program", initials: "SP", color: "#287d47",
-    seoTitle: "Spotify Summer Internship: Eligibility Guide", seoDescription: "Review Spotify's paid 10-week summer internship, degree-timing rules, business, product and technical roles, locations, and official application advice.",
+    id: "spotify-global-summer", company: "Spotify", title: "Global Summer Internship Program", initials: "SP", color: "#287d47", updated: "2026-10-15",
+    seoTitle: "Spotify Internships: Eligibility, Dates & Apply", seoDescription: "Spotify's paid ten-week internships cover business, product and technical teams. Check degree timing, locations, next-cycle status and how to apply.",
     fields: ["media", "technology", "business", "arts"], firstYear: 1, years: [1, 2, 3, 4], yearLabel: "Penultimate or graduating year · degree-dependent", pay: "Paid", location: "London, Stockholm, New York; verify next cycle", mode: "Office-based by posting",
     summary: "A paid ten-week summer program with business, product, and technical teams serving creators and listeners.",
     eligibility: ["Spotify describes eligibility for students in the graduating or penultimate year of an associate, bachelor's, master's, or PhD program, plus eligible bootcamp routes. This directory covers current associate and bachelor's students.", "The applicable college year depends on degree length: for example, the penultimate year of an associate degree can be year one.", "Location, authorization, team requirements, and the active cycle must be checked in the current posting."],

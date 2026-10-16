@@ -3,8 +3,8 @@
 const source = (name, url) => ({ name, url });
 export const ADDITIONAL_PROGRAMS = [
   {
-    id: "nvidia-ignite", company: "NVIDIA", title: "NVIDIA Ignite", initials: "NV", color: "#547a23", verified: "2026-10-11", updated: "2026-10-11",
-    seoTitle: "NVIDIA Ignite 2027: Dates, Eligibility & Pay", seoDescription: "NVIDIA Ignite applications for 2027 run Oct. 5–18, 2026. See freshman/sophomore eligibility, $20–$56 pay, housing support and how referrals work.",
+    id: "nvidia-ignite", company: "NVIDIA", title: "NVIDIA Ignite", initials: "NV", color: "#547a23", verified: "2026-10-11", updated: "2026-10-15",
+    seoTitle: "NVIDIA Ignite 2027: Oct. 18 Deadline & Pay", seoDescription: "NVIDIA Ignite 2027 closes Oct. 18, 2026. Check first- and second-year eligibility, $20–$56 pay, housing support and how employee referrals work.",
     fields: ["technology", "engineering"], firstYear: 1, years: [1, 2], yearLabel: "First- and second-years (classes of 2029–2030)", pay: "Paid", location: "Santa Clara, California", mode: "On site, 12 weeks in summer",
     summary: "NVIDIA's paid 12-week summer pre-internship in Santa Clara for first- and second-year undergraduates in computing and engineering, with software and hardware engineering tracks.",
     eligibility: ["The 2027 Ignite postings require a first-year (class of 2030) or second-year (class of 2029) undergraduate pursuing a bachelor's degree at a four-year university in the United States, in computer engineering, computer science, electrical engineering, mathematics or a related field.", "Your anticipated graduation month and year must be clearly shown on your resume to be considered. NVIDIA also asks for coursework in computing and engineering and basic knowledge of at least one of C, C++, Python, Perl or MATLAB.", "NVIDIA asks applicants to show interest through relevant clubs, leadership roles or projects, and says students seeking their first relevant industry internship stand out.", "The postings list an hourly rate of $20 to $56 depending on position, location, year in school, degree and experience, plus intern benefits."],
@@ -242,7 +242,9 @@ export const TOPICS = [
       // Added 2026-10-14: current official semiconductor, aerospace and software sources explicitly name Summer 2027.
       "applied-materials-internship-program", "tsmc-arizona-engineering-internships-2027", "rocket-lab-additive-manufacturing-intern-2027", "roblox-software-engineer-intern-2027",
       // Added 2026-10-14: current official pharmaceutical, consumer, food and retail sources explicitly name Summer 2027.
-      "sanofi-vaccines-marketing-sales-internship-2027", "amgen-us-value-access-internship-2027", "conagra-summer-internships-2027", "home-depot-summer-internship-2027", "ulta-beauty-distribution-center-internship-2027", "bath-body-works-summer-internship-2027"],
+      "sanofi-vaccines-marketing-sales-internship-2027", "amgen-us-value-access-internship-2027", "conagra-summer-internships-2027", "home-depot-summer-internship-2027", "ulta-beauty-distribution-center-internship-2027", "bath-body-works-summer-internship-2027",
+      // Added 2026-10-15: the official employer sources show Summer 2027 roles or a named 2027 engineering cycle.
+      "honeywell-university-internships", "kimberly-clark-engineering-internships-2027"],
     guideSlugs: ["when-to-apply-for-summer-internships", "how-to-apply-for-an-internship", "internship-offer-checklist"],
     sections: [
       ["What counts as a Summer 2027 listing", "Every program in this collection has an official source that identifies a Summer 2027 cycle, term, or application route. That does not mean every role remains available today. Some employers close a posting as soon as a hiring target is reached, while research programs can keep an information page live before or after the submission window. Read the status and timing on each guide, then open the employer source before preparing an application. We do not advance a 2026 date by one year or label an undated recurring program as Summer 2027 just because it usually returns."],

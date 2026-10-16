@@ -47,8 +47,8 @@ const G = {
 export const EMPLOYERS_HEALTH_PROGRAMS = [
   {
     id: "pfizer-futures-internship", company: "Pfizer", title: "Pfizer Futures Internship", initials: "PF", color: "#0000c9",
-    seoTitle: "Pfizer Internship 2027: Dates, GPA & Apply",
-    seoDescription: "Pfizer Futures applications for summer 2027 are open Oct. 5–Nov. 8, 2026. Check GPA rules, work authorization, HireVue steps and how to apply.",
+    seoTitle: "Pfizer Internship 2027: Nov. 8 Deadline & Apply",
+    seoDescription: "Pfizer Futures applications for Summer 2027 close Nov. 8, 2026. Check the 3.0 GPA, 3.3 R&D rule, work authorization and HireVue steps.",
     fields: ["life-sciences", "healthcare", "business", "research"],
     firstYear: 1, years: [1, 2, 3, 4], yearLabel: "Current freshmen–seniors at application", pay: "Paid", location: "Multiple US Pfizer sites", mode: "On site at least 4 days a week",
     summary: "Pfizer's paid summer internship for undergraduates, placing interns on project teams across the company's divisions with mentorship and professional development sessions.",
@@ -88,7 +88,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
       ["What other Pfizer programs are there for students?", "Pfizer's early careers page also lists an MBA Summer Associate Program for first-year MBA students, several two-year rotational programs for recent graduates, including Digital, Global Supply, R&D and Global Regulatory Sciences, and postdoctoral training. For an undergraduate summer internship, Pfizer Futures is the program."],
     ],
     guideSlugs: [G.when, G.apply, G.interview],
-    verified: "2026-10-11", updated: "2026-10-14",
+    verified: "2026-10-11", updated: "2026-10-15",
   },
   {
     id: "merck-future-talent-program", company: "Merck", title: "Future Talent Program Internships", initials: "MK", color: "#00857c",
@@ -343,8 +343,8 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
   },
   {
     id: "gilead-internship-program", company: "Gilead Sciences", title: "Internship Program", initials: "GS", color: "#b31b34",
-    seoTitle: "Gilead Internships 2027: Eligibility & Pay",
-    seoDescription: "Gilead's paid 10–12 week Summer 2027 internships take returning undergraduates with a 2.8 GPA. Review eligibility, locations, benefits and how to apply.",
+    seoTitle: "Gilead Internships 2027: GPA, Pay & Eligibility",
+    seoDescription: "Gilead's paid 10–12 week Summer 2027 internships take returning undergraduates with a 2.8 GPA. Check authorization, benefits and current postings.",
     fields: ["life-sciences", "research", "business", "finance", "manufacturing"],
     firstYear: 2, years: [2, 3, 4], yearLabel: "Rising sophomores through rising seniors", pay: "Paid", location: "Foster City, CA and other Gilead or Kite sites", mode: "Hybrid; no fully remote roles",
     summary: "Gilead's paid summer internship across research, development, manufacturing, commercial and corporate functions, based at its Foster City headquarters and other Gilead and Kite sites.",
@@ -380,7 +380,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
       ["Are Gilead internships open now?", "At review on October 6, 2026, Gilead's careers site listed dozens of intern postings in Foster City, California across research, development, pharmaceutical development and manufacturing, commercial and corporate teams. Gilead publishes no single program deadline, so check each posting."],
     ],
     guideSlugs: [G.apply, G.international, G.offer],
-    verified: "2026-10-06", updated: "2026-10-11",
+    verified: "2026-10-06", updated: "2026-10-15",
   },
   {
     id: "abbott-university-internships", company: "Abbott", title: "University Internship Program", initials: "AB", color: "#008fc7",

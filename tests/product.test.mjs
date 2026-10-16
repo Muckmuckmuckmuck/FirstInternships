@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 324, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 332, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 31, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -102,6 +102,29 @@ test("October 14 guide wave four covers GPA, graduation, schedules and offer dec
   assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
   assert.equal(GUIDES.find(guide => guide.slug === "how-long-do-internships-last").topicSlug, "summer-2027-college-internships");
 });
+test("October 15 industrial and consumer wave adds broad official-source coverage", () => {
+  const ids = [
+    "visa-global-internship-program",
+    "ford-summer-internship-program",
+    "rtx-campus-internships-coops",
+    "honeywell-university-internships",
+    "siemens-software-strategic-student-program",
+    "cummins-internships-coops",
+    "colgate-palmolive-student-internships",
+    "kimberly-clark-engineering-internships-2027",
+  ];
+  const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(batch.every(Boolean));
+  assert.ok(batch.every(program => program.verified === "2026-10-15" && program.updated === "2026-10-15"));
+  assert.ok(batch.every(program => program.firstYear === null && program.years.length === 0), "opening-specific or completed-year rules must not become fixed class-year claims");
+  assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(batch.every(program => program.sources.some(source => source.url === program.url)));
+  const kimberlyClark = PROGRAMS.find(program => program.id === "kimberly-clark-engineering-internships-2027");
+  assert.equal(kimberlyClark.pay, "Paid");
+  assert.match(kimberlyClark.timing, /\$24\.50/);
+  assert.ok(TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds.includes(kimberlyClark.id));
+  assert.ok(TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds.includes("honeywell-university-internships"));
+});
 test("route resolution supports clean URLs and rejects unknown routes", () => {
   assert.equal(resolvePage("/programs/nasa-ostem.html").program.id, "nasa-ostem");
   assert.equal(resolvePage("/guides/").type, "guides");
@@ -170,7 +193,7 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-14</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-15</lastmod>`), "homepage freshness should reflect the current content release");
   assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-15</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
@@ -483,6 +506,7 @@ test("October growth batch preserves publisher-specific years, dates and applica
   assert.match(PROGRAMS.find(p => p.id === "port-authority-summer-2027").status, /interest form/i);
   assert.equal(PROGRAMS.find(p => p.id === "amtrak-internships-coops").firstYear, 2);
   assert.deepEqual(currentPrograms().map(program => program.id), [
+    "kimberly-clark-engineering-internships-2027", "honeywell-university-internships",
     "roblox-software-engineer-intern-2027", "tsmc-arizona-engineering-internships-2027", "rocket-lab-additive-manufacturing-intern-2027", "applied-materials-internship-program",
     "aqr-research-summer-analyst-2027", "apollo-credit-trading-summer-analyst-2027", "brookfield-energy-fundraise-intern-2026-2027",
     "citadel-associate-program-internship", "bridgewater-investment-associate-2027", "millennium-internship-program-2027", "evercore-investment-banking-summer-analyst",

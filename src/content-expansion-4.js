@@ -78,8 +78,8 @@ export const CONTENT_EXPANSION_4_PROGRAMS = [
     materials: ["Enrollment-after-internship check", "GPA and authorization check", "Tailored resume", "Technical or commercial project"], guideSlugs: offerGuides,
   },
   {
-    id: "spacex-intern-program", company: "SpaceX", title: "Intern Program", initials: "SX", color: "#46566a",
-    seoTitle: "SpaceX Intern Program: Requirements Guide", seoDescription: "Review SpaceX's paid, year-round internships in engineering, software and business operations, including enrollment, 12-week and export-control rules.",
+    id: "spacex-intern-program", company: "SpaceX", title: "Intern Program", initials: "SX", color: "#46566a", updated: "2026-10-15",
+    seoTitle: "SpaceX Internships 2027: Requirements & Apply", seoDescription: "SpaceX's paid Summer 2027 internships cover engineering, software and business operations. Check enrollment, 12-week and export-control rules.",
     fields: ["aerospace", "engineering", "technology", "manufacturing", "operations", "business", "research"], firstYear: null, years: [], yearLabel: "Four-year university students", pay: "Paid", location: "Multiple US SpaceX sites", mode: "Full-time · minimum 12 weeks",
     summary: "Paid, year-round internships across engineering, software, manufacturing, testing, and business operations at SpaceX sites in the United States.",
     eligibility: ["Technical and nontechnical internship candidates must be currently enrolled at an accredited four-year university; some software and business roles also accept graduate enrollment.", "Interns must be available full time for at least 12 weeks, and individual openings add degree, project, location, and term requirements.", "US space-technology export regulations restrict eligibility, and SpaceX says it cannot sponsor students in F-1 visa status for these opportunities."],

@@ -260,7 +260,9 @@ export const TOPICS = [
       // Added 2026-10-17: current official infrastructure and construction sources explicitly name Summer 2027 roles or active 2027 student searches.
       "aecom-bridge-engineering-intern-summer-2027", "bechtel-ai-innovation-intern-2027", "skanska-heavy-civil-internship-2027", "kiewit-scholars-internship-summer-2027", "wsp-us-summer-internship-program-2027", "hdr-structural-engineering-intern-summer-2027",
       // Added 2026-10-17: these official design and environmental-consulting sources explicitly name current Summer 2027 roles.
-      "arup-technical-advisory-intern-summer-2027", "terracon-specialty-engineering-consulting-intern-2027", "stantec-construction-management-intern-summer-2027"],
+      "arup-technical-advisory-intern-summer-2027", "terracon-specialty-engineering-consulting-intern-2027", "stantec-construction-management-intern-summer-2027",
+      // Added 2026-10-17: SmithGroup explicitly links the scholarship to a required paid Summer 2027 internship.
+      "smithgroup-design-better-future-scholarship-2027"],
     guideSlugs: ["when-to-apply-for-summer-internships", "how-to-apply-for-an-internship", "internship-offer-checklist"],
     sections: [
       ["What counts as a Summer 2027 listing", "Every program in this collection has an official source that identifies a Summer 2027 cycle, term, or application route. That does not mean every role remains available today. Some employers close a posting as soon as a hiring target is reached, while research programs can keep an information page live before or after the submission window. Read the status and timing on each guide, then open the employer source before preparing an application. We do not advance a 2026 date by one year or label an undated recurring program as Summer 2027 just because it usually returns."],

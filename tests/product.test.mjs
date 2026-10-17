@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 409, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 419, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -1082,6 +1082,40 @@ test("October 17 design and environmental wave adds source-backed student pathwa
   const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
   for (const id of [ids[3], ids[4], ids[9]]) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
   for (const id of ids.filter(id => ![ids[3], ids[4], ids[9]].includes(id))) assert.ok(!summer.programIds.includes(id), `${id}: undated recurring program must stay out of the 2027 collection`);
+});
+test("October 17 architecture wave adds firm-specific application guides", () => {
+  const ids = [
+    "perkins-will-summer-internship-program",
+    "hks-student-internships",
+    "populous-americas-internship-program",
+    "cannondesign-student-internships",
+    "smithgroup-design-better-future-scholarship-2027",
+    "corgan-student-internship-program",
+    "dlr-group-emerging-professional-experience",
+    "sasaki-summer-internship-program",
+    "walter-p-moore-internship-program",
+    "thornton-tomasetti-internship-program",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-17" && program.updated === "2026-10-17"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "corgan-student-internship-program").years, [1, 2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "smithgroup-design-better-future-scholarship-2027").years, [3, 4]);
+  for (const program of programs.filter(program => !["corgan-student-internship-program", "smithgroup-design-better-future-scholarship-2027"].includes(program.id))) {
+    assert.equal(program.firstYear, null, `${program.id}: opening-specific eligibility must not become a fixed class-year rule`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.equal(PROGRAMS.find(program => program.id === "hks-student-internships").pay, "Paid");
+  assert.match(PROGRAMS.find(program => program.id === "sasaki-summer-internship-program").status, /closed/i);
+  assert.match(PROGRAMS.find(program => program.id === "populous-americas-internship-program").timing, /December/);
+  assert.match(PROGRAMS.find(program => program.id === "walter-p-moore-internship-program").timing, /three months/);
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  assert.ok(summer.programIds.includes("smithgroup-design-better-future-scholarship-2027"));
+  for (const id of ids.filter(id => id !== "smithgroup-design-better-future-scholarship-2027")) {
+    assert.ok(!summer.programIds.includes(id), `${id}: evergreen, current-undated or closed program must stay out of the 2027 collection`);
+  }
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

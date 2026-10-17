@@ -49,7 +49,7 @@ export default defineConfig(({ isSsrBuild }) => ({
             // Later cross-sector waves are independently cached as their own
             // slice so continued catalog growth does not recreate a 500 kB
             // catch-all employer chunk.
-            { name: "directory-employers-latest", test: /\/src\/employers-(?:industrial-consumer-wave-5|consumer-industrial-wave-6|life-sciences-wave-7|student-brands-wave-8|travel-hospitality-wave-9|consumer-food-wave-10)-expansion\.js$/, priority: 22 },
+            { name: "directory-employers-latest", test: /\/src\/employers-(?:industrial-consumer-wave-5|consumer-industrial-wave-6|life-sciences-wave-7|student-brands-wave-8|travel-hospitality-wave-9|consumer-food-wave-10|telecom-media-wave-11)-expansion\.js$/, priority: 22 },
             // The established employer batches remain a long-cached parallel
             // chunk that does not churn when a current-cycle program is added.
             { name: "directory-employers", test: /\/src\/employers-[^/]+-expansion\.js$/, priority: 20 },

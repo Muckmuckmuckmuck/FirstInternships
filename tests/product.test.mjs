@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 379, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 389, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -999,6 +999,35 @@ test("October 16 consumer and food wave adds exact 2027 and evergreen student ro
   const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
   for (const id of ids.slice(0, 7)) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
   for (const id of ids.slice(7)) assert.ok(!summer.programIds.includes(id), `${id}: evergreen program must stay out of the 2027 collection`);
+});
+test("October 16 telecom and media wave adds current, closed and evergreen pathways honestly", () => {
+  const ids = [
+    "att-summer-internship-program",
+    "att-technology-development-internship",
+    "t-mobile-software-engineering-internship-2027",
+    "spectrum-summer-internship-program-2027",
+    "comcast-college-internship-program",
+    "cox-automotive-product-management-intern-2027",
+    "motorola-solutions-software-engineer-intern-2027",
+    "motorola-solutions-finance-accounting-intern-2027",
+    "siriusxm-early-career-internships",
+    "echostar-summer-internship-program",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-16" && program.updated === "2026-10-16"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "att-technology-development-internship").years, [3]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "spectrum-summer-internship-program-2027").years, [2, 3, 4]);
+  assert.match(PROGRAMS.find(program => program.id === "att-summer-internship-program").status, /finished/i);
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of ids.filter(id => !["comcast-college-internship-program", "siriusxm-early-career-internships", "echostar-summer-internship-program"].includes(id))) {
+    assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  }
+  for (const id of ["comcast-college-internship-program", "siriusxm-early-career-internships", "echostar-summer-internship-program"]) {
+    assert.ok(!summer.programIds.includes(id), `${id}: evergreen program must stay out of the 2027 collection`);
+  }
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

@@ -41,7 +41,7 @@ FirstInternships is not:
 - A reason to invent dates, pay, remote status, class years, or future cycles.
 - A license to create hundreds of near-duplicate keyword pages.
 
-As of October 17, 2026, the maintained baseline is 419 sourced program guides, 35 original preparation guides, 490 prerendered React routes, and 488 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
+As of October 17, 2026, the maintained baseline is 429 sourced program guides, 35 original preparation guides, 500 prerendered React routes, and 498 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
 
 ## 3. Non-negotiable invariants
 
@@ -298,7 +298,7 @@ Preserve:
 - Program-specific sitemap review dates; do not replace them with one fabricated blanket date.
 - Concise search titles without a blanket `| FirstInternships` suffix on every route. Google can show the WebSite name separately. Keep the homepage brand-led and keep program titles within the tested content limit.
 - Employer-aware program H1s from `programHeading()`. Do not revert to generic title-only H1s that collide across different employers.
-- A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 419-card inventory belongs on `/internships`, not on the homepage. `CURRENT_PROGRAM_IDS` is the deliberately small link set for high-interest or newly reviewed program pages and must not become a second full directory.
+- A curated homepage program set from `FEATURED_PROGRAM_IDS`; the full 429-card inventory belongs on `/internships`, not on the homepage. `CURRENT_PROGRAM_IDS` is the deliberately small link set for high-interest or newly reviewed program pages and must not become a second full directory.
 - Exact-year cards on year hubs plus a compact sample of opening-specific pathways. Do not restore the same full unknown-minimum inventory to all four year pages.
 - Related programs from the catalog-wide assignment in `relatedPrograms()`: same-employer programs first, then six slots balanced across each page's most similar programs so every program is suggested from several others. Never reintroduce an alphabetical or array-order tie-break; it starved later programs of internal links. Keep the assignment cheap (pairs are scored once), because it runs during hydration on phones.
 - Guide "next read" links that rotate onward through `GUIDES`, and the footer's popular-guide links in `FOOTER_GUIDE_LINKS`.

@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 419, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 429, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -1115,6 +1115,40 @@ test("October 17 architecture wave adds firm-specific application guides", () =>
   assert.ok(summer.programIds.includes("smithgroup-design-better-future-scholarship-2027"));
   for (const id of ids.filter(id => id !== "smithgroup-design-better-future-scholarship-2027")) {
     assert.ok(!summer.programIds.includes(id), `${id}: evergreen, current-undated or closed program must stay out of the 2027 collection`);
+  }
+});
+test("October 17 consulting wave adds source-backed employer guides", () => {
+  const ids = [
+    "oliver-wyman-summer-internship-london-2027",
+    "lek-summer-associate-internship",
+    "alixpartners-risk-advisory-undergrad-internship-2027",
+    "analysis-group-summer-analyst-internship-2027",
+    "guidehouse-us-summer-internship-program",
+    "alvarez-marsal-internship-program",
+    "west-monroe-summer-internship-program",
+    "zs-north-america-summer-internship",
+    "roland-berger-madrid-consulting-internship-2027",
+    "fti-consulting-early-career-internships",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-17" && program.updated === "2026-10-17"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "guidehouse-us-summer-internship-program").years, [3]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "alvarez-marsal-internship-program").years, [3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "west-monroe-summer-internship-program").years, [3]);
+  for (const program of programs.filter(program => !["guidehouse-us-summer-internship-program", "alvarez-marsal-internship-program", "west-monroe-summer-internship-program"].includes(program.id))) {
+    assert.equal(program.firstYear, null, `${program.id}: graduation or opening-specific wording must not become a fixed class-year rule`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.equal(PROGRAMS.find(program => program.id === "analysis-group-summer-analyst-internship-2027").pay, "Paid");
+  assert.match(PROGRAMS.find(program => program.id === "alixpartners-risk-advisory-undergrad-internship-2027").status, /closed/i);
+  assert.match(PROGRAMS.find(program => program.id === "roland-berger-madrid-consulting-internship-2027").materials.join(" "), /cover letter/i);
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of [ids[0], ids[3], ids[5]]) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  for (const id of ids.filter(id => ![ids[0], ids[3], ids[5]].includes(id))) {
+    assert.ok(!summer.programIds.includes(id), `${id}: closed, evergreen or non-summer route must stay out of the live Summer 2027 collection`);
   }
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {

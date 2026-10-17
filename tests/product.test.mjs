@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 399, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 409, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -1057,6 +1057,31 @@ test("October 17 infrastructure wave adds construction and engineering pathways"
   const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
   for (const id of [ids[0], ids[2], ids[4], ids[5], ids[7], ids[8]]) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
   for (const id of [ids[1], ids[3], ids[6], ids[9]]) assert.ok(!summer.programIds.includes(id), `${id}: undated or unlabeled cycle must stay out of the 2027 collection`);
+});
+test("October 17 design and environmental wave adds source-backed student pathways", () => {
+  const ids = [
+    "gensler-internship-program",
+    "hok-student-internship-program",
+    "som-summer-internship-program",
+    "arup-technical-advisory-intern-summer-2027",
+    "terracon-specialty-engineering-consulting-intern-2027",
+    "kimley-horn-internship-program",
+    "arcadis-north-america-internships",
+    "parsons-north-america-internship-program",
+    "tetra-tech-internship-opportunities",
+    "stantec-construction-management-intern-summer-2027",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-17" && program.updated === "2026-10-17"));
+  assert.ok(programs.every(program => program.firstYear === null && program.years.length === 0));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.equal(PROGRAMS.find(program => program.id === "arup-technical-advisory-intern-summer-2027").payDetail, "$24.50–$47.50 per hour in New York");
+  assert.equal(PROGRAMS.find(program => program.id === "som-summer-internship-program").mode, "Full time · 10 weeks · June through August");
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of [ids[3], ids[4], ids[9]]) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  for (const id of ids.filter(id => ![ids[3], ids[4], ids[9]].includes(id))) assert.ok(!summer.programIds.includes(id), `${id}: undated recurring program must stay out of the 2027 collection`);
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

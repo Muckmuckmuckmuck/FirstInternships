@@ -1151,6 +1151,36 @@ test("October 17 consulting wave adds source-backed employer guides", () => {
     assert.ok(!summer.programIds.includes(id), `${id}: closed, evergreen or non-summer route must stay out of the live Summer 2027 collection`);
   }
 });
+test("October 17 accounting and advisory wave stays source-backed and cycle-specific", () => {
+  const ids = [
+    "bdo-summer-2027-internships",
+    "forvis-mazars-student-internships",
+    "protiviti-north-america-internship",
+    "plante-moran-audit-tax-intern-2027",
+    "cohnreznick-summer-2027-internships",
+    "cherry-bekaert-internship-program",
+    "cla-college-internships",
+    "aprio-internship-program",
+    "eisneramper-risk-compliance-winter-intern-2027",
+    "wipfli-erp-tech-consulting-internship-summer-2027",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-17" && program.updated === "2026-10-17"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.ok(programs.every(program => program.firstYear === null && program.years.length === 0), "graduation and opening-specific rules must not become guessed class years");
+  assert.equal(PROGRAMS.find(program => program.id === "bdo-summer-2027-internships").pay, "Paid");
+  assert.match(PROGRAMS.find(program => program.id === "plante-moran-audit-tax-intern-2027").eligibility.join(" "), /return to school/i);
+  assert.match(PROGRAMS.find(program => program.id === "cohnreznick-summer-2027-internships").deadlineDateLabel, /Nov 1/i);
+  assert.match(PROGRAMS.find(program => program.id === "wipfli-erp-tech-consulting-internship-summer-2027").pay, /\$32\/hour/i);
+  assert.match(PROGRAMS.find(program => program.id === "eisneramper-risk-compliance-winter-intern-2027").mode, /24 hours/i);
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of [ids[0], ids[4], ids[9]]) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  for (const id of ids.filter(id => ![ids[0], ids[4], ids[9]].includes(id))) {
+    assert.ok(!summer.programIds.includes(id), `${id}: evergreen, winter or term-unspecified route must stay out of the Summer 2027 collection`);
+  }
+});
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");
   const programs = programsForTopic(topic);

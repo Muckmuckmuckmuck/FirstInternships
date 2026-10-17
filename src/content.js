@@ -44,6 +44,7 @@ import { EMPLOYERS_STUDENT_BRANDS_WAVE_8_PROGRAMS } from "./employers-student-br
 import { EMPLOYERS_TRAVEL_HOSPITALITY_WAVE_9_PROGRAMS } from "./employers-travel-hospitality-wave-9-expansion.js";
 import { EMPLOYERS_CONSUMER_FOOD_WAVE_10_PROGRAMS } from "./employers-consumer-food-wave-10-expansion.js";
 import { EMPLOYERS_TELECOM_MEDIA_WAVE_11_PROGRAMS } from "./employers-telecom-media-wave-11-expansion.js";
+import { EMPLOYERS_INFRASTRUCTURE_WAVE_12_PROGRAMS } from "./employers-infrastructure-wave-12-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -243,6 +244,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_TRAVEL_HOSPITALITY_WAVE_9_PROGRAMS,
   ...EMPLOYERS_CONSUMER_FOOD_WAVE_10_PROGRAMS,
   ...EMPLOYERS_TELECOM_MEDIA_WAVE_11_PROGRAMS,
+  ...EMPLOYERS_INFRASTRUCTURE_WAVE_12_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,

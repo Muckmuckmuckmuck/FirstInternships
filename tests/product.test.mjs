@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 389, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 399, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -285,7 +285,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
   assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-16</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-16</lastmod>`), "directory freshness should reflect the current inventory release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-17</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1028,6 +1028,35 @@ test("October 16 telecom and media wave adds current, closed and evergreen pathw
   for (const id of ["comcast-college-internship-program", "siriusxm-early-career-internships", "echostar-summer-internship-program"]) {
     assert.ok(!summer.programIds.includes(id), `${id}: evergreen program must stay out of the 2027 collection`);
   }
+});
+test("October 17 infrastructure wave adds construction and engineering pathways", () => {
+  const ids = [
+    "aecom-bridge-engineering-intern-summer-2027",
+    "jacobs-global-internship-program",
+    "bechtel-ai-innovation-intern-2027",
+    "turner-bridge-internship-coop-program",
+    "skanska-heavy-civil-internship-2027",
+    "kiewit-scholars-internship-summer-2027",
+    "black-veatch-water-civil-engineer-intern",
+    "wsp-us-summer-internship-program-2027",
+    "hdr-structural-engineering-intern-summer-2027",
+    "burns-mcdonnell-college-internship-program",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-17" && program.updated === "2026-10-17"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "burns-mcdonnell-college-internship-program").years, [1, 2, 3, 4]);
+  for (const program of programs.filter(program => program.id !== "burns-mcdonnell-college-internship-program")) {
+    assert.equal(program.firstYear, null, `${program.id}: program-wide or preference wording must not become a fixed class-year rule`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.equal(PROGRAMS.find(program => program.id === "skanska-heavy-civil-internship-2027").payDetail, "$25 per hour");
+  assert.equal(PROGRAMS.find(program => program.id === "kiewit-scholars-internship-summer-2027").payDetail, "$17–$25 per hour");
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of [ids[0], ids[2], ids[4], ids[5], ids[7], ids[8]]) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  for (const id of [ids[1], ids[3], ids[6], ids[9]]) assert.ok(!summer.programIds.includes(id), `${id}: undated or unlabeled cycle must stay out of the 2027 collection`);
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

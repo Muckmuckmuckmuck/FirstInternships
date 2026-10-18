@@ -35,7 +35,7 @@ export const LEGACY_REDIRECTS = {
 // These retired guides were all about writing internship emails, so they point at the
 // guide that actually answers that search rather than the narrower follow-up guide.
 for (const slug of ["how-to-ask-for-an-internship", "how-to-email-a-recruiter-about-an-internship", "internship-email-templates", "cold-email-vs-applying-online-for-internships", "cold-email-for-internship", "best-time-to-send-a-cold-email"]) LEGACY_REDIRECTS[`/guides/${slug}`] = "/guides/email-templates-for-internships";
-for (const slug of ["washington-dc", "chicago", "los-angeles", "san-francisco", "boston", "new-york", "education", "marketing", "communications", "legal", "design", "media-and-marketing"]) LEGACY_REDIRECTS[`/internships/${slug}`] = "/internships";
+for (const slug of ["washington-dc", "chicago", "los-angeles", "san-francisco", "boston", "new-york", "education", "communications", "legal", "design", "media-and-marketing"]) LEGACY_REDIRECTS[`/internships/${slug}`] = "/internships";
 for (const slug of ["journalism", "graphic-design", "law", "ux-design"]) LEGACY_REDIRECTS[`/${slug}-internships`] = "/internships";
 for (const slug of ["texas", "florida", "new-york-state", "illinois", "california", "washington", "pennsylvania", "new-jersey", "georgia", "north-carolina", "massachusetts", "virginia"]) LEGACY_REDIRECTS[`/internships-in-${slug}`] = "/internships";
 for (const prefix of ["", "paid-", "summer-", "remote-", "stem-", "business-", "finance-", "software-engineering-", "marketing-", "medical-"]) LEGACY_REDIRECTS[`/${prefix}high-school-internships`] = "/";

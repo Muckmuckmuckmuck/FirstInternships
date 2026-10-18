@@ -1462,6 +1462,65 @@ test("October 18 real-estate wave adds brokerage, property, investment and accou
   const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
   assert.match(fieldHtml, /How to Get a Real Estate Internship/);
 });
+test("October 18 marketing wave adds current brand, communications, media and agency pathways", async () => {
+  const ids = [
+    "trane-technologies-marketing-intern-2027",
+    "kemin-marketing-intern-2027",
+    "uline-marketing-internship-summer-2027",
+    "inmar-marketing-internships-summer-2027",
+    "western-digital-sales-marketing-intern-2027",
+    "dow-jones-brand-marketing-intern-2027",
+    "mckesson-communications-intern-summer-2027",
+    "constellation-brands-marketing-intern-2027",
+    "aep-communications-marketing-intern-2027",
+    "hntb-communications-intern-nashville-2027",
+    "versant-cnbc-content-events-marketing-2027",
+    "dentsu-summer-experience-internship",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-18" && program.updated === "2026-10-18"));
+  assert.ok(programs.every(program => program.fields.includes("marketing")));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(item => item.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "western-digital-sales-marketing-intern-2027").years, [3]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "aep-communications-marketing-intern-2027").years, [2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "versant-cnbc-content-events-marketing-2027").years, [2, 3, 4]);
+  assert.match(PROGRAMS.find(program => program.id === "dow-jones-brand-marketing-intern-2027").pitfall, /deadline/i);
+  assert.match(PROGRAMS.find(program => program.id === "inmar-marketing-internships-summer-2027").status, /pipeline/i);
+
+  const existing = [
+    "boeing-communications-2027",
+    "boeing-sales-marketing-2027",
+    "google-business-undergraduate-intern",
+    "whitney-marketing-spring-2027",
+    "sanofi-vaccines-marketing-sales-internship-2027",
+    "unilever-netherlands-marketing-internship-2027",
+    "estee-lauder-creative-2027",
+    "aaf-most-promising-students-2027",
+    "colorado-golf-communications-internship-2027",
+  ].map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(existing.every(program => program.fields.includes("marketing")));
+  assert.ok(existing.every(program => program.guideSlugs.includes("how-to-get-a-marketing-or-advertising-internship")));
+
+  const field = FIELDS.find(item => item.id === "marketing");
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("marketing")).length, 21);
+  assert.ok(field.guideSlugs.includes("how-to-get-a-marketing-or-advertising-internship"));
+  const guide = GUIDES.find(item => item.slug === "how-to-get-a-marketing-or-advertising-internship");
+  assert.ok(guide);
+  assert.equal(guide.sections.length, 8);
+  assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 800);
+  assert.ok(guide.example?.text);
+
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of ids.filter(id => id !== "dentsu-summer-experience-internship")) {
+    assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  }
+  assert.ok(!summer.programIds.includes("dentsu-summer-experience-internship"), "evergreen dentsu overview must stay out of Summer 2027");
+
+  const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
+  assert.match(fieldHtml, /How to Get a Marketing or Advertising Internship/);
+});
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");
   const programs = programsForTopic(topic);

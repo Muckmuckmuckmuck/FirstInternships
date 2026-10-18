@@ -442,16 +442,6 @@
       "permanent": true
     },
     {
-      "source": "/internships/marketing",
-      "destination": "/internships",
-      "permanent": true
-    },
-    {
-      "source": "/internships/marketing.html",
-      "destination": "/internships",
-      "permanent": true
-    },
-    {
       "source": "/internships/communications",
       "destination": "/internships",
       "permanent": true

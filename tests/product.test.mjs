@@ -1302,6 +1302,65 @@ test("October 18 sports wave adds current college pathways and one function-firs
   const fieldHtml = await readFile(`dist${fieldPath(sports)}.html`, "utf8");
   assert.match(fieldHtml, /How to Get a Sports Internship in College/);
 });
+test("October 18 aerospace wave expands airlines, aircraft, airports and federal aviation", async () => {
+  const ids = [
+    "american-airlines-engineering-coop",
+    "gulfstream-airworthiness-intern-summer-2027",
+    "textron-aviation-aerodynamics-intern-2027",
+    "sierra-space-internship-program",
+    "general-atomics-college-internships",
+    "spirit-aerosystems-college-internships",
+    "bombardier-internship-program",
+    "faa-gateways-internship-program",
+    "tampa-airport-runway-to-success-2027",
+    "envoy-air-summer-internship-2027",
+    "atlanta-airport-college-internship",
+    "san-diego-airport-summer-internship",
+    "delta-airport-consultants-summer-aviation-experience-2027",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-18" && program.updated === "2026-10-18"));
+  assert.ok(programs.every(program => program.fields.includes("aerospace")));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 1 && program.sources.some(item => item.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "gulfstream-airworthiness-intern-summer-2027").years, [3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "general-atomics-college-internships").years, [1, 2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "atlanta-airport-college-internship").years, [2, 3, 4]);
+  assert.match(PROGRAMS.find(program => program.id === "tampa-airport-runway-to-success-2027").timing, /May 17/);
+  assert.match(PROGRAMS.find(program => program.id === "textron-aviation-aerodynamics-intern-2027").timing, /ten-week/i);
+
+  for (const id of ["american-airlines-college-internships", "united-airlines-student-internships"]) {
+    const existing = PROGRAMS.find(program => program.id === id);
+    assert.ok(existing.fields.includes("aerospace"), `${id}: aviation program should appear on the aerospace field page`);
+    assert.ok(existing.guideSlugs.includes("how-to-get-an-aerospace-or-aviation-internship"));
+  }
+
+  const field = FIELDS.find(item => item.id === "aerospace");
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("aerospace")).length, 40);
+  assert.ok(field.guideSlugs.includes("how-to-get-an-aerospace-or-aviation-internship"));
+  const guide = GUIDES.find(item => item.slug === "how-to-get-an-aerospace-or-aviation-internship");
+  assert.ok(guide);
+  assert.equal(guide.sections.length, 8);
+  assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 700);
+  assert.ok(guide.example?.text);
+
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  const summerIds = [
+    "gulfstream-airworthiness-intern-summer-2027",
+    "textron-aviation-aerodynamics-intern-2027",
+    "tampa-airport-runway-to-success-2027",
+    "envoy-air-summer-internship-2027",
+    "delta-airport-consultants-summer-aviation-experience-2027",
+  ];
+  for (const id of summerIds) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  for (const id of ids.filter(id => !summerIds.includes(id))) {
+    assert.ok(!summer.programIds.includes(id), `${id}: evergreen or cohort-uncertain route must stay out of Summer 2027`);
+  }
+
+  const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
+  assert.match(fieldHtml, /How to Get an Aerospace or Aviation Internship/);
+});
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");
   const programs = programsForTopic(topic);

@@ -192,7 +192,7 @@ export const EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS = [
     id: "american-airlines-college-internships", company: "American Airlines", title: "College Internship Program", initials: "AA", color: "#c8102e",
     seoTitle: "American Airlines Internship: Student Guide",
     seoDescription: "American Airlines recruits paid summer interns in finance, cargo, revenue, marketing, supply chain and airport teams. Juniors and seniors are the stated audience.",
-    fields: ["business", "finance", "operations", "technology"], firstYear: 3, years: [3, 4], yearLabel: "Juniors and seniors at four-year universities", pay: "Paid", location: "US roles; opening-specific", mode: "Most summer roles are full time",
+    fields: ["aerospace", "business", "finance", "operations", "technology"], firstYear: 3, years: [3, 4], yearLabel: "Juniors and seniors at four-year universities", pay: "Paid", location: "US roles; opening-specific", mode: "Most summer roles are full time",
     summary: "Paid airline-industry placements across airport administration, cargo, finance, procurement, revenue, sales, marketing and customer analysis.",
     eligibility: [
       "American Airlines says it hires juniors and seniors from accredited four-year universities who are in good academic standing. The central page also highlights initiative, communication, leadership, teamwork and interest in aviation or travel.",
@@ -222,13 +222,13 @@ export const EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS = [
       ["Which college years does American recruit?", "The central page names juniors and seniors from accredited four-year universities. The selected posting controls its exact graduation rule."],
       ["Does American provide housing?", "No. The program page says housing is not provided, although eligible candidates may receive relocation assistance."],
     ],
-    guideSlugs: [G.when, G.resume, G.offer], verified: "2026-10-11", updated: "2026-10-11",
+    guideSlugs: ["how-to-get-an-aerospace-or-aviation-internship", G.resume, G.offer], verified: "2026-10-11", updated: "2026-10-11",
   },
   {
     id: "united-airlines-student-internships", company: "United Airlines", title: "Student Internship Program", initials: "UA", color: "#005daa",
     seoTitle: "United Airlines Internships: Student Guide",
     seoDescription: "United offers student internships in digital technology, commercial and finance plus technical-operations co-ops. Learn the recruiting calendar and application steps.",
-    fields: ["business", "finance", "operations", "technology", "engineering"], firstYear: null, years: [], yearLabel: "Student eligibility depends on opening", pay: "Check opening", location: "United locations; opening-specific", mode: "Role-specific",
+    fields: ["aerospace", "business", "finance", "operations", "technology", "engineering"], firstYear: null, years: [], yearLabel: "Student eligibility depends on opening", pay: "Check opening", location: "United locations; opening-specific", mode: "Role-specific",
     summary: "Student roles in digital technology, commercial strategy and finance, plus technical-operations co-ops spanning engineering and aircraft systems.",
     eligibility: [
       "United's central student page does not publish one class-year, GPA, degree, graduation-window or work-authorization rule for every internship and co-op. The current opening controls each condition.",
@@ -255,7 +255,7 @@ export const EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS = [
       ["How long are United technology internships?", "The central page describes Digital Technology internships as twelve weeks."],
       ["Are United internships paid?", "The reviewed central student page does not publish one pay rule for every program. Check the selected opening and written offer."],
     ],
-    guideSlugs: [G.when, G.find, G.interview], verified: "2026-10-11", updated: "2026-10-11",
+    guideSlugs: ["how-to-get-an-aerospace-or-aviation-internship", G.find, G.interview], verified: "2026-10-11", updated: "2026-10-11",
   },
   {
     id: "northrop-grumman-college-internships", company: "Northrop Grumman", title: "College Internship Program", initials: "NG", color: "#1b365d",

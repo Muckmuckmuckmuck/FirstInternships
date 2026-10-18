@@ -870,7 +870,7 @@ test("focused collections have substantive original content and valid crosslinks
   assert.equal(TOPICS.length, 5);
   assert.ok(programsForTopic(TOPICS.find(t => t.filter === "paid")).every(p => p.pay === "Paid"));
   const community = TOPICS.find(t => t.slug === "community-college-internships");
-  assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow", "white-house-internship", "cia-directorate-of-operations-internship", "intuit-internships", "regeneron-summer-internship", "spotify-global-summer", "nytimes-internships-outside-newsroom", "uber-career-prep", "nist-surf", "llnl-computing-internships", "sf-fed-summer-internship"]);
+  assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow", "white-house-internship", "cia-directorate-of-operations-internship", "intuit-internships", "regeneron-summer-internship", "spotify-global-summer", "nytimes-internships-outside-newsroom", "uber-career-prep", "nist-surf", "llnl-computing-internships", "sf-fed-summer-internship", "hartford-claims-apprentice-program"]);
   const paragraphs = new Set();
   for (const topic of TOPICS) {
     assert.equal(resolvePage(topicPath(topic)).type, "topic");
@@ -1360,6 +1360,50 @@ test("October 18 aerospace wave expands airlines, aircraft, airports and federal
 
   const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
   assert.match(fieldHtml, /How to Get an Aerospace or Aviation Internship/);
+});
+test("October 18 insurance wave adds actuarial, underwriting, claims, analytics and risk pathways", async () => {
+  const ids = [
+    "allstate-quantum-algorithm-intern-summer-2027",
+    "new-york-life-financial-products-internship-2027",
+    "new-york-life-business-analytics-internship-2027",
+    "zurich-underwriting-internship-los-angeles-2027",
+    "massmutual-actuarial-summer-internship",
+    "guardian-summer-internship-program-2027",
+    "swiss-re-us-internship-program",
+    "amica-paid-internship-program",
+    "hartford-college-summer-internships",
+    "hartford-claims-apprentice-program",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-18" && program.updated === "2026-10-18"));
+  assert.ok(programs.every(program => program.fields.includes("insurance")));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(item => item.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "new-york-life-financial-products-internship-2027").years, [2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "zurich-underwriting-internship-los-angeles-2027").years, [3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "swiss-re-us-internship-program").years, [3]);
+  assert.match(PROGRAMS.find(program => program.id === "new-york-life-business-analytics-internship-2027").timing, /\$27 per hour/);
+  assert.match(PROGRAMS.find(program => program.id === "hartford-claims-apprentice-program").pitfall, /not a conventional summer internship/i);
+
+  const field = FIELDS.find(item => item.id === "insurance");
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("insurance")).length, 26);
+  assert.ok(field.guideSlugs.includes("how-to-get-an-insurance-or-actuarial-internship"));
+  const guide = GUIDES.find(item => item.slug === "how-to-get-an-insurance-or-actuarial-internship");
+  assert.ok(guide);
+  assert.equal(guide.sections.length, 8);
+  assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 700);
+  assert.ok(guide.example?.text);
+
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  const summerIds = ids.slice(0, 4).concat("guardian-summer-internship-program-2027");
+  for (const id of summerIds) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  for (const id of ids.filter(id => !summerIds.includes(id))) {
+    assert.ok(!summer.programIds.includes(id), `${id}: evergreen or non-summer route must stay out of Summer 2027`);
+  }
+
+  const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
+  assert.match(fieldHtml, /How to Get an Insurance or Actuarial Internship/);
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

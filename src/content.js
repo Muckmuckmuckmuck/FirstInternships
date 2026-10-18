@@ -50,6 +50,7 @@ import { EMPLOYERS_ARCHITECTURE_WAVE_14_PROGRAMS } from "./employers-architectur
 import { EMPLOYERS_CONSULTING_WAVE_15_PROGRAMS } from "./employers-consulting-wave-15-expansion.js";
 import { EMPLOYERS_ACCOUNTING_ADVISORY_WAVE_16_PROGRAMS } from "./employers-accounting-advisory-wave-16-expansion.js";
 import { EMPLOYERS_ACCOUNTING_ADVISORY_WAVE_17_PROGRAMS } from "./employers-accounting-advisory-wave-17-expansion.js";
+import { EMPLOYERS_POLICY_RESEARCH_WAVE_18_PROGRAMS, POLICY_RESEARCH_GUIDES } from "./employers-policy-research-wave-18-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -255,6 +256,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_CONSULTING_WAVE_15_PROGRAMS,
   ...EMPLOYERS_ACCOUNTING_ADVISORY_WAVE_16_PROGRAMS,
   ...EMPLOYERS_ACCOUNTING_ADVISORY_WAVE_17_PROGRAMS,
+  ...EMPLOYERS_POLICY_RESEARCH_WAVE_18_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
@@ -306,6 +308,7 @@ export const GUIDES = [
   ...GUIDE_EXPANSION_3,
   ...GUIDE_EXPANSION_4,
   ...GUIDE_EXPANSION_5,
+  ...POLICY_RESEARCH_GUIDES,
   ...ADDITIONAL_GUIDES,
   { slug: "how-to-apply-for-an-internship", updated: "2026-09-20", title: "How to Apply for a College Internship", description: "A practical internship application process: verify eligibility, prepare evidence, submit through the official portal, and track the next step.", intro: "Start by checking whether you can actually participate. A polished application cannot fix an incompatible graduation date, required credit count, citizenship restriction, or work schedule.", sections: [
     ["1. Turn the listing into a checklist", "Before writing anything, copy the essentials out of the posting: employer, role title and identifier, term dates, location and work arrangement, deadline with its time zone, and the required documents. Separate required qualifications from preferred ones — they are not the same test, and many students disqualify themselves over a preferred item. Check whether class year is assessed when you apply or when the internship begins, because those can be different years for the same person. Where a mandatory rule is genuinely unclear, use the employer's published contact route rather than guessing."],

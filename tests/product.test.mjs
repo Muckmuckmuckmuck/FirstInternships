@@ -867,7 +867,7 @@ test("all public content is reachable through ordinary homepage links", async ()
 });
 
 test("focused collections have substantive original content and valid crosslinks", () => {
-  assert.equal(TOPICS.length, 4);
+  assert.equal(TOPICS.length, 5);
   assert.ok(programsForTopic(TOPICS.find(t => t.filter === "paid")).every(p => p.pay === "Paid"));
   const community = TOPICS.find(t => t.slug === "community-college-internships");
   assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow", "white-house-internship", "cia-directorate-of-operations-internship", "intuit-internships", "regeneron-summer-internship", "spotify-global-summer", "nytimes-internships-outside-newsroom", "uber-career-prep", "nist-surf", "llnl-computing-internships", "sf-fed-summer-internship"]);
@@ -1214,6 +1214,50 @@ test("October 18 accounting and advisory wave adds current and durable firm guid
   }
   for (const id of ids.filter(id => !["bpm-assurance-intern-summer-2027", "andersen-tax-services-intern-summer-2027-seattle"].includes(id))) {
     assert.ok(!summer.programIds.includes(id), `${id}: evergreen, winter or term-unspecified route must stay out of the Summer 2027 collection`);
+  }
+});
+test("October 18 policy-research wave adds sourced think tank programs and one deep guide", () => {
+  const ids = [
+    "brookings-spring-2027-internships",
+    "cfr-blavatnik-internship-program",
+    "csis-internships",
+    "aei-internship-program",
+    "cato-internship-program-2027",
+    "carnegie-endowment-internships",
+    "bipartisan-policy-center-internships-2027",
+    "urban-institute-summer-internships",
+    "heritage-young-leaders-program-2027",
+    "wilson-center-spring-2027-internships",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-18" && program.updated === "2026-10-18"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "csis-internships").years, [3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "bipartisan-policy-center-internships-2027").years, [3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "heritage-young-leaders-program-2027").years, [1, 2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "wilson-center-spring-2027-internships").years, [1, 2, 3, 4]);
+  assert.match(PROGRAMS.find(program => program.id === "cato-internship-program-2027").pay, /\$17\.50\/hour/);
+  assert.match(PROGRAMS.find(program => program.id === "carnegie-endowment-internships").pay, /\$20\/hour/);
+  assert.match(PROGRAMS.find(program => program.id === "heritage-young-leaders-program-2027").pitfall, /preferred, not required/i);
+
+  const topic = TOPICS.find(topic => topic.slug === "think-tank-internships-for-college-students");
+  assert.deepEqual(topic.programIds, ids);
+  assert.ok(topic.sections.flat().join(" ").split(/\s+/).length >= 350);
+  const guide = GUIDES.find(guide => guide.slug === "how-to-get-a-think-tank-internship");
+  assert.ok(guide);
+  assert.equal(guide.topicSlug, topic.slug);
+  assert.equal(guide.sections.length, 8);
+  assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 700);
+  assert.ok(guide.example?.text);
+
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of ["cato-internship-program-2027", "bipartisan-policy-center-internships-2027", "heritage-young-leaders-program-2027"]) {
+    assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  }
+  for (const id of ids.filter(id => !["cato-internship-program-2027", "bipartisan-policy-center-internships-2027", "heritage-young-leaders-program-2027"].includes(id))) {
+    assert.ok(!summer.programIds.includes(id), `${id}: a Spring-only or evergreen route must stay out of the Summer 2027 collection`);
   }
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {

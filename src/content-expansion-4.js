@@ -8,16 +8,24 @@ const offerGuides = ["when-to-apply-for-summer-internships", "how-to-apply-for-a
 // Current openings remain authoritative for dates, degree rules, location, authorization and compensation.
 export const CONTENT_EXPANSION_4_PROGRAMS = [
   {
-    id: "palantir-year-internship", company: "Palantir", title: "Year at Palantir Software Internship", initials: "PL", color: "#3c5362",
-    seoTitle: "Year at Palantir Internship: Apply Guide", seoDescription: "Review Palantir's paid, year-long New York software internship for college freshmen through seniors, including skills, role choices and application checks.",
+    id: "palantir-year-internship", company: "Palantir", title: "Year at Palantir Software Internship", initials: "PL", color: "#3c5362", verified: "2026-10-18", updated: "2026-10-18",
+    seoTitle: "Year at Palantir Internship: Pay & Who Can Apply", seoDescription: "Year at Palantir is a paid, year-long, on-site software internship in New York for college freshmen through seniors, estimated at $5,900–$10,500 a month.",
     fields: ["technology", "engineering", "business"], firstYear: 1, years: [1, 2, 3, 4], yearLabel: "College years 1–4", pay: "Paid", location: "New York, New York", mode: "On-site · year-long",
     summary: "A paid, year-long software internship with Software Engineer and Forward Deployed Software Engineer paths working on production data and AI systems.",
     eligibility: ["The official listing explicitly says the opportunity is open to college freshmen, sophomores, juniors, and seniors.", "Applicants must be pursuing or have received an engineering-related degree and be proficient in at least one programming language.", "The listing asks for hands-on experience applying AI through coursework, projects, internships, or relevant extracurricular work; US government work can add clearance requirements."],
-    timing: "This is presented as a year at Palantir rather than a standard summer term. The current listing does not publish one closing date, so confirm start, end, academic-leave, and work-schedule details before applying.", status: "Official listing available",
+    timing: "This is presented as a year at Palantir rather than a standard summer term. The listing estimates pay at $5,900 to $10,500 a month and does not publish one closing date, so confirm start, end, academic-leave, and work-schedule details before applying.", status: "Official listing available",
     url: "https://jobs.lever.co/palantir/655f9937-a4ce-4e7d-80e2-a6659af07329",
     sources: [source("Palantir role, class years, requirements, location and salary", "https://jobs.lever.co/palantir/655f9937-a4ce-4e7d-80e2-a6659af07329")],
     steps: ["Read both internship role descriptions and decide whether product software engineering or forward-deployed customer work fits your evidence.", "Confirm that a year-long, on-site New York commitment works with your college schedule and review any clearance condition tied to the selected team.", "Apply through Palantir's official listing with a resume that makes your programming, AI work, and personal contribution to projects easy to verify."],
     prepare: ["Choose one system you built and be ready to explain the data, architecture, tradeoffs, failure modes, testing, and the part you personally owned.", "For AI experience, describe the problem, model or tool choice, evaluation method, limitations, and what changed after you tested it."],
+    faqs: [
+      ["What is Year at Palantir?", "A year-long, on-site software engineering internship in New York. Palantir presents it as a way for undergraduates to spend a year doing real work with its engineers and customers instead of a standard summer term, and says interns are held to the same performance standards as any Palantir engineer."],
+      ["Who can apply to Year at Palantir?", "Palantir says it is open to college freshmen, sophomores, juniors and seniors. You need to be pursuing or have received an engineering-related degree, preferably computer science, mathematics, software engineering, physics or data science, plus proficiency in a language such as Python, Java, C++ or TypeScript and hands-on experience applying AI."],
+      ["How much does Year at Palantir pay?", "The listing estimates $5,900 to $10,500 a month, excluding benefits and any long-term incentives. Individual pay depends on qualifications, experience and skills."],
+      ["What's the difference between the two roles?", "Forward Deployed Software Engineer interns work directly with customers, building data and AI solutions to their problems. Software Engineer interns write production code for Palantir Gotham, Foundry or Apollo on small product teams."],
+      ["Do I need a security clearance?", "Only for US government work, where an active clearance, or eligibility and willingness to obtain one, is required. For other roles Palantir lists clearance as a plus, not a requirement."],
+      ["Will I need to take time off school?", "Probably. The listing describes a year on site rather than a summer term and does not publish start dates or academic-leave arrangements, so confirm with your school how a year away affects your degree before you accept."],
+    ],
     pitfall: "Do not mistake broad class-year eligibility for a light time commitment; this listing describes a year of on-site work rather than a typical summer internship.",
     materials: ["Year-long schedule check", "Technical resume", "Programming project evidence", "AI project or coursework example"], guideSlugs: projectGuides,
   },

@@ -284,7 +284,7 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-16</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-18</lastmod>`), "homepage freshness should reflect the current content release");
   assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-18</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));

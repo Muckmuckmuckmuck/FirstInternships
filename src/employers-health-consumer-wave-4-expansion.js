@@ -41,7 +41,7 @@ export const EMPLOYERS_HEALTH_CONSUMER_WAVE_4_PROGRAMS = [
     timing: "The internship lasts ten weeks and pays $35 an hour. Sanofi lists a December 11, 2026 closing date but no closing time, so this guide records a date-only cutoff rather than inventing an hour.",
     status: "Summer 2027 application open through Dec. 11",
     deadlineDate: "2026-12-11",
-    deadlineDateLabel: "Summer 2027 · Dec 11 · no time published",
+    deadlineDateLabel: "Summer 2027 · Dec 11",
     url: "https://jobs.sanofi.com/en/job/morristown/2027-summer-intern-marketing-and-sales-associate-vaccines-morristown-nj/2649/44498274880",
     sources: [
       { name: "Official vaccines marketing and sales posting: responsibilities, degree, enrollment, location, pay, authorization and deadline", url: "https://jobs.sanofi.com/en/job/morristown/2027-summer-intern-marketing-and-sales-associate-vaccines-morristown-nj/2649/44498274880" },
@@ -283,7 +283,7 @@ export const EMPLOYERS_HEALTH_CONSUMER_WAVE_4_PROGRAMS = [
     timing: "The Home Depot lists a Summer 2027 application window from August 31 through October 23, 2026 and program dates from May 17 through July 30, 2027. It calls the eleven-week program paid but publishes no universal hourly rate or closing time on the central page.",
     status: "Summer 2027 applications open through Oct. 23",
     deadlineDate: "2026-10-23",
-    deadlineDateLabel: "Summer 2027 · Oct 23 · no time published",
+    deadlineDateLabel: "Summer 2027 · Oct 23",
     url: "https://careers.homedepot.com/student-internships/",
     sources: [
       { name: "Official student-internship page: paid status, 11-week structure, application window, program dates and project areas", url: "https://careers.homedepot.com/student-internships/" },

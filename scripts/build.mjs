@@ -77,7 +77,7 @@ function lastmodForRoute(route) {
   if (page.type === "home") return latestProgramReview([...featuredPrograms(), ...currentPrograms()], "2026-10-12");
   if (page.type === "directory") return latestProgramReview(PROGRAMS, "2026-10-11");
   const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
-  if (programs.length) return latestProgramReview(programs, page.field?.updated || page.topic?.updated || VERIFIED);
+  if (programs.length) return latestProgramReview(programs, page.field?.updated || page.year?.updated || page.topic?.updated || VERIFIED);
   const explicit = {
     "/application-timeline": "2026-09-20", "/about": "2026-10-07", "/contact": "2026-10-07", "/privacy": "2026-10-09", "/terms": "2026-10-09",
   }[route];

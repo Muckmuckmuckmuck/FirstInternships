@@ -712,8 +712,16 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
 .narrow-options { display: flex; flex-wrap: wrap; gap: 8px; }
 @media(max-width: 760px) { .narrow-bar { padding: 17px 16px; border-radius: 13px; } }
 
-/* Footer: brand, year links, utility links and popular guides. */
+/* Footer: brand, year links, utility links, popular guides and popular programs. */
 @media(min-width: 761px) {
-  .footer-inner { grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 48px; }
+  .footer-inner { grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr; gap: 40px; }
 }
+/* Year hubs: computed at-a-glance panel and next published cutoffs. */
+.year-glance { margin: 10px 0 40px; }
+.year-glance h2 { font-size: 26px; margin: 0; }
+.year-glance .facts-grid { margin: 18px 0 24px; }
+.year-cutoffs h3 { font-size: 17px; margin: 0 0 12px; }
+.year-cutoffs ul { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 10px; }
+.year-cutoffs li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.year-cutoffs li > a { font-weight: 700; }
 .callout .text-link:not(:last-child) { margin-right: 22px; }

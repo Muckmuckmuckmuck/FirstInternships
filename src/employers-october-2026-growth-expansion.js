@@ -62,7 +62,7 @@ export const EMPLOYERS_OCTOBER_2026_GROWTH_PROGRAMS = [
       "Technical preparation includes operating systems, at least one programming language, object-oriented development, data structures, algorithms, databases and scripting. The posting does not state one undergraduate year or universal immigration rule.",
     ],
     timing: "Morgan Stanley lists the Calgary Summer 2027 program as a fourteen-week placement running May through August. The official page gives December 31, 2026 as the application deadline but no closing time, so the date is preserved without inventing an hour. Compensation is not published on the reviewed page.",
-    status: "2027 applications open at review", deadlineDate: "2026-12-31", deadlineDateLabel: "Summer 2027 · Dec 31 · no time published",
+    status: "2027 applications open at review", deadlineDate: "2026-12-31", deadlineDateLabel: "Summer 2027 · Dec 31",
     url: "https://www.morganstanley.com/careers/students-graduates/opportunities/20936",
     sources: [{ name: "Summer 2027 Calgary duration, deadline, GPA, majors and technical qualifications", url: "https://www.morganstanley.com/careers/students-graduates/opportunities/20936" }],
     steps: [

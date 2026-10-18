@@ -42,7 +42,7 @@ export const EMPLOYERS_FINANCE_CORPORATE_WAVE_3_PROGRAMS = [
     timing: "The Summer 2027 program lasts ten weeks and starts with orientation and induction, followed by structured and on-the-job training, speaker events and mentorship. The Seoul listing publishes October 18, 2026 as a date-only deadline; it does not state a closing time or pay rate.",
     status: "2027 Seoul application available at review",
     deadlineDate: "2026-10-18",
-    deadlineDateLabel: "Summer 2027 · Oct 18 · no time published",
+    deadlineDateLabel: "Summer 2027 · Oct 18",
     url: "https://careers.bankofamerica.com/en-us/students/job-detail/14360/global-investment-banking-summer-analyst-2027-seoul-",
     sources: [
       { name: "Seoul 2027 eligibility, Korean-language rule, ten-week structure, work, training and October 18 date", url: "https://careers.bankofamerica.com/en-us/students/job-detail/14360/global-investment-banking-summer-analyst-2027-seoul-" },

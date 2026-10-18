@@ -43,7 +43,7 @@ export const EMPLOYERS_FINANCE_ADVISORY_WAVE_2_PROGRAMS = [
     timing: "Applications for the Summer 2028 New York Generalist program opened September 9, 2026 and close November 15, 2026. Evercore says applications are not reviewed on a rolling basis. The program runs ten weeks and the posting states an expected base salary range of $120,000; it does not say an intern earns $120,000 during the ten-week term.",
     status: "Summer 2028 posting available at review",
     deadlineDate: "2026-11-15",
-    deadlineDateLabel: "Summer 2028 · Nov 15 · no time published",
+    deadlineDateLabel: "Summer 2028 · Nov 15",
     url: "https://evercore.tal.net/vx/lang-en-GB/mobile-0/appcentre-1/brand-6/xf-3c67f783d3b5/spa-1/candidate/so/pm/1/pl/2/opp/3220-2028-Strategic-Advisory-Mergers-Acquisitions-Summer-Analyst-Program-New-York-Generalist/en-GB",
     sources: [
       {
@@ -301,7 +301,7 @@ export const EMPLOYERS_FINANCE_ADVISORY_WAVE_2_PROGRAMS = [
     timing: "Houlihan Lokey describes its U.S. summer program as ten weeks from June through August, beginning with one week of training. The Baltimore posting closes November 30, 2026, with no published closing time, and states a $110,000–$110,000 possible salary range. Treat that as the posting's salary field, not a promise of $110,000 for ten weeks.",
     status: "Summer 2027 posting available at review",
     deadlineDate: "2026-11-30",
-    deadlineDateLabel: "Summer 2027 · Nov 30 · no time published",
+    deadlineDateLabel: "Summer 2027 · Nov 30",
     url: "https://hl.wd1.myworkdayjobs.com/en-US/Campus/job/Baltimore-MD-USA/XMLNAME-2027-Investment-Banking-Summer-Financial-Analyst--Class-of-2028----Baltimore-Business-Services_R2830",
     sources: [
       {

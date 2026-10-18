@@ -188,7 +188,7 @@ export const EMPLOYERS_FINANCE_BANKS_WAVE_2_PROGRAMS = [
     timing: "The ten-week program begins in June with one week of intensive classroom and division-specific training. It includes desk rotations, mini-rotations, project work, a speaker series, networking, a dean and a buddy. The listing gives October 19, 2026 as a date-only application deadline and says recruiting is rolling, so no closing time is inferred. No pay rate or work arrangement was published.",
     status: "2027 London application available at review",
     deadlineDate: "2026-10-19",
-    deadlineDateLabel: "Summer 2027 · Oct 19 · no time published",
+    deadlineDateLabel: "Summer 2027 · Oct 19",
     url: "https://www.morganstanley.com/careers/students-graduates/opportunities/21502",
     sources: [
       { name: "2027 London rotations, eligibility, training, rolling review and October 19 date", url: "https://www.morganstanley.com/careers/students-graduates/opportunities/21502" },

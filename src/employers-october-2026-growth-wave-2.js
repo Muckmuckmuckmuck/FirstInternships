@@ -29,7 +29,7 @@ export const EMPLOYERS_OCTOBER_2026_GROWTH_WAVE_2_PROGRAMS = [
       "The application requires a resume, a 500-to-700-word essay, two recommendation letters and a portfolio of at least five relevant samples. The Athletic asks candidates not to use generative AI to create substantive application or interview content.",
     ],
     timing: "The internship runs for twelve weeks from June through August 2027, although the posting says dates may change. It pays $25 an hour. Applications are due October 30, 2026; no closing time is published, so the guide records the date without inventing an hour.",
-    status: "Summer 2027 applications open through Oct. 30", deadlineDate: "2026-10-30", deadlineDateLabel: "Summer 2027 · Oct 30 · no time published",
+    status: "Summer 2027 applications open through Oct. 30", deadlineDate: "2026-10-30", deadlineDateLabel: "Summer 2027 · Oct 30",
     url: "https://jobs.lever.co/theathletic/89e4e9d0-2e53-496c-b4ab-e6f02ab6521d",
     sources: [{ name: "Official Leon H. Carter internship posting: eligibility, dates, pay, materials and application policy", url: "https://jobs.lever.co/theathletic/89e4e9d0-2e53-496c-b4ab-e6f02ab6521d" }],
     steps: [

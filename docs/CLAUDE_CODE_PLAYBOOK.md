@@ -302,6 +302,8 @@ Preserve:
 - Exact-year cards on year hubs plus a compact sample of opening-specific pathways. Do not restore the same full unknown-minimum inventory to all four year pages.
 - Related programs from the catalog-wide assignment in `relatedPrograms()`: same-employer programs first, then six slots balanced across each page's most similar programs so every program is suggested from several others. Never reintroduce an alphabetical or array-order tie-break; it starved later programs of internal links. Keep the assignment cheap (pairs are scored once), because it runs during hydration on phones.
 - Guide "next read" links that rotate onward through `GUIDES`, and the footer's popular-guide links in `FOOTER_GUIDE_LINKS`.
+- The footer's popular-program links in `FOOTER_PROGRAM_LINKS`: a handful of the most-searched program guides (from Search Console), labelled the way students search. Keep it short and refresh it from search data; it is not a second directory.
+- Year-hub titles and descriptions that state the count of officially confirmed programs for that year, and a computed at-a-glance panel (confirmed, paid, upcoming published cutoffs, common fields) with the next cutoffs. Do not hand-write those numbers.
 - Page-level review lines that show `reviewSpan()` of the programs on the page, never one blanket review date.
 
 Do not add:
@@ -535,7 +537,7 @@ After pushing:
 3. Add only valid program IDs and guide slugs.
 4. Ensure the new page is linked through ordinary navigation or crosslinks.
 5. Verify ItemList structured data matches the visible inventory.
-6. A collection's inclusion rule is a promise: add a test that every listed record meets it. A field hub can carry `updated: "YYYY-MM-DD"` when its own copy changes; the sitemap uses the later of that and its newest program.
+6. A collection's inclusion rule is a promise: add a test that every listed record meets it. A field or year hub can carry `updated: "YYYY-MM-DD"` when its own copy changes; the sitemap uses the later of that and its newest program.
 
 ### Add a guide
 

@@ -27,7 +27,7 @@ export const EMPLOYERS_OCTOBER_2026_INSURANCE_PROGRAMS = [
       "The employer describes analytical, quantitative, interpersonal, academic and extracurricular evidence as useful selection signals. Those are selection factors, not a substitute for the required qualifications in the selected posting.",
     ],
     timing: "AIG's September 28, 2026 program update says applications for the 2027 Internship Program are accepted through October 31, 2026. The central student page says internships last about ten weeks and deadlines otherwise vary by country. No universal closing time, pay rate, exact term dates or work arrangement is published.",
-    status: "2027 applications open at review", deadlineDate: "2026-10-31", deadlineDateLabel: "Summer 2027 · Oct 31 · no time published",
+    status: "2027 applications open at review", deadlineDate: "2026-10-31", deadlineDateLabel: "Summer 2027 · Oct 31",
     url: "https://www.aig.com/careers/students",
     sources: [
       { name: "Internship length, levels, recruiting process and role-specific deadlines", url: "https://www.aig.com/careers/students" },

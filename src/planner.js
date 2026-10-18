@@ -6,7 +6,9 @@ export const STAGES = ["Considering", "Preparing", "Applied", "Interviewing", "O
 // Sized so a backup of every catalog program with maximum-length notes still
 // restores; tests/planner.test.mjs checks that as the catalog grows.
 export const BACKUP_LIMIT = 2 * 1024 * 1024;
-const BACKUP_RECORDS = 500;
+// Keep this above the maintained catalog size so a legitimate full-library
+// backup remains restorable as new employer guides are added.
+const BACKUP_RECORDS = 1000;
 const FORMAT = "firstinternships-planner";
 const record = value => value && typeof value === "object" && !Array.isArray(value);
 const validActionDate = value => Number.isFinite(dateInstant(value)) && value >= "1900-01-01" && value <= "9998-12-31";

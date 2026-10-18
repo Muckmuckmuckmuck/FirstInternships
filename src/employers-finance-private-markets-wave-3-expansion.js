@@ -354,7 +354,7 @@ export const EMPLOYERS_FINANCE_PRIVATE_MARKETS_WAVE_3_PROGRAMS = [
     color: "#8d2e2a",
     seoTitle: "Hines REDI Undergraduate Internship Guide",
     seoDescription: "Hines's paid REDI Undergraduate internships generally open in August for the next year and run mainly in person. Learn how roles differ and how to prepare.",
-    fields: ["finance", "business", "operations"],
+    fields: ["real-estate", "finance", "business", "operations"],
     firstYear: null,
     years: [],
     yearLabel: "Undergraduates · role-specific preparation",
@@ -397,7 +397,8 @@ export const EMPLOYERS_FINANCE_PRIVATE_MARKETS_WAVE_3_PROGRAMS = [
       ["Do I need a real-estate or finance major?", "No. Hines says it considers a range of majors and academic backgrounds; the preparation expected depends on the role."],
       ["Are Hines REDI internships paid and remote?", "Hines says REDI internships are paid and generally take place in person. Compensation and program details vary by role and location."],
     ],
-    guideSlugs: [G.when, G.resume, G.interview],
+    guideSlugs: ["how-to-get-a-real-estate-internship", G.when, G.resume, G.interview],
     verified: "2026-10-14",
+    updated: "2026-10-18",
   },
 ];

@@ -1405,6 +1405,63 @@ test("October 18 insurance wave adds actuarial, underwriting, claims, analytics 
   const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
   assert.match(fieldHtml, /How to Get an Insurance or Actuarial Internship/);
 });
+test("October 18 real-estate wave adds brokerage, property, investment and accounting pathways", async () => {
+  const ids = [
+    "cbre-sales-brokerage-internship-program",
+    "jll-property-management-internship-san-francisco-2027",
+    "cushman-wakefield-boston-commercial-real-estate-intern-2027",
+    "cushman-wakefield-client-accounting-tempe-2027",
+    "greystar-tax-accounting-internship-2027",
+    "prologis-investment-analyst-intern-2027",
+    "nrp-group-property-management-internship-2027",
+    "southpace-commercial-real-estate-internship-2027",
+    "colliers-campus-internships",
+    "simon-property-group-summer-internship-program",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-18" && program.updated === "2026-10-18"));
+  assert.ok(programs.every(program => program.fields.includes("real-estate")));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(item => item.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "cbre-sales-brokerage-internship-program").years, [3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "prologis-investment-analyst-intern-2027").years, [3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "cushman-wakefield-client-accounting-tempe-2027").years, [3]);
+  assert.match(PROGRAMS.find(program => program.id === "greystar-tax-accounting-internship-2027").timing, /\$26\.75 per hour/);
+  assert.match(PROGRAMS.find(program => program.id === "southpace-commercial-real-estate-internship-2027").pitfall, /time zone/i);
+
+  const hines = PROGRAMS.find(program => program.id === "hines-redi-undergraduate-internship");
+  assert.ok(hines.fields.includes("real-estate"));
+  assert.ok(hines.guideSlugs.includes("how-to-get-a-real-estate-internship"));
+  assert.equal(hines.updated, "2026-10-18");
+
+  const field = FIELDS.find(item => item.id === "real-estate");
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("real-estate")).length, 11);
+  assert.ok(field.guideSlugs.includes("how-to-get-a-real-estate-internship"));
+  const guide = GUIDES.find(item => item.slug === "how-to-get-a-real-estate-internship");
+  assert.ok(guide);
+  assert.equal(guide.sections.length, 8);
+  assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 700);
+  assert.ok(guide.example?.text);
+
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  const summerIds = [
+    "jll-property-management-internship-san-francisco-2027",
+    "cushman-wakefield-boston-commercial-real-estate-intern-2027",
+    "cushman-wakefield-client-accounting-tempe-2027",
+    "greystar-tax-accounting-internship-2027",
+    "prologis-investment-analyst-intern-2027",
+    "nrp-group-property-management-internship-2027",
+    "southpace-commercial-real-estate-internship-2027",
+  ];
+  for (const id of summerIds) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  for (const id of ids.filter(id => !summerIds.includes(id))) {
+    assert.ok(!summer.programIds.includes(id), `${id}: evergreen route must stay out of Summer 2027`);
+  }
+
+  const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
+  assert.match(fieldHtml, /How to Get a Real Estate Internship/);
+});
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");
   const programs = programsForTopic(topic);

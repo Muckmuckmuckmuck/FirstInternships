@@ -1260,6 +1260,48 @@ test("October 18 policy-research wave adds sourced think tank programs and one d
     assert.ok(!summer.programIds.includes(id), `${id}: a Spring-only or evergreen route must stay out of the Summer 2027 collection`);
   }
 });
+test("October 18 sports wave adds current college pathways and one function-first guide", async () => {
+  const ids = [
+    "miami-dolphins-summer-internship-2027",
+    "utah-jazz-basketball-analytics-intern-2027",
+    "little-league-softball-operations-internship-2027",
+    "us-club-soccer-event-operations-internship-2027",
+    "metlife-stadium-summer-internships-2027",
+    "cincinnati-open-operations-internship-2027",
+    "colorado-golf-communications-internship-2027",
+    "prep-baseball-event-operations-intern-2027",
+    "la-dodgers-internship-program",
+    "angel-city-fc-data-analytics-intern",
+    "miami-marlins-sports-pathways-program",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-18" && program.updated === "2026-10-18"));
+  assert.ok(programs.every(program => program.fields.includes("sports")));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 1 && program.sources.some(source => source.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "miami-dolphins-summer-internship-2027").years, [4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "little-league-softball-operations-internship-2027").years, [1, 2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "metlife-stadium-summer-internships-2027").years, [3, 4]);
+  assert.match(PROGRAMS.find(program => program.id === "angel-city-fc-data-analytics-intern").pay, /Paid/);
+  assert.match(PROGRAMS.find(program => program.id === "colorado-golf-communications-internship-2027").timing, /\$20 per hour/);
+
+  const sports = FIELDS.find(field => field.id === "sports");
+  assert.equal(programsForTopic({ programIds: programs.filter(program => program.fields.includes("sports")).map(program => program.id) }).length, programs.length);
+  assert.ok(sports.guideSlugs.includes("how-to-get-a-sports-internship"));
+  const guide = GUIDES.find(guide => guide.slug === "how-to-get-a-sports-internship");
+  assert.ok(guide);
+  assert.equal(guide.sections.length, 8);
+  assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 700);
+  assert.ok(guide.example?.text);
+
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of ids.slice(0, 8)) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  for (const id of ids.slice(8)) assert.ok(!summer.programIds.includes(id), `${id}: evergreen or term-unspecified route must stay out of Summer 2027`);
+
+  const fieldHtml = await readFile(`dist${fieldPath(sports)}.html`, "utf8");
+  assert.match(fieldHtml, /How to Get a Sports Internship in College/);
+});
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");
   const programs = programsForTopic(topic);

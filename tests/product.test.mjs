@@ -285,7 +285,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
   assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-16</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-17</lastmod>`), "directory freshness should reflect the current inventory release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-18</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1178,6 +1178,41 @@ test("October 17 accounting and advisory wave stays source-backed and cycle-spec
   const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
   for (const id of [ids[0], ids[4], ids[9]]) assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
   for (const id of ids.filter(id => ![ids[0], ids[4], ids[9]].includes(id))) {
+    assert.ok(!summer.programIds.includes(id), `${id}: evergreen, winter or term-unspecified route must stay out of the Summer 2027 collection`);
+  }
+});
+test("October 18 accounting and advisory wave adds current and durable firm guides", () => {
+  const ids = [
+    "crowe-internship-program",
+    "baker-tilly-winter-2027-audit-internship-nashville",
+    "cbiz-student-internships",
+    "armanino-campus-internships",
+    "eide-bailly-accounting-internships",
+    "withum-internship-program",
+    "bpm-assurance-intern-summer-2027",
+    "andersen-tax-services-intern-summer-2027-seattle",
+    "pkf-oconnor-davies-audit-tax-internships",
+    "ryan-summer-internship-program",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-18" && program.updated === "2026-10-18"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "withum-internship-program").years, [2, 3, 4]);
+  assert.deepEqual(PROGRAMS.find(program => program.id === "pkf-oconnor-davies-audit-tax-internships").years, [3, 4]);
+  for (const program of programs.filter(program => !["withum-internship-program", "pkf-oconnor-davies-audit-tax-internships"].includes(program.id))) {
+    assert.equal(program.firstYear, null, `${program.id}: graduation or opening-specific wording must not become a fixed class-year rule`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.match(PROGRAMS.find(program => program.id === "bpm-assurance-intern-summer-2027").pay, /\$30–\$35\/hour/);
+  assert.match(PROGRAMS.find(program => program.id === "andersen-tax-services-intern-summer-2027-seattle").mode, /3 days/i);
+  assert.match(PROGRAMS.find(program => program.id === "ryan-summer-internship-program").eligibility.join(" "), /within one year of graduation/i);
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  for (const id of ["bpm-assurance-intern-summer-2027", "andersen-tax-services-intern-summer-2027-seattle"]) {
+    assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
+  }
+  for (const id of ids.filter(id => !["bpm-assurance-intern-summer-2027", "andersen-tax-services-intern-summer-2027-seattle"].includes(id))) {
     assert.ok(!summer.programIds.includes(id), `${id}: evergreen, winter or term-unspecified route must stay out of the Summer 2027 collection`);
   }
 });

@@ -266,7 +266,9 @@ export const TOPICS = [
       // Added 2026-10-17: these official consulting sources explicitly identify live Summer 2027 recruiting routes.
       "oliver-wyman-summer-internship-london-2027", "analysis-group-summer-analyst-internship-2027", "alvarez-marsal-internship-program",
       // Added 2026-10-17: official accounting-firm boards identify current Summer 2027 roles.
-      "bdo-summer-2027-internships", "cohnreznick-summer-2027-internships", "wipfli-erp-tech-consulting-internship-summer-2027"],
+      "bdo-summer-2027-internships", "cohnreznick-summer-2027-internships", "wipfli-erp-tech-consulting-internship-summer-2027",
+      // Added 2026-10-18: the official BPM and Andersen postings explicitly name live Summer 2027 roles.
+      "bpm-assurance-intern-summer-2027", "andersen-tax-services-intern-summer-2027-seattle"],
     guideSlugs: ["when-to-apply-for-summer-internships", "how-to-apply-for-an-internship", "internship-offer-checklist"],
     sections: [
       ["What counts as a Summer 2027 listing", "Every program in this collection has an official source that identifies a Summer 2027 cycle, term, or application route. That does not mean every role remains available today. Some employers close a posting as soon as a hiring target is reached, while research programs can keep an information page live before or after the submission window. Read the status and timing on each guide, then open the employer source before preparing an application. We do not advance a 2026 date by one year or label an undated recurring program as Summer 2027 just because it usually returns."],

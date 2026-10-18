@@ -49,6 +49,7 @@ import { EMPLOYERS_DESIGN_ENVIRONMENT_WAVE_13_PROGRAMS } from "./employers-desig
 import { EMPLOYERS_ARCHITECTURE_WAVE_14_PROGRAMS } from "./employers-architecture-wave-14-expansion.js";
 import { EMPLOYERS_CONSULTING_WAVE_15_PROGRAMS } from "./employers-consulting-wave-15-expansion.js";
 import { EMPLOYERS_ACCOUNTING_ADVISORY_WAVE_16_PROGRAMS } from "./employers-accounting-advisory-wave-16-expansion.js";
+import { EMPLOYERS_ACCOUNTING_ADVISORY_WAVE_17_PROGRAMS } from "./employers-accounting-advisory-wave-17-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -253,6 +254,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_ARCHITECTURE_WAVE_14_PROGRAMS,
   ...EMPLOYERS_CONSULTING_WAVE_15_PROGRAMS,
   ...EMPLOYERS_ACCOUNTING_ADVISORY_WAVE_16_PROGRAMS,
+  ...EMPLOYERS_ACCOUNTING_ADVISORY_WAVE_17_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,

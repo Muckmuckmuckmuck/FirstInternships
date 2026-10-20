@@ -9,8 +9,8 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 429, "the college directory should not regress to a thin inventory");
-  assert.ok(GUIDES.length >= 35, "the preparation library should not regress");
+  assert.ok(PROGRAMS.length >= 520, "the college directory should not regress to a thin inventory");
+  assert.ok(GUIDES.length >= 42, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
       const rows = record[key];
@@ -285,7 +285,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
   assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-18</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-18</lastmod>`), "directory freshness should reflect the current inventory release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-19</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1520,6 +1520,51 @@ test("October 18 marketing wave adds current brand, communications, media and ag
 
   const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
   assert.match(fieldHtml, /How to Get a Marketing or Advertising Internship/);
+});
+test("October 19 international-affairs wave builds a sourced development and humanitarian cluster", async () => {
+  const ids = [
+    "unicef-internship-programme",
+    "undp-internship-programme",
+    "unhcr-internship-programme",
+    "wfp-internship-programme",
+    "oecd-internship-programme",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-19" && program.updated === "2026-10-19"));
+  assert.ok(programs.every(program => program.fields.includes("international-affairs")));
+  assert.ok(programs.every(program => program.pay === "Paid"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(item => item.url === program.url)));
+  assert.deepEqual(PROGRAMS.find(program => program.id === "oecd-internship-programme").years, [1, 2, 3, 4]);
+  for (const id of ids.filter(id => id !== "oecd-internship-programme")) {
+    assert.equal(PROGRAMS.find(program => program.id === id).firstYear, null, `${id}: completed-year or final-year wording must not become a guessed US class year`);
+  }
+
+  const existingIds = [
+    "world-bank-wbg-pioneers",
+    "un-secretariat-internship",
+    "state-department-student-internship",
+    "cfr-blavatnik-internship-program",
+    "csis-internships",
+    "carnegie-endowment-internships",
+  ];
+  const existing = existingIds.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(existing.every(program => program.fields.includes("international-affairs")));
+  assert.ok(existing.every(program => program.guideSlugs.includes("how-to-get-an-international-affairs-internship")));
+
+  const field = FIELDS.find(item => item.id === "international-affairs");
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("international-affairs")).length, 11);
+  assert.ok(field.guideSlugs.includes("how-to-get-an-international-affairs-internship"));
+  const guide = GUIDES.find(item => item.slug === "how-to-get-an-international-affairs-internship");
+  assert.ok(guide);
+  assert.equal(guide.sections.length, 8);
+  assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 800);
+  assert.ok(guide.example?.text);
+  assert.ok(guide.programIds.every(id => PROGRAMS.some(program => program.id === id)));
+
+  const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
+  assert.match(fieldHtml, /How to Get an International Affairs Internship/);
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

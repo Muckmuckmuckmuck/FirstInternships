@@ -56,6 +56,7 @@ import { EMPLOYERS_AEROSPACE_WAVE_20_PROGRAMS, AEROSPACE_GUIDES } from "./employ
 import { EMPLOYERS_INSURANCE_WAVE_21_PROGRAMS, INSURANCE_GUIDES } from "./employers-insurance-wave-21-expansion.js";
 import { EMPLOYERS_REAL_ESTATE_WAVE_22_PROGRAMS, REAL_ESTATE_GUIDES } from "./employers-real-estate-wave-22-expansion.js";
 import { EMPLOYERS_MARKETING_WAVE_23_PROGRAMS, MARKETING_EXISTING_PROGRAM_IDS, MARKETING_GUIDES } from "./employers-marketing-wave-23-expansion.js";
+import { EMPLOYERS_INTERNATIONAL_AFFAIRS_WAVE_24_PROGRAMS, INTERNATIONAL_AFFAIRS_EXISTING_PROGRAM_IDS, INTERNATIONAL_AFFAIRS_GUIDES } from "./employers-international-affairs-wave-24-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -267,17 +268,23 @@ export const PROGRAMS = [
   ...EMPLOYERS_INSURANCE_WAVE_21_PROGRAMS,
   ...EMPLOYERS_REAL_ESTATE_WAVE_22_PROGRAMS,
   ...EMPLOYERS_MARKETING_WAVE_23_PROGRAMS,
+  ...EMPLOYERS_INTERNATIONAL_AFFAIRS_WAVE_24_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
 ].map(program => {
   const addMarketing = MARKETING_EXISTING_PROGRAM_IDS.includes(program.id);
+  const addInternationalAffairs = INTERNATIONAL_AFFAIRS_EXISTING_PROGRAM_IDS.includes(program.id);
+  let fields = program.fields;
+  let guideSlugs = program.guideSlugs;
+  if (addMarketing && !fields.includes("marketing")) fields = [...fields, "marketing"];
+  if (addInternationalAffairs && !fields.includes("international-affairs")) fields = [...fields, "international-affairs"];
+  if (addMarketing && !(guideSlugs || []).includes("how-to-get-a-marketing-or-advertising-internship")) guideSlugs = [...(guideSlugs || []), "how-to-get-a-marketing-or-advertising-internship"];
+  if (addInternationalAffairs && !(guideSlugs || []).includes("how-to-get-an-international-affairs-internship")) guideSlugs = [...(guideSlugs || []), "how-to-get-an-international-affairs-internship"];
   return {
     ...program,
-    fields: addMarketing && !program.fields.includes("marketing") ? [...program.fields, "marketing"] : program.fields,
-    guideSlugs: addMarketing && !(program.guideSlugs || []).includes("how-to-get-a-marketing-or-advertising-internship")
-      ? [...(program.guideSlugs || []), "how-to-get-a-marketing-or-advertising-internship"]
-      : program.guideSlugs,
+    fields,
+    guideSlugs,
     verified: program.verified || VERIFIED,
     seoTitle: program.seoTitle || PROGRAM_SEO[program.id][0],
     seoDescription: program.seoDescription || PROGRAM_SEO[program.id][1],
@@ -336,6 +343,7 @@ export const GUIDES = [
   ...INSURANCE_GUIDES,
   ...REAL_ESTATE_GUIDES,
   ...MARKETING_GUIDES,
+  ...INTERNATIONAL_AFFAIRS_GUIDES,
   ...ADDITIONAL_GUIDES,
   { slug: "how-to-apply-for-an-internship", updated: "2026-09-20", title: "How to Apply for a College Internship", description: "A practical internship application process: verify eligibility, prepare evidence, submit through the official portal, and track the next step.", intro: "Start by checking whether you can actually participate. A polished application cannot fix an incompatible graduation date, required credit count, citizenship restriction, or work schedule.", sections: [
     ["1. Turn the listing into a checklist", "Before writing anything, copy the essentials out of the posting: employer, role title and identifier, term dates, location and work arrangement, deadline with its time zone, and the required documents. Separate required qualifications from preferred ones — they are not the same test, and many students disqualify themselves over a preferred item. Check whether class year is assessed when you apply or when the internship begins, because those can be different years for the same person. Where a mandatory rule is genuinely unclear, use the employer's published contact route rather than guessing."],

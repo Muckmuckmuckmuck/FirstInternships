@@ -50,6 +50,10 @@ export default defineConfig(({ isSsrBuild }) => ({
             // slice so continued catalog growth does not recreate a 500 kB
             // catch-all employer chunk.
             { name: "directory-employers-latest", test: /\/src\/employers-(?:industrial-consumer-wave-5|consumer-industrial-wave-6|life-sciences-wave-7|student-brands-wave-8|travel-hospitality-wave-9|consumer-food-wave-10|telecom-media-wave-11|infrastructure-wave-12|design-environment-wave-13|architecture-wave-14|consulting-wave-15)-expansion\.js$/, priority: 22 },
+            // The newest specialist fields carry long program and guide copy.
+            // Split waves 16+ before the catch-all so every browser data chunk
+            // remains below the 500 kB warning threshold as the catalog grows.
+            { name: "directory-employers-newest", test: /\/src\/employers-(?:accounting-advisory-wave-1[67]|policy-research-wave-18|sports-wave-19|aerospace-wave-20|insurance-wave-21|real-estate-wave-22|marketing-wave-23|international-affairs-wave-24)-expansion\.js$/, priority: 23 },
             // The established employer batches remain a long-cached parallel
             // chunk that does not churn when a current-cycle program is added.
             { name: "directory-employers", test: /\/src\/employers-[^/]+-expansion\.js$/, priority: 20 },
@@ -59,6 +63,10 @@ export default defineConfig(({ isSsrBuild }) => ({
             // Long-form preparation guides change on a different cadence from
             // company data and merit their own parallel browser chunk.
             { name: "directory-guides", test: /\/src\/guide-expansion(?:-\d+)?\.js$/, priority: 16 },
+            // Stable field, topic and editorial-page definitions are smaller
+            // and change on a different cadence from the catalog composition
+            // root, so keep them out of the catch-all content chunk.
+            { name: "directory-editorial", test: /\/src\/(?:expanded-content|editorial-pages)\.js$/, priority: 17 },
             // Editorial data changes far more often than the interface. Keep it in
             // a parallel, independently parsed chunk as the directory grows.
             { name: "directory-content", test: /\/src\/(?:content|expanded-content|editorial-pages|[^/]+-expansion(?:-\d+)?)\.js$/, priority: 10 },

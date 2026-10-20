@@ -343,8 +343,8 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
   },
   {
     id: "gilead-internship-program", company: "Gilead Sciences", title: "Internship Program", initials: "GS", color: "#b31b34",
-    seoTitle: "Gilead Internships 2027: GPA, Pay & Eligibility",
-    seoDescription: "Gilead's paid 10–12 week Summer 2027 internships take returning undergraduates with a 2.8 GPA. Check authorization, benefits and current postings.",
+    seoTitle: "Gilead Internship 2027: Eligibility & How to Apply",
+    seoDescription: "Gilead's paid 10–12 week internships require fall enrollment, a 2.8 GPA and no sponsorship. Check benefits, current 2027 postings and how to apply.",
     fields: ["life-sciences", "research", "business", "finance", "manufacturing"],
     firstYear: 2, years: [2, 3, 4], yearLabel: "Rising sophomores through rising seniors", pay: "Paid", location: "Foster City, CA and other Gilead or Kite sites", mode: "Hybrid; no fully remote roles",
     summary: "Gilead's paid summer internship across research, development, manufacturing, commercial and corporate functions, based at its Foster City headquarters and other Gilead and Kite sites.",
@@ -354,7 +354,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
       "Applicants must be authorized to work in the US without sponsorship. The 2027 posting reviewed specifies authorization that does not require school or employer sponsorship now or in the future.",
     ],
     timing: "Gilead describes a paid internship of 10 to 12 weeks in the summer, and the 2027 posting reviewed requires 10–12 consecutive weeks between May and August. Internship postings for Foster City were live on the review date, several of them posted in September 2026. Gilead publishes no program-wide deadline; postings sit in its Workday careers site under the Internship Group job category.",
-    status: "2027 postings live at review",
+    status: "Check current 2027 internship postings",
     url: "https://www.gilead.com/careers/opportunities/early-career-opportunities/gilead-internship-program",
     sources: [
       { name: "Paid status, length, locations, eligibility, intern benefits and how to find postings", url: "https://www.gilead.com/careers/opportunities/early-career-opportunities/gilead-internship-program" },
@@ -380,7 +380,7 @@ export const EMPLOYERS_HEALTH_PROGRAMS = [
       ["Are Gilead internships open now?", "At review on October 6, 2026, Gilead's careers site listed dozens of intern postings in Foster City, California across research, development, pharmaceutical development and manufacturing, commercial and corporate teams. Gilead publishes no single program deadline, so check each posting."],
     ],
     guideSlugs: [G.apply, G.international, G.offer],
-    verified: "2026-10-06", updated: "2026-10-15",
+    verified: "2026-10-06", updated: "2026-10-20",
   },
   {
     id: "abbott-university-internships", company: "Abbott", title: "University Internship Program", initials: "AB", color: "#008fc7",

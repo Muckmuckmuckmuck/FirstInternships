@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, currentPrograms, featuredPrograms, fieldPath, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
+import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, currentPrograms, featuredPrograms, fieldPath, footerPrograms, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
 import { LEGACY_REDIRECTS } from "../src/legacy.js";
 import { FIELD_INTERVIEW_PREP, GUIDE_INTERVIEW_PREP, INTERVIEW_PREP } from "../src/interview-prep.js";
 import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, hasPublishedCutoff, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
@@ -284,8 +284,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-18</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-19</lastmod>`), "directory freshness should reflect the current inventory release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-20</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-20</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1565,6 +1565,44 @@ test("October 19 international-affairs wave builds a sourced development and hum
 
   const fieldHtml = await readFile(`dist${fieldPath(field)}.html`, "utf8");
   assert.match(fieldHtml, /How to Get an International Affairs Internship/);
+});
+test("October 20 Search Console refresh sharpens high-impression snippets and current status", async () => {
+  const expectedTitles = new Map([
+    ["world-bank-wbg-pioneers", "World Bank Internship: Eligibility, Pay & Apply"],
+    ["nvidia-ignite", "NVIDIA Ignite 2027: Eligibility, Pay & Apply"],
+    ["capital-one-early-internship", "Capital One Early Internship: Eligibility & Housing"],
+    ["paramount-internships", "Paramount Internships: Eligibility & How to Apply"],
+    ["gilead-internship-program", "Gilead Internship 2027: Eligibility & How to Apply"],
+  ]);
+  for (const [id, title] of expectedTitles) {
+    const program = PROGRAMS.find(item => item.id === id);
+    assert.ok(program, id);
+    assert.equal(program.seoTitle, title);
+    assert.ok(program.seoDescription.length >= 120 && program.seoDescription.length <= 180, `${id}: useful search description`);
+    const html = await readFile(`dist${programPath(program)}.html`, "utf8");
+    assert.match(html, new RegExp(`<title>${title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/&/g, "&amp;")}</title>`));
+  }
+
+  const worldBank = PROGRAMS.find(program => program.id === "world-bank-wbg-pioneers");
+  const capitalOne = PROGRAMS.find(program => program.id === "capital-one-early-internship");
+  const nvidia = PROGRAMS.find(program => program.id === "nvidia-ignite");
+  assert.equal(worldBank.verified, "2026-10-20");
+  assert.equal(capitalOne.verified, "2026-10-20");
+  assert.match(nvidia.status, /ended Oct\. 18/);
+  assert.match(nvidia.steps[0], /window ended/i);
+  assert.doesNotMatch(PROGRAMS.find(program => program.id === "paramount-internships").seoDescription, /Summer 2027 status/);
+
+  const emailGuide = GUIDES.find(guide => guide.slug === "email-templates-for-internships");
+  assert.equal(emailGuide.updated, "2026-10-20");
+  assert.equal(emailGuide.title, "Internship Email: 6 Templates & Subject Lines");
+  assert.ok(emailGuide.sections.some(([heading]) => /email subject lines/i.test(heading)));
+  assert.ok(emailGuide.sections.some(([heading]) => /cold email template/i.test(heading)));
+
+  const footerIds = footerPrograms().map(([program]) => program.id);
+  assert.ok(footerIds.includes("world-bank-wbg-pioneers"));
+  assert.ok(footerIds.includes("gilead-internship-program"));
+  assert.ok(!footerIds.includes("netflix-internships"));
+  assert.ok(!footerIds.includes("meta-internships"));
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

@@ -367,8 +367,8 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
   },
   {
     id: "world-bank-wbg-pioneers", company: "World Bank Group", title: "WBG Pioneers Internship Program", initials: "WB", color: "#00538a",
-    seoTitle: "World Bank Internship 2027: Eligibility & Deadlines",
-    seoDescription: "The World Bank WBG Pioneers internship accepts final-year undergraduates. See 2027 application months, required documents, pay details and the 3-role limit.",
+    seoTitle: "World Bank Internship: Eligibility, Pay & Apply",
+    seoDescription: "World Bank WBG Pioneers accepts final-year undergraduates, opens twice yearly and limits applicants to three roles. Check pay, documents and current positions.",
     fields: ["public-service", "finance", "research", "engineering"],
     firstYear: null, years: [], yearLabel: "Final-year undergraduates", pay: "Check opening", location: "Washington, DC and country offices", mode: "Position-specific",
     summary: "The World Bank Group's structured internship program, with separate undergraduate and postgraduate tracks and placements in Washington, DC and country offices.",
@@ -380,7 +380,7 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
       "The program welcomes interest across operations and support functions: economics, investment and portfolio management, human development (public health, education, nutrition and population), social sciences, agriculture, environment, engineering, urban planning, natural resources management, private-sector development, and corporate support such as accounting, communications, HR, IT and finance.",
     ],
     timing: "The program page lists two cycles: spring/summer, with applications in January–February, a longlist and assessment in February, interviews in March and selection in April; and winter/fall, with applications in July–August, a longlist and assessment in August, interviews in September and selection in October. It lists a paid internship with a competitive hourly salary among the program features but also describes no-fee internships, so confirm whether a particular position is paid. At review the page listed one undergraduate position (a World Bank Treasury intern in Washington, DC) and one postgraduate position in Seoul.",
-    status: "Spring/summer applications Jan–Feb",
+    status: "Current WBG Pioneers roles listed",
     url: "https://www.worldbank.org/ext/en/careers/talent-programs/wbg-pioneers",
     sources: [
       { name: "WBG Pioneers: tracks, eligibility, cycle calendar, materials and application limit", url: "https://www.worldbank.org/ext/en/careers/talent-programs/wbg-pioneers" },
@@ -406,7 +406,7 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
       ["Is WBG Explorers an internship for students?", "No. WBG Explorers is a two-year contract in country offices for people who already hold a bachelor's degree and are nationals of a donor or developed country. A current student looking for an internship should use WBG Pioneers."],
     ],
     guideSlugs: [G.cover, G.international, G.files],
-    verified: "2026-10-14", updated: "2026-10-15",
+    verified: "2026-10-20", updated: "2026-10-20",
   },
   {
     id: "nytimes-internships-outside-newsroom", company: "The New York Times", title: "Internships Outside the Newsroom", initials: "NT", color: "#333333",

@@ -474,14 +474,14 @@ export const FOOTER_GUIDE_LINKS = [
 // (Search Console impressions, October 2026), labelled the way they search.
 // Keep this short: it is a handful of high-demand pages, not a directory.
 export const FOOTER_PROGRAM_LINKS = [
+  ["world-bank-wbg-pioneers", "World Bank internship"],
   ["nvidia-ignite", "NVIDIA Ignite"],
   ["nsa-summer-internships", "NSA internships"],
   ["capital-one-early-internship", "Capital One Early Internship"],
   ["evercore-investment-banking-summer-analyst", "Evercore summer analyst"],
   ["paramount-internships", "Paramount internships"],
-  ["netflix-internships", "Netflix internships"],
+  ["gilead-internship-program", "Gilead internships"],
   ["pfizer-futures-internship", "Pfizer summer internship"],
-  ["meta-internships", "Meta summer internship"],
 ];
 export const footerPrograms = () => FOOTER_PROGRAM_LINKS.map(([id, label]) => [PROGRAMS.find(program => program.id === id), label]).filter(([program]) => program);
 export const footerGuides = () => FOOTER_GUIDE_LINKS.map(([slug, label]) => [GUIDES.find(guide => guide.slug === slug), label]).filter(([guide]) => guide);

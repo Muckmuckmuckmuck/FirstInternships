@@ -71,7 +71,7 @@ function trackPublicEvent(name) {
   // newsletter preference, or other user input. Vercel still associates the
   // event with the public page path, which can identify the program guide.
   window.va ||= function (...args) { (window.vaq ||= []).push(args); };
-  window.va("event", name);
+  window.va("event", { name });
 }
 // A public site identifier that ships in every page, not a credential. The
 // beacon is installed here rather than by Cloudflare's "automatic" injection,

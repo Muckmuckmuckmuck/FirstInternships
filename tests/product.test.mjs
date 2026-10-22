@@ -289,6 +289,7 @@ test("the partnership page qualifies revenue leads with auditable inventory and 
   for (const text of ["Ask about newsletter sponsorship", "Send an employer campaign brief", "Ask about future display inventory", "How a campaign moves from brief to report"]) assert.ok(partners.includes(text), text);
   for (const event of ["partner_newsletter_inquiry", "partner_employer_inquiry", "partner_display_inquiry", "partner_general_inquiry"]) assert.match(partners, new RegExp(`data-partner-event="${event}"`));
   assert.match(source, /trackPublicEvent\("official_apply_click"\)/);
+  assert.match(source, /window\.va\("event", \{ name \}\)/, "custom events must use Vercel's supported event payload");
   assert.match(source, /no email, planner state,[\s\S]*newsletter preference,[\s\S]*public page path/);
   assert.match(partners, /not guaranteed impressions, clicks or campaign results/i);
   assert.doesNotMatch(partners, /we guarantee|guaranteed campaign results/i);

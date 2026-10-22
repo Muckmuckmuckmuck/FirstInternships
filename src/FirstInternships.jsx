@@ -64,6 +64,15 @@ function usePlanner() {
 // page address only when a visitor submits the search form, and is recorded as
 // such. Like the AdSense flag, this is a launch gate: off until enabled.
 const analyticsEnabled = () => import.meta.env.VITE_ANALYTICS_ENABLED === "true";
+function trackPublicEvent(name) {
+  if (typeof window === "undefined" || !analyticsEnabled()) return;
+  // Vercel's documented queue keeps the click safe when its analytics script
+  // is still loading. Events add no email, planner state, search term,
+  // newsletter preference, or other user input. Vercel still associates the
+  // event with the public page path, which can identify the program guide.
+  window.va ||= function (...args) { (window.vaq ||= []).push(args); };
+  window.va("event", name);
+}
 // A public site identifier that ships in every page, not a credential. The
 // beacon is installed here rather than by Cloudflare's "automatic" injection,
 // which was unusable while DNS was unproxied. Now that the zone is proxied,
@@ -462,24 +471,49 @@ function Contact() {
   </div>;
 }
 function Partners() {
-  const subject = encodeURIComponent("FirstInternships partnership inquiry");
-  const body = encodeURIComponent("Organization:\nContact name and role:\nCampaign goal:\nStudent audience:\nTiming:\nBudget range:\nDestination URL:\nAnything we should verify:\n");
+  const inquiry = (format, event) => {
+    const subject = encodeURIComponent(`FirstInternships ${format} inquiry`);
+    const body = encodeURIComponent(`Organization:\nContact name and role:\nFormat: ${format}\nCampaign goal:\nStudent audience:\nTiming:\nBudget range:\nDestination URL:\nAnything we should verify:\n`);
+    return { href: `mailto:${CONTACT}?subject=${subject}&body=${body}`, event };
+  };
+  const products = [
+    {
+      number: "01", title: "Newsletter sponsorship", event: "partner_newsletter_inquiry",
+      description: "One clearly labeled sponsor block in an eligible permission-based digest. Any audience description comes from aggregate, consented preferences; subscriber addresses and individual profiles never leave FirstInternships.",
+      details: ["One sponsor per eligible issue", "Audience and results reported only when measurable", "Creative and destination reviewed before approval"],
+      cta: "Ask about newsletter sponsorship",
+    },
+    {
+      number: "02", title: "Employer campaigns", event: "partner_employer_inquiry",
+      description: "A scoped campaign for a genuine undergraduate opportunity or employer message. Distribution can be paid; source-backed eligibility, availability and ordinary directory ordering cannot.",
+      details: ["Official destination and claims required", "Placement, dates and label agreed in writing", "No promises of applicants, interviews or hires"],
+      cta: "Send an employer campaign brief",
+    },
+    {
+      number: "03", title: "Display advertising", event: "partner_display_inquiry",
+      description: "Reserved, labeled placements on relevant directory and guide pages after the advertising account, regional consent system and production quality checks are active.",
+      details: ["Separate from internship and apply controls", "Modest density with stable page layout", "Launch remains subject to AdSense and consent approval"],
+      cta: "Ask about future display inventory",
+    },
+  ];
+  const general = inquiry("partnership", "partner_general_inquiry");
   return <div className="container"><Breadcrumbs items={[["Advertise or partner", null]]} />
     <PageIntro eyebrow="Commercial partnerships / clearly labeled" title="Reach college students while they plan their next move." description="FirstInternships is building a focused audience of college students researching internships, application requirements and career preparation. We consider transparent campaigns that help that audience without changing our editorial facts or rankings." />
     <div className="partner-principles"><span><strong>Free forever for students</strong>Commercial support funds access instead of putting the directory behind a paywall.</span><span><strong>Clear commercial labels</strong>Paid placements never imitate editorial guidance.</span><span><strong>No list sales</strong>Subscriber and account data are not sold to partners.</span></div>
+    <section className="partner-snapshot" aria-labelledby="partner-snapshot-title"><div><p className="eyebrow">Auditable editorial inventory</p><h2 id="partner-snapshot-title">A focused college-internship audience, not an invented reach claim.</h2><p>These counts come directly from the maintained site inventory. They describe the available editorial surfaces—not guaranteed impressions, clicks or campaign results.</p></div><dl><div><dt>{PROGRAMS.length}</dt><dd>sourced program guides</dd></div><div><dt>{GUIDES.length}</dt><dd>application playbooks</dd></div><div><dt>{FIELDS.length}</dt><dd>field hubs</dd></div><div><dt>{YEARS.length}</dt><dd>college-year paths</dd></div></dl></section>
     <section className="section partner-section"><div className="section-heading"><div><p className="eyebrow">Ways to work together</p><h2>Three revenue products.<br />One editorial wall.</h2></div></div>
-      <div className="partner-grid">
-        <article><span>01</span><h3>Newsletter sponsorship</h3><p>A clearly labeled sponsor block for a relevant student product, service or recruiting message. Availability depends on audience size, segment fit and newsletter performance.</p></article>
-        <article><span>02</span><h3>Employer campaigns</h3><p>Promote a genuine college opportunity or employer brand across agreed placements. Sponsorship can buy distribution, never favorable eligibility claims or hidden ranking influence.</p></article>
-        <article><span>03</span><h3>Display advertising</h3><p>Reserved, labeled placements on relevant directory and guide pages once the advertising account, consent system and quality checks are fully active.</p></article>
-      </div>
+      <div className="partner-grid">{products.map(product => {
+        const contact = inquiry(product.title.toLowerCase(), product.event);
+        return <article key={product.number}><span>{product.number}</span><h3>{product.title}</h3><p>{product.description}</p><ul>{product.details.map(detail => <li key={detail}>{detail}</li>)}</ul><a className="text-link" data-partner-event={contact.event} href={contact.href}>{product.cta} <ArrowUpRight size={14} /></a></article>;
+      })}</div>
     </section>
     <div className="article-layout partner-details"><article className="prose">
       <section><h2>What to include in an inquiry</h2><p>Tell us who you represent, the student audience you want to reach, campaign timing, the exact destination page, the format you are considering and a realistic budget range. For an internship campaign, include the official opening and the written eligibility rules. We will not invent reach, fit or outcomes that we cannot measure.</p></section>
       <section><h2>What a partnership cannot buy</h2><ul><li>Changes to sourced eligibility, deadlines, pay, location or availability.</li><li>Unlabeled placement inside editorial recommendations or application buttons.</li><li>A promise of ranking, clicks, applicants, interviews or hires.</li><li>Access to account information, subscriber addresses or individual student preferences.</li></ul></section>
       <section><h2>How proposals are evaluated</h2><p>Audience usefulness comes first, followed by claim accuracy, destination quality, timing, disclosure requirements and whether the campaign can run without making the site harder to use. We may decline products or messages that create student risk, imitate an employer application, make unsupported outcome claims or conflict with the directory's editorial standards.</p></section>
+      <section><h2>How a campaign moves from brief to report</h2><ol className="partner-process"><li><strong>Qualify the destination.</strong> We review the organization, official destination, claims, student fit and disclosure needs before discussing placement.</li><li><strong>Scope the inventory.</strong> The written plan identifies the commercial label, surface, audience, dates, creative owner, review rights and cancellation terms.</li><li><strong>Report only what exists.</strong> Any recap uses aggregate delivery, click or placement data the active systems can actually measure. We do not manufacture attribution or expose individual student records.</li></ol></section>
       <section><h2>What your support keeps free</h2><p>Students do not pay to browse internship guides, use the filters, compare programs, review deadlines or keep a private browser-based application plan. Commercial revenue supports source review, publishing and infrastructure without turning student access into the product.</p></section>
-    </article><aside className="article-sidebar"><div className="quick-check"><p className="eyebrow">Start a conversation</p><h2>Send the campaign facts.</h2><p>Nothing is booked automatically. An email lets us evaluate fit, inventory and disclosure before discussing terms.</p><a className="button" href={`mailto:${CONTACT}?subject=${subject}&body=${body}`}>Open partnership email <ArrowUpRight size={16} /></a><a className="button secondary" href="/about">Read our editorial standards</a><p className="small-note">Do not send subscriber lists, student records, passwords or confidential applicant information.</p></div></aside></div>
+    </article><aside className="article-sidebar"><div className="quick-check"><p className="eyebrow">Start a conversation</p><h2>Send the campaign facts.</h2><p>Choose a format above for a tailored brief, or open the general inquiry. Nothing is booked automatically; fit, inventory and disclosure are reviewed first.</p><a className="button" data-partner-event={general.event} href={general.href}>Open partnership email <ArrowUpRight size={16} /></a><a className="button secondary" href="/about">Read our editorial standards</a><p className="small-note">Do not send subscriber lists, student records, passwords or confidential applicant information.</p></div></aside></div>
     <Questions title="Partnership questions" items={[
       ["Can an employer pay to change its program page?", "No. Program facts remain tied to official sources. A paid campaign may link to a real opportunity in a separately labeled placement, but payment does not change eligibility, status, editorial language or ordinary directory ordering."],
       ["Do you sell your newsletter list?", "No. We do not provide subscriber addresses, account records or individual preferences to advertisers or listed employers."],
@@ -494,11 +528,27 @@ function SiteContent({ pathname = "/" }) {
   const [stale, setStale] = useState(false);
   const pageReviewDate = page.program?.verified || null;
   useEffect(() => {
+    if (!analyticsEnabled()) return;
+    const measureConversion = event => {
+      const link = event.target.closest?.("a");
+      if (!link) return;
+      if (link.dataset.partnerEvent) {
+        trackPublicEvent(link.dataset.partnerEvent);
+        return;
+      }
+      const officialAction = link.closest("#how-to-apply, .quick-check");
+      if (page.type === "program" && officialAction && link.href === page.program.url) trackPublicEvent("official_apply_click");
+    };
+    document.addEventListener("click", measureConversion);
+    return () => document.removeEventListener("click", measureConversion);
+  }, [page.type, page.program]);
+  useEffect(() => {
     // Client-only so the first server render and first hydration render match.
     // Restrict both providers to the public hostname so local development and
     // deployment previews never pollute production traffic.
     if (!analyticsEnabled() || window.location.hostname !== CF_BEACON_HOST) return;
     if (!document.querySelector("script[data-fi-analytics]")) {
+      window.va ||= function (...args) { (window.vaq ||= []).push(args); };
       const script = document.createElement("script"); script.defer = true; script.dataset.fiAnalytics = "true";
       script.src = "/_vercel/insights/script.js";
       document.head.appendChild(script);

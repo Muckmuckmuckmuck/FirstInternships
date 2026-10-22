@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-22 — commercial conversion and measurement release
+
+### Baseline
+
+- The latest available 28-day Search Console window remained September 22–October 19: 406 clicks, 42,734 impressions, 1.0% CTR and average position 9.6.
+- The highest-impression employer pages had already received source-backed snippet and content work on October 20–21. They were intentionally left stable so the first few days of delayed Search Console data do not trigger another rewrite.
+- Production already loaded cookieless Vercel and Cloudflare page analytics. AdSense was correctly disabled because publisher approval, placement identifiers and applicable consent configuration had not been established in the repository or live page.
+- The partner page had one generic inquiry action and explained the editorial boundary, but it did not show auditable inventory or let a prospect start with a product-specific brief.
+
+### Changes
+
+- Added a server-rendered commercial inventory snapshot computed from the maintained program, guide, field and college-year collections. It explicitly distinguishes editorial surfaces from promised reach or campaign results.
+- Turned newsletter sponsorship, employer campaigns and future display advertising into separately scoped offers with requirements, guardrails and prefilled inquiry briefs.
+- Added an aggregate campaign process from destination review through reporting, while preserving the ban on list sales, paid editorial facts and ordinary-rank purchases.
+- Added anonymous Vercel custom-event hooks for partnership inquiry starts and official-application button clicks. They add no planner data, search term, email address, newsletter preference or other user input; Vercel still associates each event with its public page path, and availability depends on the active Vercel plan.
+
+### Measurement
+
+- Primary commercial metric: qualified partnership inquiry starts by product, followed by manually verified inquiry quality and revenue rather than raw email clicks alone.
+- Supporting utility metric: aggregate official-application button clicks, used to understand whether search traffic reaches a useful next action.
+- Guardrails: no new ad density, no unapproved AdSense activation, no subscriber-data sharing, no student-content gate and no personal or planner data in analytics.
+- Reassess the commercial page after enough visits to observe a real funnel. Evaluate the October 20–21 search changes only after their documented 200-impression or 28-day threshold.
+
 ## 2026-10-21 — application timing and interview-answer expansion
 
 ### Baseline

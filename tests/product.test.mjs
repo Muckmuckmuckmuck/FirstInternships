@@ -279,6 +279,20 @@ test("the free-forever promise protects student access while commercial revenue 
   assert.match(strategy, /AdSense baseline:[\s\S]*primary passive layer/);
   assert.match(strategy, /Never charge an application fee, sell ordinary directory rank, sell subscriber data/);
 });
+test("the partnership page qualifies revenue leads with auditable inventory and anonymous events", async () => {
+  const partners = render("/partners");
+  const source = await readFile("src/FirstInternships.jsx", "utf8");
+
+  for (const [count, label] of [[PROGRAMS.length, "sourced program guides"], [GUIDES.length, "application playbooks"], [FIELDS.length, "field hubs"], [YEARS.length, "college-year paths"]]) {
+    assert.match(partners, new RegExp(`>${count}<[\\s\\S]{0,100}${label}`), label);
+  }
+  for (const text of ["Ask about newsletter sponsorship", "Send an employer campaign brief", "Ask about future display inventory", "How a campaign moves from brief to report"]) assert.ok(partners.includes(text), text);
+  for (const event of ["partner_newsletter_inquiry", "partner_employer_inquiry", "partner_display_inquiry", "partner_general_inquiry"]) assert.match(partners, new RegExp(`data-partner-event="${event}"`));
+  assert.match(source, /trackPublicEvent\("official_apply_click"\)/);
+  assert.match(source, /no email, planner state,[\s\S]*newsletter preference,[\s\S]*public page path/);
+  assert.match(partners, /not guaranteed impressions, clicks or campaign results/i);
+  assert.doesNotMatch(partners, /we guarantee|guaranteed campaign results/i);
+});
 test("planner data is validated and deduplicated", () => {
   assert.deepEqual(sanitizePlanner(null), { saved: [], entries: {} });
   assert.deepEqual(sanitizePlanner({ saved: "not-an-array" }), { saved: [], entries: {} });

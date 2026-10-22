@@ -69,6 +69,12 @@ Review these metrics together each week:
 
 Do not optimize revenue per session in isolation. A change that raises short-term ad revenue but reduces search traffic, trust or subscriber retention can reduce total enterprise value.
 
+### Current measurement boundary
+
+Production page measurement uses cookieless Vercel and Cloudflare Web Analytics and never receives browser-planner data. When the active Vercel plan supports custom events, the public interface queues anonymous events for three product-specific partnership inquiry links, the general partnership inquiry and official-application button clicks. These events add no email address, search term, saved-program state, note, checklist, newsletter preference or other visitor input. Vercel associates an event with its public page path, so an application click can be analyzed by public program-guide route without adding a private identifier. Cloudflare Web Analytics does not currently support custom events, so its role remains aggregate page and performance measurement.
+
+The `/partners` page publishes only inventory counts computed from maintained site data: sourced program guides, original application playbooks, field hubs and college-year paths. Those counts describe editorial surfaces, not reach or results. Do not publish traffic, subscriber, open, click or conversion figures in a media kit until the reporting system can reproduce the number and its measurement window.
+
 ## Next commercial milestones
 
 1. Connect first-party Search Console/analytics reporting and establish a weekly baseline.

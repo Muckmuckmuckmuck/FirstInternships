@@ -26,7 +26,11 @@
 .partner-grid p{margin:0;color:var(--muted);font-size:12px;line-height:1.8}
 .partner-details{margin-top:25px}
 .partner-details .quick-check .button{justify-content:center}
-@media(max-width:760px){.partner-principles,.partner-grid{grid-template-columns:1fr}.partner-principles{gap:1px}.partner-section{padding-top:30px}.partner-grid article{padding:24px}}
+.partner-snapshot{display:grid;grid-template-columns:minmax(0,1fr) minmax(430px,.9fr);gap:55px;align-items:center;margin:35px 0 10px;padding:34px;border:1px solid var(--line);border-radius:18px;background:#fff}
+.partner-snapshot h2{max-width:620px;margin:6px 0 12px;font-size:30px;line-height:1.25;letter-spacing:-.8px}.partner-snapshot p{margin:0;color:var(--muted);font-size:12px;line-height:1.8}.partner-snapshot dl{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin:0;border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--line)}.partner-snapshot dl>div{padding:20px;background:#f7f8f2}.partner-snapshot dt{color:var(--forest);font-family:var(--serif);font-size:31px;font-weight:700;line-height:1}.partner-snapshot dd{margin:7px 0 0;color:var(--muted);font-size:10px;line-height:1.45;text-transform:uppercase;letter-spacing:.04em}
+.partner-grid article{display:flex;flex-direction:column}.partner-grid article ul{margin:20px 0 24px;padding:18px 0 0 18px;border-top:1px solid #d6dccb}.partner-grid article li{margin:0 0 9px;color:var(--muted);font-size:10px;line-height:1.6}.partner-grid article .text-link{margin-top:auto;align-self:flex-start}.partner-process strong{color:var(--ink)}
+@media(max-width:900px){.partner-snapshot{grid-template-columns:1fr;gap:25px}.partner-snapshot dl{max-width:600px}}
+@media(max-width:760px){.partner-principles,.partner-grid{grid-template-columns:1fr}.partner-principles{gap:1px}.partner-section{padding-top:30px}.partner-grid article{padding:24px}.partner-snapshot{padding:24px;margin-top:22px}.partner-snapshot h2{font-size:25px}.partner-snapshot dl{grid-template-columns:1fr 1fr}.partner-snapshot dl>div{padding:16px}.partner-snapshot dt{font-size:26px}}
 
 .free-forever{display:flex;align-items:center;justify-content:space-between;gap:42px;margin-top:34px;padding:32px 36px;border:1px solid #a9b997;border-radius:16px;background:linear-gradient(120deg,#eef4df,#f8f8f1)}
 .free-forever h2{margin:0 0 9px;font-size:28px}

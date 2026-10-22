@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ArrowRight, BellRing, Check, Loader2, LogOut, Mail, ShieldCheck, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { FIELDS, PROGRAMS, YEARS } from "./content.js";
+import { trackPublicEvent } from "./analytics.js";
 import {
   ACCOUNT_PATH,
   accountAuthRedirect,
@@ -132,6 +133,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
         }
         try {
           await completion.promise;
+          trackPublicEvent("newsletter_opt_in_completed");
         } catch (error) {
           if (pendingCompletionRef.current.promise === completion.promise) {
             pendingCompletionRef.current = { intentId: "", promise: null };
@@ -232,6 +234,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
         },
       });
       if (error) throw error;
+      trackPublicEvent(consent ? "newsletter_email_link_sent" : "account_email_link_sent");
       patchState({
         busy: "",
         magicLinkSentTo: cleanEmail,
@@ -274,6 +277,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
       if (!consent) clearPendingNewsletterPreferences();
       const client = clientRef.current || await getAccountClient();
       clientRef.current = client;
+      trackPublicEvent(consent ? "newsletter_google_start" : "account_google_start");
       await signInWithGoogle(client, { source, intentId: pendingIntent?.intentId || "" });
       patchState({ busy: "" });
       return true;
@@ -298,6 +302,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
     patchState({ busy: "saving", feedback: null });
     try {
       await postNewsletterSubscription(clientRef.current, { consent, preferences: cleanPreferences });
+      if (consent) trackPublicEvent("newsletter_preferences_saved");
       await loadSession(state.session, { finishPending: false });
       patchState({
         busy: "",

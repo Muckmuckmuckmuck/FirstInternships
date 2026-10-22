@@ -2,6 +2,28 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-22 — directory CTR and owned-audience measurement
+
+### Baseline
+
+- Window: September 23–October 20, 2026, the latest complete 28 days available in Search Console on October 22.
+- Site totals: 447 clicks, 46,700 impressions, 1.0% CTR and average position 9.5.
+- `/internships` recorded 525 impressions, no clicks and average position 10.1. Search Console exposed only a small privacy-filtered query sample, including `freshers internship programs` and `college internships`, so the intervention stays on the existing broad directory rather than creating new keyword pages.
+- The highest-impression employer pages received source-backed snippet work on October 20–21. They remain unchanged in this release because the current report mostly predates those edits and cannot yet judge them responsibly.
+
+### Changes
+
+- Changed the existing directory title and visible H1 to lead with the computed inventory count and the site's differentiator: college-year, field and eligibility organization.
+- Sharpened the directory description around sourced internship and early-career pathways while keeping the full useful directory visible without an account.
+- Added fixed-name, privacy-minimized conversion events for Google account starts, email-link starts, completed newsletter opt-ins and successful preference saves. Events contain no email, year, field, location, planner state or other visitor-supplied value.
+
+### Measurement
+
+- Primary search metric: `/internships` clicks and CTR, interpreted together with average position.
+- Primary owned-audience metric: account starts that progress to completed, explicitly consented newsletter opt-ins.
+- Guardrails: browsing remains ungated; newsletter consent remains initially unchecked; no personal or planner data enters analytics; no recently refreshed employer snippet is rewritten on delayed evidence.
+- Reassess `/internships` after at least another 200 impressions. Reassess the October 20–21 employer snippet cohort after its documented 200-impression or 28-day threshold, not after a few days.
+
 ## 2026-10-22 — commercial conversion and measurement release
 
 ### Baseline

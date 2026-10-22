@@ -3,7 +3,7 @@
 Independent college internship directory. Program facts are reviewed against official sources; editorial preparation advice is separate. Not a live vacancies feed.
 
 - [College Internships by Class Year](https://firstinternships.com/)
-- [College Internships by Year & Field](https://firstinternships.com/internships)
+- [520 College Internships by Year, Field & Eligibility](https://firstinternships.com/internships)
 - [Freshman Internships: 52 Programs Open to First-Years](https://firstinternships.com/freshman-internships)
 - [Sophomore Internships: 84 Programs for Second-Years](https://firstinternships.com/sophomore-internships)
 - [Junior Internships: 125 Programs for College Juniors](https://firstinternships.com/junior-internships)

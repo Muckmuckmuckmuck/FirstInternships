@@ -228,7 +228,8 @@ test("route resolution supports clean URLs and rejects unknown routes", () => {
 });
 test("October 21 growth release strengthens directory discovery and opens an ethical revenue path", async () => {
   const directory = resolvePage("/internships");
-  assert.equal(directory.title, "College Internships by Year & Field");
+  assert.equal(directory.title, `${PROGRAMS.length} College Internships by Year, Field & Eligibility`);
+  assert.match(directory.description, new RegExp(`Browse ${PROGRAMS.length} sourced college internship`));
   assert.ok(directory.description.includes(String(PROGRAMS.length)));
   assert.ok(directory.description.length >= 120 && directory.description.length <= 180);
 
@@ -282,6 +283,7 @@ test("the free-forever promise protects student access while commercial revenue 
 test("the partnership page qualifies revenue leads with auditable inventory and anonymous events", async () => {
   const partners = render("/partners");
   const source = await readFile("src/FirstInternships.jsx", "utf8");
+  const analyticsSource = await readFile("src/analytics.js", "utf8");
 
   for (const [count, label] of [[PROGRAMS.length, "sourced program guides"], [GUIDES.length, "application playbooks"], [FIELDS.length, "field hubs"], [YEARS.length, "college-year paths"]]) {
     assert.match(partners, new RegExp(`>${count}<[\\s\\S]{0,100}${label}`), label);
@@ -289,10 +291,22 @@ test("the partnership page qualifies revenue leads with auditable inventory and 
   for (const text of ["Ask about newsletter sponsorship", "Send an employer campaign brief", "Ask about future display inventory", "How a campaign moves from brief to report"]) assert.ok(partners.includes(text), text);
   for (const event of ["partner_newsletter_inquiry", "partner_employer_inquiry", "partner_display_inquiry", "partner_general_inquiry"]) assert.match(partners, new RegExp(`data-partner-event="${event}"`));
   assert.match(source, /trackPublicEvent\("official_apply_click"\)/);
-  assert.match(source, /window\.va\("event", \{ name \}\)/, "custom events must use Vercel's supported event payload");
-  assert.match(source, /no email, planner state,[\s\S]*newsletter preference,[\s\S]*public page path/);
+  assert.match(analyticsSource, /window\.va\("event", \{ name \}\)/, "custom events must use Vercel's supported event payload");
+  assert.match(analyticsSource, /never add email addresses,[\s\S]*newsletter preferences,[\s\S]*planner data/);
   assert.match(partners, /not guaranteed impressions, clicks or campaign results/i);
   assert.doesNotMatch(partners, /we guarantee|guaranteed campaign results/i);
+});
+test("account and newsletter conversion events stay aggregate and contain no visitor data", async () => {
+  const [accountSource, analyticsSource] = await Promise.all([
+    readFile("src/Account.jsx", "utf8"),
+    readFile("src/analytics.js", "utf8"),
+  ]);
+  for (const event of ["account_google_start", "newsletter_google_start", "account_email_link_sent", "newsletter_email_link_sent", "newsletter_opt_in_completed", "newsletter_preferences_saved"]) {
+    assert.match(accountSource, new RegExp(`"${event}"`), event);
+  }
+  assert.equal((accountSource.match(/trackPublicEvent\(/g) || []).length, 4);
+  assert.match(analyticsSource, /window\.va\("event", \{ name \}\)/);
+  assert.doesNotMatch(analyticsSource, /properties|email:|preferences:|planner:/i);
 });
 test("planner data is validated and deduplicated", () => {
   assert.deepEqual(sanitizePlanner(null), { saved: [], entries: {} });
@@ -354,7 +368,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
   assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-21</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-21</lastmod>`), "directory freshness should reflect the current inventory release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-22</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));

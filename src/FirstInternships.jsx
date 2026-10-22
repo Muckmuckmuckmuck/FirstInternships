@@ -4,6 +4,7 @@ import { CONTACT, FIELDS, GUIDES, PROGRAMS, TOPICS, VERIFIED, YEARS, currentProg
 import { CalendarDownload, CompareButton, ComparisonPage, ComparisonProvider, DeadlineBadge, DeadlinesPage, useReviewClock } from "./DirectoryTools.jsx";
 import { deadlineState, filterQuery, hasPublishedCutoff, readFilters, sortPrograms } from "./directory-tools.js";
 import { ABOUT_FAQS, ABOUT_SECTIONS, CONTACT_LIMITS, CONTACT_TOPICS } from "./editorial-pages.js";
+import { analyticsEnabled, trackPublicEvent } from "./analytics.js";
 import ApplicationTimeline from "./ApplicationTimeline.jsx";
 import { AccountConversionCTA, AccountPage, AccountProvider, SignupPrompt, accountFeatureEnabled, useAccount } from "./Account.jsx";
 import SavedPlanner from "./SavedPlanner.jsx";
@@ -63,16 +64,6 @@ function usePlanner() {
 // event — see docs/CLAUDE_CODE_PLAYBOOK.md §13. A search term is part of the
 // page address only when a visitor submits the search form, and is recorded as
 // such. Like the AdSense flag, this is a launch gate: off until enabled.
-const analyticsEnabled = () => import.meta.env.VITE_ANALYTICS_ENABLED === "true";
-function trackPublicEvent(name) {
-  if (typeof window === "undefined" || !analyticsEnabled()) return;
-  // Vercel's documented queue keeps the click safe when its analytics script
-  // is still loading. Events add no email, planner state, search term,
-  // newsletter preference, or other user input. Vercel still associates the
-  // event with the public page path, which can identify the program guide.
-  window.va ||= function (...args) { (window.vaq ||= []).push(args); };
-  window.va("event", { name });
-}
 // A public site identifier that ships in every page, not a credential. The
 // beacon is installed here rather than by Cloudflare's "automatic" injection,
 // which was unusable while DNS was unproxied. Now that the zone is proxied,
@@ -575,7 +566,7 @@ function SiteContent({ pathname = "/" }) {
     {stale && <p className="storage-warning">This program was last reviewed on {reviewLabel(pageReviewDate)}. Check its official sources for the current cycle.</p>}
     <main id="main">
       {page.type === "home" && <Home planner={planner} />}
-      {page.type === "directory" && <><div className="container"><Breadcrumbs items={[["Internship directory", null]]} /><PageIntro eyebrow="College only. Application-ready." title="College Internship Directory" description={page.description} /><YearLinks /><FieldLinks /><AccountConversionCTA compact source="directory-page" /></div><Board planner={planner} /></>}
+      {page.type === "directory" && <><div className="container"><Breadcrumbs items={[["Internship directory", null]]} /><PageIntro eyebrow="College only. Application-ready." title={page.title} description={page.description} /><YearLinks /><FieldLinks /><AccountConversionCTA compact source="directory-page" /></div><Board planner={planner} /></>}
       {["year", "field"].includes(page.type) && <Collection page={page} planner={planner} />}
       {page.type === "topic" && <TopicPage topic={page.topic} planner={planner} />}
       {page.type === "program" && <ProgramPage program={page.program} planner={planner} />}

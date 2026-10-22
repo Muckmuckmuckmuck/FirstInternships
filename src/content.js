@@ -608,7 +608,7 @@ export function resolvePage(pathname) {
   if (topic) return { type: "topic", path, topic, title: topic.title, description: topic.description };
   const basic = {
     "/": ["home", "College Internships by Class Year", "College internship pathways with sourced eligibility, application guides, and a free personal application tracker. First-year students through seniors."],
-    "/internships": ["directory", "College Internships by Year & Field", `Browse ${PROGRAMS.length} college internship pathways by freshman, sophomore, junior or senior eligibility, field, pay and verified application details.`],
+    "/internships": ["directory", `${PROGRAMS.length} College Internships by Year, Field & Eligibility`, `Browse ${PROGRAMS.length} sourced college internship and early-career pathways by freshman, sophomore, junior or senior eligibility, field, pay and verified application details.`],
     "/guides": ["guides", "College Internship Application Guides", "College internship guides for finding roles, application volume, resumes, career fairs, interviews, portal statuses, remote work, relocation, offers, and starting well."],
     "/internship-deadlines": ["deadlines", "College Internship Deadlines 2027: Application Calendar", "Published 2027 college internship deadlines from NASA, NIH, the White House, Pfizer, Novartis and more, with time zones, eligibility links and a downloadable calendar."],
     "/application-timeline": ["timeline", "College Internship Application Timeline Builder", "Build a personal college internship preparation timeline, plan references and documents, and download a checklist or all-day calendar. Free; no account needed."],

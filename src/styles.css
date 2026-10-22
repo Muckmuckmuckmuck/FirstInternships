@@ -27,3 +27,9 @@
 .partner-details{margin-top:25px}
 .partner-details .quick-check .button{justify-content:center}
 @media(max-width:760px){.partner-principles,.partner-grid{grid-template-columns:1fr}.partner-principles{gap:1px}.partner-section{padding-top:30px}.partner-grid article{padding:24px}}
+
+.free-forever{display:flex;align-items:center;justify-content:space-between;gap:42px;margin-top:34px;padding:32px 36px;border:1px solid #a9b997;border-radius:16px;background:linear-gradient(120deg,#eef4df,#f8f8f1)}
+.free-forever h2{margin:0 0 9px;font-size:28px}
+.free-forever p:not(.eyebrow){max-width:820px;margin:0;color:#50604f;font-size:13px;line-height:1.75}
+.free-forever .button{flex-shrink:0;white-space:nowrap}
+@media(max-width:760px){.free-forever{display:block;margin-top:24px;padding:26px 24px}.free-forever h2{font-size:24px}.free-forever .button{width:100%;margin-top:20px;white-space:normal}}

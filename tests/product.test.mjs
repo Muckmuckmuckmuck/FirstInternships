@@ -235,7 +235,7 @@ test("October 21 growth release strengthens directory discovery and opens an eth
   const partners = resolvePage("/partners");
   assert.equal(partners.type, "partners");
   assert.equal(partners.title, "Advertise to College Students | FirstInternships");
-  assert.match(partners.description, /clearly labeled/);
+  assert.match(partners.description, /labeled sponsorships/);
   const html = render("/partners");
   assert.equal((html.match(/<h1(?:\s|>)/g) || []).length, 1);
   for (const text of ["Newsletter sponsorship", "Employer campaigns", "Display advertising", "Open partnership email", "No list sales"]) assert.ok(html.includes(text), text);
@@ -245,6 +245,23 @@ test("October 21 growth release strengthens directory discovery and opens an eth
   const built = await readFile("dist/partners.html", "utf8");
   assert.match(built, /<link rel="canonical" href="https:\/\/firstinternships\.com\/partners">/);
   assert.match(built, /<meta name="robots" content="index, follow, max-image-preview:large">/);
+});
+test("the free-forever promise protects student access while commercial revenue stays separate", async () => {
+  const home = render("/");
+  const about = render("/about");
+  const partners = render("/partners");
+  const accountSource = await readFile("src/Account.jsx", "utf8");
+  const strategy = await readFile("docs/MONETIZATION_STRATEGY.md", "utf8");
+
+  assert.match(home, /Free forever\. No premium tier between you and the facts\./);
+  assert.match(home, /href="\/about#funding"/);
+  assert.match(home, /Free forever for college students/);
+  assert.match(about, /The directory, application guides, deadlines, comparisons, private browser planner, account and opted-in internship alerts do not require a student subscription or application fee/);
+  assert.match(partners, /Free forever for students/);
+  assert.match(partners, /Commercial support funds access instead of putting the directory behind a paywall/);
+  assert.match(accountSource, /The account, opted-in alerts and directory stay free/);
+  assert.match(strategy, /AdSense baseline:[\s\S]*primary passive layer/);
+  assert.match(strategy, /Never charge an application fee, sell ordinary directory rank, sell subscriber data/);
 });
 test("planner data is validated and deduplicated", () => {
   assert.deepEqual(sanitizePlanner(null), { saved: [], entries: {} });

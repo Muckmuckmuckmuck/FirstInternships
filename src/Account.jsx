@@ -1176,7 +1176,7 @@ export function AccountPage({ source = "account-page" }) {
     <section className="account-trust-grid" aria-label="How personalized alerts work">
       <article><span><BellRing size={19} /></span><h2>Relevant by design</h2><p>Your year and chosen fields narrow what belongs in your digest. You can change them whenever your plans change.</p></article>
       <article><span><ShieldCheck size={19} /></span><h2>Consent stays clear</h2><p>An account alone does not turn on marketing email. Subscription requires the separate, unchecked consent choice above.</p></article>
-      <article><span><Sparkles size={19} /></span><h2>The directory stays free</h2><p>Alerts point back to independent guides. Applications still happen on official employer and institution sites.</p></article>
+      <article><span><Sparkles size={19} /></span><h2>Free forever for students</h2><p>The account, opted-in alerts and directory stay free. Applications still happen on official employer and institution sites.</p></article>
     </section>
   </div>;
 }

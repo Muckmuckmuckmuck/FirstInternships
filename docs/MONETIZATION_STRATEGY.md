@@ -4,7 +4,26 @@ Updated October 21, 2026.
 
 The product has two assets: qualified organic traffic from students actively researching internships, and a permission-based audience that can receive relevant alerts. Monetization should increase the value of those assets without turning employer facts into paid claims or making indexed content difficult to read.
 
+## Free-forever constraint
+
+The student-facing product remains free forever. Students are not charged to browse the directory, read application guides, use deadlines and comparison tools, keep a private browser planner, create an account or receive alerts they explicitly requested. Do not introduce a premium tier that withholds sourced eligibility, application instructions or existing planning tools.
+
+Revenue comes from the commercial side of the marketplace: restrained display ads, clearly labeled newsletter sponsorship, employer campaigns and carefully selected disclosed referrals. Never charge an application fee, sell ordinary directory rank, sell subscriber data or make an employer payment look like an editorial recommendation.
+
+This constraint is a growth advantage as well as a product principle. Open access preserves indexability, sharing, returning visitors and the largest possible audience for ad and sponsor inventory.
+
 ## Revenue model
+
+### Passive-income priority
+
+Prioritize revenue by how little ongoing sales and fulfillment work it requires:
+
+1. **AdSense baseline:** automated auction, serving and payment after approval and consent setup. This is the primary passive layer.
+2. **Evergreen disclosed referrals:** only for genuinely useful student tools, with no paid distortion of editorial recommendations. This can become semi-passive after placement and periodic review.
+3. **Standard newsletter sponsorship:** one labeled inventory unit with fixed requirements and reporting. This is repeatable but still needs sponsor review.
+4. **Employer campaigns:** the highest-touch route and therefore priced for the manual verification, setup and reporting it requires.
+
+Content verification, privacy compliance, consent configuration and advertiser review are never passive. Budget time for them even when serving and billing are automated.
 
 ### 1. Personalized newsletter and account audience
 

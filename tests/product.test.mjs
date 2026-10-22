@@ -220,10 +220,31 @@ test("route resolution supports clean URLs and rejects unknown routes", () => {
   assert.equal(resolvePage("/programs/nasa-ostem.html").program.id, "nasa-ostem");
   assert.equal(resolvePage("/guides/").type, "guides");
   assert.equal(resolvePage("/account").type, "account");
+  assert.equal(resolvePage("/partners").type, "partners");
   assert.equal(resolvePage("/not-a-page").type, "404");
   assert.equal(YEARS.length, 4);
   assert.ok(FIELDS.length >= 17, "field hubs should not regress");
   assert.ok(GUIDES.every(g => g.sections.length >= 4));
+});
+test("October 21 growth release strengthens directory discovery and opens an ethical revenue path", async () => {
+  const directory = resolvePage("/internships");
+  assert.equal(directory.title, "College Internships by Year & Field");
+  assert.ok(directory.description.includes(String(PROGRAMS.length)));
+  assert.ok(directory.description.length >= 120 && directory.description.length <= 180);
+
+  const partners = resolvePage("/partners");
+  assert.equal(partners.type, "partners");
+  assert.equal(partners.title, "Advertise to College Students | FirstInternships");
+  assert.match(partners.description, /clearly labeled/);
+  const html = render("/partners");
+  assert.equal((html.match(/<h1(?:\s|>)/g) || []).length, 1);
+  for (const text of ["Newsletter sponsorship", "Employer campaigns", "Display advertising", "Open partnership email", "No list sales"]) assert.ok(html.includes(text), text);
+  assert.match(html, /payment does not change eligibility, status, editorial language or ordinary directory ordering/i);
+  assert.match(html, /href="\/about"/);
+
+  const built = await readFile("dist/partners.html", "utf8");
+  assert.match(built, /<link rel="canonical" href="https:\/\/firstinternships\.com\/partners">/);
+  assert.match(built, /<meta name="robots" content="index, follow, max-image-preview:large">/);
 });
 test("planner data is validated and deduplicated", () => {
   assert.deepEqual(sanitizePlanner(null), { saved: [], entries: {} });
@@ -284,8 +305,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-20</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-20</lastmod>`), "directory freshness should reflect the current inventory release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-21</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-21</lastmod>`), "directory freshness should reflect the current inventory release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -373,7 +394,7 @@ test("account disclosures cover Google auth boundaries and separate newsletter c
     readFile("public/terms.html", "utf8"),
   ]);
   for (const [name, document] of [["privacy", privacy], ["terms", terms]]) {
-    assert.match(document, /Updated October 9, 2026/, `${name} disclosure date`);
+    assert.match(document, /Updated October 21, 2026/, `${name} disclosure date`);
     assert.match(document, /Supabase/, `${name} must identify the auth processor`);
     assert.match(document, /Gmail messages/, `${name} must explain that Gmail access is not requested`);
     assert.match(document, /Google Drive files/, `${name} must explain that Drive access is not requested`);

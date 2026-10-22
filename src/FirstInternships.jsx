@@ -104,7 +104,7 @@ function Header({ planner }) {
   </header>;
 }
 function Footer() {
-  return <footer className="site-footer"><div className="footer-inner"><div><a className="brand" href="/"><span className="brand-mark">fi<span>↗</span></span>firstinternships</a><p>Know where you stand.<br />Make your next move.</p><small>An independent directory. Not affiliated with listed employers.</small></div><nav aria-label="College year links"><strong>Start with your year</strong>{YEARS.map(y => <a key={y.id} href={yearPath(y)}>{y.name} internships</a>)}</nav><nav aria-label="Footer links"><strong>The useful stuff</strong>{accountFeatureEnabled() && <a href="/account">Account & personalized alerts</a>}<a href="/guides">Application guides</a>{TOPICS.map(topic => <a key={topic.slug} href={topicPath(topic)}>{topic.name}</a>)}<a href="/internship-deadlines">Deadline calendar</a><a href="/application-timeline">Timeline builder</a><a href="/compare">Compare programs</a><a href="/about">Editorial process</a><a href="/contact">Contact & corrections</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav><nav aria-label="Popular application guides"><strong>Popular guides</strong>{footerGuides().map(([guide, label]) => <a key={guide.slug} href={guidePath(guide)}>{label}</a>)}</nav><nav aria-label="Popular internship programs"><strong>Popular programs</strong>{footerPrograms().map(([program, label]) => <a key={program.id} href={programPath(program)}>{label}</a>)}</nav></div><div className="footer-bottom"><span>© 2026 FirstInternships</span><span>Free for college students. Applications happen on official employer sites.</span></div></footer>;
+  return <footer className="site-footer"><div className="footer-inner"><div><a className="brand" href="/"><span className="brand-mark">fi<span>↗</span></span>firstinternships</a><p>Know where you stand.<br />Make your next move.</p><small>An independent directory. Not affiliated with listed employers.</small></div><nav aria-label="College year links"><strong>Start with your year</strong>{YEARS.map(y => <a key={y.id} href={yearPath(y)}>{y.name} internships</a>)}</nav><nav aria-label="Footer links"><strong>The useful stuff</strong>{accountFeatureEnabled() && <a href="/account">Account & personalized alerts</a>}<a href="/guides">Application guides</a>{TOPICS.map(topic => <a key={topic.slug} href={topicPath(topic)}>{topic.name}</a>)}<a href="/internship-deadlines">Deadline calendar</a><a href="/application-timeline">Timeline builder</a><a href="/compare">Compare programs</a><a href="/about">Editorial process</a><a href="/partners">Advertise or partner</a><a href="/contact">Contact & corrections</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav><nav aria-label="Popular application guides"><strong>Popular guides</strong>{footerGuides().map(([guide, label]) => <a key={guide.slug} href={guidePath(guide)}>{label}</a>)}</nav><nav aria-label="Popular internship programs"><strong>Popular programs</strong>{footerPrograms().map(([program, label]) => <a key={program.id} href={programPath(program)}>{label}</a>)}</nav></div><div className="footer-bottom"><span>© 2026 FirstInternships</span><span>Free for college students. Applications happen on official employer sites.</span></div></footer>;
 }
 function Breadcrumbs({ items }) {
   return <nav className="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a>{items.map(([label, href], i) => <span key={i}><span aria-hidden="true">/</span>{href ? <a href={href}>{label}</a> : <span aria-current="page">{label}</span>}</span>)}</nav>;
@@ -459,6 +459,32 @@ function Contact() {
     </div>
   </div>;
 }
+function Partners() {
+  const subject = encodeURIComponent("FirstInternships partnership inquiry");
+  const body = encodeURIComponent("Organization:\nContact name and role:\nCampaign goal:\nStudent audience:\nTiming:\nBudget range:\nDestination URL:\nAnything we should verify:\n");
+  return <div className="container"><Breadcrumbs items={[["Advertise or partner", null]]} />
+    <PageIntro eyebrow="Commercial partnerships / clearly labeled" title="Reach college students while they plan their next move." description="FirstInternships is building a focused audience of college students researching internships, application requirements and career preparation. We consider transparent campaigns that help that audience without changing our editorial facts or rankings." />
+    <div className="partner-principles"><span><strong>Student-first context</strong>Reach students during active internship research.</span><span><strong>Clear commercial labels</strong>Paid placements never imitate editorial guidance.</span><span><strong>No list sales</strong>Subscriber and account data are not sold to partners.</span></div>
+    <section className="section partner-section"><div className="section-heading"><div><p className="eyebrow">Ways to work together</p><h2>Three revenue products.<br />One editorial wall.</h2></div></div>
+      <div className="partner-grid">
+        <article><span>01</span><h3>Newsletter sponsorship</h3><p>A clearly labeled sponsor block for a relevant student product, service or recruiting message. Availability depends on audience size, segment fit and newsletter performance.</p></article>
+        <article><span>02</span><h3>Employer campaigns</h3><p>Promote a genuine college opportunity or employer brand across agreed placements. Sponsorship can buy distribution, never favorable eligibility claims or hidden ranking influence.</p></article>
+        <article><span>03</span><h3>Display advertising</h3><p>Reserved, labeled placements on relevant directory and guide pages once the advertising account, consent system and quality checks are fully active.</p></article>
+      </div>
+    </section>
+    <div className="article-layout partner-details"><article className="prose">
+      <section><h2>What to include in an inquiry</h2><p>Tell us who you represent, the student audience you want to reach, campaign timing, the exact destination page, the format you are considering and a realistic budget range. For an internship campaign, include the official opening and the written eligibility rules. We will not invent reach, fit or outcomes that we cannot measure.</p></section>
+      <section><h2>What a partnership cannot buy</h2><ul><li>Changes to sourced eligibility, deadlines, pay, location or availability.</li><li>Unlabeled placement inside editorial recommendations or application buttons.</li><li>A promise of ranking, clicks, applicants, interviews or hires.</li><li>Access to account information, subscriber addresses or individual student preferences.</li></ul></section>
+      <section><h2>How proposals are evaluated</h2><p>Audience usefulness comes first, followed by claim accuracy, destination quality, timing, disclosure requirements and whether the campaign can run without making the site harder to use. We may decline products or messages that create student risk, imitate an employer application, make unsupported outcome claims or conflict with the directory's editorial standards.</p></section>
+    </article><aside className="article-sidebar"><div className="quick-check"><p className="eyebrow">Start a conversation</p><h2>Send the campaign facts.</h2><p>Nothing is booked automatically. An email lets us evaluate fit, inventory and disclosure before discussing terms.</p><a className="button" href={`mailto:${CONTACT}?subject=${subject}&body=${body}`}>Open partnership email <ArrowUpRight size={16} /></a><a className="button secondary" href="/about">Read our editorial standards</a><p className="small-note">Do not send subscriber lists, student records, passwords or confidential applicant information.</p></div></aside></div>
+    <Questions title="Partnership questions" items={[
+      ["Can an employer pay to change its program page?", "No. Program facts remain tied to official sources. A paid campaign may link to a real opportunity in a separately labeled placement, but payment does not change eligibility, status, editorial language or ordinary directory ordering."],
+      ["Do you sell your newsletter list?", "No. We do not provide subscriber addresses, account records or individual preferences to advertisers or listed employers."],
+      ["Are rates published?", "Not yet. Inventory and audience reporting are still developing, so any proposal is scoped individually instead of being sold against an unsupported rate card."],
+      ["Is advertising live now?", "Display ad code is gated and remains off until publisher approval, valid placement identifiers and applicable consent controls are configured. Partnership inquiries can still be evaluated before inventory opens."],
+    ]} />
+  </div>;
+}
 function SiteContent({ pathname = "/" }) {
   const page = resolvePage(pathname);
   const planner = usePlanner();
@@ -508,6 +534,7 @@ function SiteContent({ pathname = "/" }) {
       {page.type === "saved" && <SavedPlanner planner={planner} SaveButton={SaveButton} GuideCards={GuideCards} />}
       {page.type === "account" && <AccountPage />}
       {page.type === "about" && <About />}
+      {page.type === "partners" && <Partners />}
       {page.type === "contact" && <Contact />}
       {page.type === "404" && <div className="container section empty-state"><p className="eyebrow">404 / Let's find another way</p><h1>That page isn't here.</h1><p>Find college internship pathways or start with an application guide.</p><a className="button" href="/internships">Browse internships <ArrowRight size={16} /></a></div>}
     </main><Footer /><SignupPrompt

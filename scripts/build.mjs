@@ -74,12 +74,12 @@ function lastmodForRoute(route) {
   // Collection pages change when the programs they actually render change.
   // Derive freshness from that inventory instead of leaving old blanket dates
   // in the sitemap after a verified content expansion.
-  if (page.type === "home") return latestProgramReview([...featuredPrograms(), ...currentPrograms()], "2026-10-12");
-  if (page.type === "directory") return latestProgramReview(PROGRAMS, "2026-10-11");
+  if (page.type === "home") return latestProgramReview([...featuredPrograms(), ...currentPrograms()], "2026-10-21");
+  if (page.type === "directory") return latestProgramReview(PROGRAMS, "2026-10-21");
   const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
   if (programs.length) return latestProgramReview(programs, page.field?.updated || page.year?.updated || page.topic?.updated || VERIFIED);
   const explicit = {
-    "/application-timeline": "2026-09-20", "/about": "2026-10-07", "/contact": "2026-10-07", "/privacy": "2026-10-09", "/terms": "2026-10-09",
+    "/application-timeline": "2026-09-20", "/about": "2026-10-21", "/partners": "2026-10-21", "/contact": "2026-10-21", "/privacy": "2026-10-21", "/terms": "2026-10-21",
   }[route];
   if (explicit) return explicit;
   return VERIFIED;

@@ -580,7 +580,7 @@ export function reviewSpan(programs) {
 }
 export function programsForYear(year) { return PROGRAMS.filter(p => p.years.includes(year)); }
 export function programsForField(field) { return PROGRAMS.filter(p => p.fields.includes(field)); }
-export const ROUTES = ["/", "/internships", ...YEARS.map(yearPath), ...FIELDS.map(fieldPath), ...PROGRAMS.map(programPath), ...TOPICS.map(topicPath), "/guides", ...GUIDES.map(guidePath), "/internship-deadlines", "/application-timeline", "/compare", "/about", "/contact", "/saved", "/account", "/404"];
+export const ROUTES = ["/", "/internships", ...YEARS.map(yearPath), ...FIELDS.map(fieldPath), ...PROGRAMS.map(programPath), ...TOPICS.map(topicPath), "/guides", ...GUIDES.map(guidePath), "/internship-deadlines", "/application-timeline", "/compare", "/about", "/partners", "/contact", "/saved", "/account", "/404"];
 export function normalizePath(path) { return path.replace(/\.html$/, "").replace(/\/$/, "") || "/"; }
 export function resolvePage(pathname) {
   const path = normalizePath(pathname);
@@ -596,12 +596,13 @@ export function resolvePage(pathname) {
   if (topic) return { type: "topic", path, topic, title: topic.title, description: topic.description };
   const basic = {
     "/": ["home", "College Internships by Class Year", "College internship pathways with sourced eligibility, application guides, and a free personal application tracker. First-year students through seniors."],
-    "/internships": ["directory", "College Internship Directory", "Browse sourced undergraduate internship pathways by college year and field. Check eligibility, learn how to apply, and visit the official employer."],
+    "/internships": ["directory", "College Internships by Year & Field", `Browse ${PROGRAMS.length} college internship pathways by freshman, sophomore, junior or senior eligibility, field, pay and verified application details.`],
     "/guides": ["guides", "College Internship Application Guides", "College internship guides for finding roles, application volume, resumes, career fairs, interviews, portal statuses, remote work, relocation, offers, and starting well."],
     "/internship-deadlines": ["deadlines", "College Internship Deadlines 2027: Application Calendar", "Published 2027 college internship deadlines from NASA, NIH, the White House, Pfizer, Novartis and more, with time zones, eligibility links and a downloadable calendar."],
     "/application-timeline": ["timeline", "College Internship Application Timeline Builder", "Build a personal college internship preparation timeline, plan references and documents, and download a checklist or all-day calendar. Free; no account needed."],
     "/compare": ["compare", "Compare College Internship Program Requirements", "Compare up to three college internship pathways side by side: class-year guidance, eligibility, pay, location, deadlines, and application preparation."],
     "/about": ["about", "About FirstInternships & Our Editorial Process", "How FirstInternships verifies college internship pathways, handles eligibility, updates sources, and keeps advertising separate from editorial decisions."],
+    "/partners": ["partners", "Advertise to College Students | FirstInternships", "Reach college students through clearly labeled FirstInternships sponsorships, employer campaigns and future advertising without buying editorial rankings."],
     "/contact": ["contact", "Contact FirstInternships", "Report a program correction, suggest an undergraduate opportunity, or contact the FirstInternships directory team."],
     "/saved": ["saved", "Your Saved Internships & Application Tracker", "Plan your internship applications, record next actions, and export your saved list. Stored in your browser, with no account required."],
     "/account": ["account", "Your Personalized Internship Alerts", "Create or manage a free FirstInternships account and choose the college year, fields, location, work arrangements, and email cadence that fit you."],

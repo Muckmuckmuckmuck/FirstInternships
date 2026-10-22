@@ -10,7 +10,7 @@ import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstin
 
 test("content has unique routes and real official-source records", () => {
   assert.ok(PROGRAMS.length >= 520, "the college directory should not regress to a thin inventory");
-  assert.ok(GUIDES.length >= 42, "the preparation library should not regress");
+  assert.ok(GUIDES.length >= 44, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
       const rows = record[key];
@@ -245,6 +245,22 @@ test("October 21 growth release strengthens directory discovery and opens an eth
   const built = await readFile("dist/partners.html", "utf8");
   assert.match(built, /<link rel="canonical" href="https:\/\/firstinternships\.com\/partners">/);
   assert.match(built, /<meta name="robots" content="index, follow, max-image-preview:large">/);
+});
+test("October 21 interview search expansion adds distinct, substantive answer guides", () => {
+  const slugs = [
+    "tell-me-about-yourself-internship-interview",
+    "why-do-you-want-this-internship-answer",
+  ];
+  const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
+  assert.ok(guides.every(Boolean));
+  assert.ok(guides.every(guide => guide.updated === "2026-10-21"));
+  assert.ok(guides.every(guide => guide.category === "Interviews & follow-ups"));
+  assert.ok(guides.every(guide => guide.sections.length === 8 && guide.example?.text));
+  assert.ok(guides.every(guide => guide.sections.flat().join(" ").split(/\s+/).length >= 600), "interview guides must answer the full task, not just target a keyword");
+  assert.ok(guides.every(guide => guide.programIds.length >= 4));
+  assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
+  assert.ok(guides.every(guide => guide.relatedGuideSlugs.includes("internship-interview-guide")));
+  assert.deepEqual(GUIDES.find(guide => guide.slug === "internship-interview-guide").relatedGuideSlugs, slugs);
 });
 test("the free-forever promise protects student access while commercial revenue stays separate", async () => {
   const home = render("/");

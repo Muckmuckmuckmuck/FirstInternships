@@ -397,7 +397,8 @@ function GuidePage({ guide }) {
   const position = GUIDES.indexOf(guide);
   const onward = [...GUIDES.slice(position + 1), ...GUIDES.slice(0, Math.max(position, 0))];
   const family = g => guideCategory(g).split(" & ")[0];
-  const nextGuides = [onward[0], ...onward.filter(g => family(g) === family(guide)), ...onward.filter(g => family(g) !== family(guide))].filter((candidate, index, list) => candidate && list.indexOf(candidate) === index).slice(0, 3);
+  const editorialNext = (guide.relatedGuideSlugs || []).map(slug => GUIDES.find(candidate => candidate.slug === slug));
+  const nextGuides = [...editorialNext, onward[0], ...onward.filter(g => family(g) === family(guide)), ...onward.filter(g => family(g) !== family(guide))].filter((candidate, index, list) => candidate && candidate !== guide && list.indexOf(candidate) === index).slice(0, 3);
   const examples = (guide.programIds || []).map(id => PROGRAMS.find(p => p.id === id)).filter(Boolean);
   const collection = TOPICS.find(topic => topic.slug === guide.topicSlug);
   const [copyNotice, setCopyNotice] = useState("");

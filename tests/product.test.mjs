@@ -9,8 +9,8 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 520, "the college directory should not regress to a thin inventory");
-  assert.ok(GUIDES.length >= 44, "the preparation library should not regress");
+  assert.ok(PROGRAMS.length >= 526, "the college directory should not regress to a thin inventory");
+  assert.ok(GUIDES.length >= 45, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
       const rows = record[key];
@@ -367,7 +367,7 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-21</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-22</lastmod>`), "homepage freshness should reflect the current content release");
   assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-22</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
@@ -950,7 +950,7 @@ test("all public content is reachable through ordinary homepage links", async ()
 });
 
 test("focused collections have substantive original content and valid crosslinks", () => {
-  assert.equal(TOPICS.length, 5);
+  assert.equal(TOPICS.length, 6);
   assert.ok(programsForTopic(TOPICS.find(t => t.filter === "paid")).every(p => p.pay === "Paid"));
   const community = TOPICS.find(t => t.slug === "community-college-internships");
   assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow", "white-house-internship", "cia-directorate-of-operations-internship", "intuit-internships", "regeneron-summer-internship", "spotify-global-summer", "nytimes-internships-outside-newsroom", "uber-career-prep", "nist-surf", "llnl-computing-internships", "sf-fed-summer-internship", "hartford-claims-apprentice-program"]);
@@ -1686,6 +1686,50 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
   assert.ok(footerIds.includes("gilead-internship-program"));
   assert.ok(!footerIds.includes("netflix-internships"));
   assert.ok(!footerIds.includes("meta-internships"));
+});
+test("October 22 environment wave adds sourced programs and one useful search cluster", () => {
+  const ids = [
+    "student-conservation-association-internships",
+    "wwf-bridge-internships-2027",
+    "environmental-defense-fund-internships",
+    "earthjustice-student-internships",
+    "national-wildlife-federation-internships",
+    "conservation-international-singapore-internships",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-22" && program.updated === "2026-10-22"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.some(item => item.url === program.url)));
+
+  const wwf = PROGRAMS.find(program => program.id === "wwf-bridge-internships-2027");
+  const nwf = PROGRAMS.find(program => program.id === "national-wildlife-federation-internships");
+  const ci = PROGRAMS.find(program => program.id === "conservation-international-singapore-internships");
+  assert.deepEqual(wwf.years, [1, 2, 3, 4]);
+  assert.match(wwf.timing, /June 1 through August 6/);
+  assert.match(wwf.timing, /\$20\.50 per hour/);
+  assert.deepEqual(nwf.years, [1, 2, 3, 4]);
+  assert.equal(ci.firstYear, null);
+  assert.deepEqual(ci.years, []);
+
+  const topic = TOPICS.find(item => item.slug === "environmental-internships-for-college-students");
+  assert.ok(topic);
+  assert.equal(new Set(topic.programIds).size, topic.programIds.length);
+  assert.ok(ids.every(id => topic.programIds.includes(id)));
+  assert.ok(topic.sections.flat().join(" ").split(/\s+/).length >= 350);
+
+  const guide = GUIDES.find(item => item.slug === "how-to-get-an-environmental-or-conservation-internship");
+  assert.ok(guide);
+  assert.equal(guide.topicSlug, topic.slug);
+  assert.equal(guide.sections.length, 8);
+  assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 700);
+  assert.ok(guide.example?.text);
+
+  const summer = TOPICS.find(item => item.slug === "summer-2027-college-internships");
+  assert.ok(summer.programIds.includes(wwf.id), "WWF's official page explicitly names its Summer 2027 cohort");
+  for (const id of ids.filter(id => id !== wwf.id)) {
+    assert.ok(!summer.programIds.includes(id), `${id}: evergreen or opening-specific routes must stay out of Summer 2027`);
+  }
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

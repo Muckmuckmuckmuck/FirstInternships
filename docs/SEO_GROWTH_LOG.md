@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-22 — environmental and conservation search cluster
+
+### Baseline
+
+- Window: September 23–October 20, 2026, the latest complete 28 days available in Search Console on October 22.
+- Site totals: 447 clicks, 46,700 impressions, 1.0% CTR and average position 9.5.
+- The catalog already contained scattered federal, research and consulting programs related to environmental work, but no dedicated comparison path or application guide. The visible query sample also included `national park internships summer 2027`, which supports the broader student task without justifying a thin keyword-specific page.
+- Recently refreshed high-impression employer pages remain unchanged until their documented reassessment threshold; this expansion targets a distinct inventory and guidance gap.
+
+### Changes
+
+- Added six official-source program guides for SCA conservation internships, WWF BRIDGE 2027, EDF internships, Earthjustice undergraduate internships, National Wildlife Federation internships and Conservation International Singapore.
+- Added one original environmental and conservation application guide covering work lanes, student evidence, field safety, housing and transport, respectful community work, portfolio choices, recruiting calendars and offer evaluation.
+- Added one curated environmental collection connecting the six new programs with ten existing park, ocean, federal, research and environmental-consulting pathways. It is crawlable from the homepage/footer graph and links directly to the preparation guide.
+- Added WWF BRIDGE to the Summer 2027 collection because its official page explicitly publishes the June 1–August 6, 2027 cohort and early-March application timing. Evergreen and opening-specific programs remain outside that collection.
+
+### Measurement
+
+- Primary search metric: nonbranded clicks and impressions to the environmental collection, the application guide and the six new program pages.
+- Supporting query families: `environmental internships for college students`, `conservation internships`, `wildlife internships`, `WWF BRIDGE internship`, `SCA internships`, `EDF internships` and the existing national-park query family.
+- Guardrails: no fabricated class years, deadlines, pay or open status; no duplicate location or employer-keyword permutations; no changes to recently refreshed high-impression snippets before their own threshold.
+- Reassess the cluster after each route has accumulated at least 200 impressions or after 28 days. Strengthen one existing page when the query maps to it; create another page only when the student task and inventory are materially distinct.
+
 ## 2026-10-22 — directory CTR and owned-audience measurement
 
 ### Baseline

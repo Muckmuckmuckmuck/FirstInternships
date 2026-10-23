@@ -343,7 +343,12 @@ function Collection({ page, planner }) {
   const allMatches = page.year ? programsForYear(item.id) : programsForField(item.id);
   const allRoleSpecific = page.year ? PROGRAMS.filter(p => !p.firstYear && (!p.preferredYears || p.preferredYears.includes(item.id))) : [];
   const [narrow, setNarrow] = useState("all");
-  const keep = p => narrow === "all" || (page.year ? p.fields.includes(narrow) : p.years.includes(Number(narrow)));
+  const [query, setQuery] = useState("");
+  const [paidOnly, setPaidOnly] = useState(false);
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const keep = p => (narrow === "all" || (page.year ? p.fields.includes(narrow) : p.years.includes(Number(narrow))))
+    && (!paidOnly || p.pay === "Paid")
+    && words.every(word => `${p.company} ${p.title} ${p.summary} ${p.location} ${p.eligibility.join(" ")}`.toLowerCase().includes(word));
   const matches = allMatches.filter(keep);
   const roleSpecific = allRoleSpecific.filter(keep);
   const shownRoleSpecific = roleSpecific.slice(0, 12);
@@ -356,8 +361,14 @@ function Collection({ page, planner }) {
     <section className="collection-start" aria-labelledby="start-here"><div><p className="eyebrow">Start here · {visibleCount} options on this page</p><h2 id="start-here">Find a fit in three steps.</h2><p>Pick a promising program, check the exact eligibility, then apply on the employer's official site.</p></div><ol aria-label="How to use this page"><li><span>1</span><strong>Scan the matches</strong><small>Year, field, pay and location</small></li><li><span>2</span><strong>Open the guide</strong><small>Requirements and materials</small></li><li><span>3</span><strong>Apply officially</strong><small>We send you to the source</small></li></ol><a className="button" href="#program-list">See {visibleCount} options <ArrowRight size={16} /></a></section>
     <AccountConversionCTA compact source={page.year ? "year-page" : "field-page"} year={page.year?.id} field={page.field?.id} />
     <AdSlot slot="VITE_ADSENSE_SLOT_TOP" />
+    <div className="collection-search-tools" aria-label="Narrow this collection">
+      <div><label className="search-label" htmlFor="collection-query">Search within these opportunities</label><div className="filter-search"><Search size={18} /><input id="collection-query" maxLength={200} value={query} onChange={event => setQuery(event.target.value)} placeholder="Try procurement, airline, research, or a company" /></div></div>
+      <label className="collection-paid"><input type="checkbox" checked={paidOnly} onChange={event => setPaidOnly(event.target.checked)} />Only confirmed paid programs</label>
+      <p role="status"><strong>{visibleCount}</strong> {visibleCount === 1 ? "option" : "options"} shown</p>
+      {(query || paidOnly || narrow !== "all") && <button className="quiet-button" type="button" onClick={() => { setQuery(""); setPaidOnly(false); setNarrow("all"); }}>Clear all</button>}
+    </div>
     {narrowOptions.length > 1 && <CollectionNarrow page={page} options={narrowOptions} value={narrow} setValue={setNarrow} label={page.year ? "Narrow by the kind of work" : "Narrow by your college year"} />}
-    {visibleCount === 0 && <div className="empty-state"><Search size={26} /><h2>Nothing in that combination yet.</h2><p>We have not reviewed a program matching both of those in this directory. That is a gap in our coverage, not a statement that none exists.</p><button className="button" onClick={() => setNarrow("all")}>Show everything again</button></div>}
+    {visibleCount === 0 && <div className="empty-state"><Search size={26} /><h2>Nothing in that combination yet.</h2><p>We have not reviewed a program matching all of those choices. That is a gap in our coverage, not a statement that none exists.</p><button className="button" onClick={() => { setQuery(""); setPaidOnly(false); setNarrow("all"); }}>Show everything again</button></div>}
     {page.year && <YearAtAGlance year={item} programs={allMatches} />}
     {matches.length > 0 && <section className="collection-programs" id="program-list"><p className="eyebrow">{matches.length} confirmed program-level matches</p><h2>{page.year ? `Programs to check for ${item.name.toLowerCase()} students` : `${item.name} pathways`}</h2><p className="muted">{page.year ? "A program-level year match is a starting point. Open a guide to check credits, student status, dates, location and authorization." : "Some programs span several fields. Open a guide to match the exact role to your coursework, experience and availability."}</p><div className="cards">{matches.map(p => <ProgramCard key={p.id} program={p} planner={planner} />)}</div></section>}
     {page.year && shownRoleSpecific.length > 0 && <section className="collection-programs role-specific"><p className="eyebrow">{shownRoleSpecific.length} highlighted possibilities</p><h2>Check the role before counting yourself in.</h2><p className="muted">These employers do not publish one universal minimum year, or they describe a preferred year rather than a hard rule. The individual opening decides.</p><div className="cards">{shownRoleSpecific.map(p => <ProgramCard key={p.id} program={p} planner={planner} />)}</div>{hiddenRoleSpecific > 0 && <p className="collection-more">There are {hiddenRoleSpecific} more opening-specific pathways in the full directory. <a className="text-link" href="/internships">Browse every program <ArrowRight size={14} /></a></p>}</section>}

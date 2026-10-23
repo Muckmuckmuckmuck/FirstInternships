@@ -367,8 +367,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-22</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-22</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-23</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-23</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1730,6 +1730,46 @@ test("October 22 environment wave adds sourced programs and one useful search cl
   for (const id of ids.filter(id => id !== wwf.id)) {
     assert.ok(!summer.programIds.includes(id), `${id}: evergreen or opening-specific routes must stay out of Summer 2027`);
   }
+});
+test("October 23 logistics wave expands sourced pathways and improves the existing hub", async () => {
+  const ids = [
+    "union-pacific-student-internships",
+    "jb-hunt-college-internships",
+    "csx-college-internship-program",
+    "maersk-student-internships",
+    "norfolk-southern-internship-program",
+    "ryder-summer-internship-program",
+    "ch-robinson-global-internships",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-23" && program.updated === "2026-10-23"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.some(item => item.url === program.url)));
+  assert.ok(programs.every(program => program.fields.includes("operations")));
+  for (const program of programs) {
+    assert.equal(program.firstYear, null, `${program.id}: an opening-specific year must not become a fixed class-year claim`);
+    assert.deepEqual(program.years, []);
+  }
+
+  assert.equal(PROGRAMS.find(program => program.id === "union-pacific-student-internships").pay, "Paid");
+  assert.equal(PROGRAMS.find(program => program.id === "norfolk-southern-internship-program").pay, "Paid");
+  assert.match(PROGRAMS.find(program => program.id === "ryder-summer-internship-program").timing, /Summer 2027/);
+  assert.ok(TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds.includes("ryder-summer-internship-program"));
+
+  const guide = GUIDES.find(item => item.slug === "how-to-get-a-supply-chain-or-logistics-internship");
+  assert.ok(guide);
+  assert.equal(guide.sections.length, 8);
+  assert.ok(guide.sections.flat().join(" ").split(/\s+/).length >= 800);
+  assert.ok(guide.example?.text);
+  assert.ok(guide.programIds.every(id => PROGRAMS.some(program => program.id === id)));
+
+  const field = FIELDS.find(item => item.id === "operations");
+  assert.match(field.title, /^\d+ Supply Chain & Logistics Internships$/);
+  assert.ok(field.guideSlugs.includes(guide.slug));
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("operations")).length, 152);
+  const html = await readFile(`dist${fieldPath(field)}.html`, "utf8");
+  for (const text of ["Search within these opportunities", "Only confirmed paid programs", guide.title, "Union Pacific"]) assert.ok(html.includes(text), text);
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

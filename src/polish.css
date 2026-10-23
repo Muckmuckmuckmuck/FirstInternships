@@ -707,10 +707,24 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
 .fit-more { font-weight: 700; border-style: dashed; }
 
 /* Narrowing on a year or field hub: the axis those pages were missing. */
+.collection-search-tools { display: grid; grid-template-columns: minmax(280px, 1fr) auto auto auto; align-items: end; gap: 18px; margin: 28px 0 12px; padding: 20px 22px; border: 1px solid var(--line); border-radius: 15px; background: #fffdf7; }
+.collection-search-tools .search-label { margin: 0 0 8px; }
+.collection-search-tools .filter-search { min-height: 46px; }
+.collection-search-tools .filter-search input { font-size: 13px; }
+.collection-paid { display: flex; align-items: center; gap: 9px; min-height: 46px; padding: 0 15px; border: 1px solid var(--line); border-radius: 9px; background: #fff; font-size: 12px; font-weight: 700; }
+.collection-paid input { accent-color: var(--forest); }
+.collection-search-tools>p { min-height: 46px; display: flex; align-items: center; gap: 5px; margin: 0; color: var(--muted); font-size: 12px; white-space: nowrap; }
+.collection-search-tools .quiet-button { min-height: 46px; }
 .narrow-bar { border: 1px solid var(--line); background: #f1f3e9; border-radius: 15px; padding: 20px 22px; margin: 6px 0 30px; }
 .narrow-label { margin: 0 0 12px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; font-weight: 800; color: #4f6054; }
 .narrow-options { display: flex; flex-wrap: wrap; gap: 8px; }
-@media(max-width: 760px) { .narrow-bar { padding: 17px 16px; border-radius: 13px; } }
+@media(max-width: 900px) { .collection-search-tools { grid-template-columns: minmax(0, 1fr) auto; } }
+@media(max-width: 760px) {
+  .collection-search-tools { grid-template-columns: 1fr; padding: 17px 16px; gap: 12px; }
+  .collection-search-tools>p, .collection-search-tools .quiet-button { min-height: auto; justify-content: flex-start; }
+  .collection-search-tools .quiet-button { padding: 5px 0; text-align: left; }
+  .narrow-bar { padding: 17px 16px; border-radius: 13px; }
+}
 
 /* Footer: brand, year links, utility links, popular guides and popular programs. */
 @media(min-width: 761px) {

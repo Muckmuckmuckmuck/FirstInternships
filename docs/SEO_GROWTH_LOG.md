@@ -2,6 +2,30 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-23 — supply-chain and logistics opportunity cluster
+
+### Baseline
+
+- Window: September 23–October 20, 2026, the latest complete 28 days available in Search Console on October 23.
+- Site totals: 447 clicks, 46,700 impressions, 1.0% CTR and average position 9.5.
+- Visible logistics query variants produced at least 61 impressions with no clicks and average positions around 25–34. The existing `/internships/operations` hub recorded 96 impressions, 2 clicks and average position 27.5.
+- The existing hub already covered supply chain, logistics and operations, so this release strengthens that URL instead of creating a competing keyword landing page. Its 145-program list also needed a faster way to find relevant employers.
+
+### Changes
+
+- Added seven official-source program guides for Union Pacific, J.B. Hunt, CSX, Maersk, Norfolk Southern, Ryder and C.H. Robinson. Unpublished company-wide class years, pay rates and deadlines remain labeled as opening-specific instead of inferred.
+- Expanded the existing supply-chain and logistics hub to 152 sourced pathways, refreshed its title and description around the inventory students can compare and attached a substantial application playbook.
+- Added in-page keyword and confirmed-paid narrowing to every field and college-year collection. The full initial inventory remains server rendered and crawlable; the controls only help a visitor reduce it after the page loads.
+- Added Ryder to the Summer 2027 collection because Ryder's official careers system currently publishes a role explicitly labeled Summer 2027. Evergreen and undated programs remain outside that collection.
+
+### Measurement
+
+- Primary search metric: clicks, impressions, CTR and average position for `/internships/operations`, the seven program pages and the new supply-chain application guide.
+- Supporting query families: `logistics internship`, `supply chain internships`, `transportation internships`, `Union Pacific internships`, `J.B. Hunt internships`, `CSX internships`, `Maersk internships`, `Norfolk Southern internships`, `Ryder internships` and `C.H. Robinson internships`.
+- Utility metric: use of collection keyword and paid filters where privacy-safe aggregate events become available; no typed search value should enter a custom analytics event.
+- Guardrails: no duplicate supply-chain landing page, no fabricated opening state, no gating of the directory and no changes to recently refreshed high-impression employer snippets.
+- Reassess the cluster after the changed hub or a new route accumulates at least 200 impressions, or after 28 days. Strengthen the existing URL when the task is the same; add another page only for a materially distinct student task.
+
 ## 2026-10-22 — environmental and conservation search cluster
 
 ### Baseline

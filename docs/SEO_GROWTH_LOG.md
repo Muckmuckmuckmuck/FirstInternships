@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-23 — Netflix live-role and CTR refresh
+
+### Baseline
+
+- Window: September 24–October 21, 2026, the latest complete 28 days available in Search Console on October 23.
+- Site totals: 490 clicks, 51,100 impressions, 1.0% CTR and average position 9.4.
+- `/programs/netflix-internships` recorded no clicks, 422 impressions, 0% CTR and average position 10.3. Visible queries included `netflix internships summer 2027` at average position 7.7 and timing questions such as `when do netflix summer internships open` around positions 10–11.
+- Gilead ranked above Netflix in the automated opportunity list, but its snippet was refreshed on October 20. This release preserves that experiment until it reaches the documented reassessment threshold.
+
+### Changes
+
+- Reframed the existing Netflix URL around Summer 2027 openings, pay and dates while preserving its broader program guidance and canonical URL.
+- Verified an official Summer 2027 software engineering posting dated October 19 with a December 2027–Spring/Summer 2028 graduation window, paid 12-week minimum, Los Gatos or Los Angeles placement, $40–$110 hourly total-compensation range and a January 1, 2027 published closing date.
+- Added role-specific FAQs that distinguish the software posting's deadline and compensation from universal Netflix program rules.
+- Added the existing Netflix guide to the Summer 2027 collection because the employer now has an official current role explicitly naming that cycle.
+
+### Measurement
+
+- Primary metric: clicks and CTR for `/programs/netflix-internships`, interpreted alongside average position.
+- Supporting query families: `netflix internships`, `netflix internships summer 2027`, `when do netflix internships open` and `netflix software engineer intern summer 2027`.
+- Guardrails: no duplicate Netflix page, no universal deadline inferred from one role, no claim that the top of the pay range is guaranteed and no rewrite of the October 20 snippet cohort.
+- Reassess after the changed URL accumulates at least another 200 impressions or after 28 days. Refresh this existing URL again rather than splitting the same search intent.
+
 ## 2026-10-23 — NSA and Evercore high-impression CTR refresh
 
 ### Baseline

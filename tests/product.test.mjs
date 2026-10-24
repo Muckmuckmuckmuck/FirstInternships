@@ -1713,6 +1713,28 @@ test("October 23 Search Console refresh improves NSA and Evercore search intent"
     assert.ok(html.includes(program.seoTitle.replace(/&/g, "&amp;")));
   }
 });
+test("October 23 Netflix refresh reflects the live Summer 2027 software role", async () => {
+  const netflix = PROGRAMS.find(program => program.id === "netflix-internships");
+  assert.ok(netflix);
+  assert.equal(netflix.seoTitle, "Netflix Internships 2027: Open Roles, Pay & Dates");
+  assert.ok(netflix.seoTitle.length <= 52);
+  assert.ok(netflix.seoDescription.length >= 120 && netflix.seoDescription.length <= 180);
+  assert.equal(netflix.status, "Summer 2027 software engineering role available");
+  assert.equal(netflix.verified, "2026-10-23");
+  assert.match(netflix.timing, /January 1, 2027/);
+  assert.match(netflix.timing, /rolling basis/i);
+  assert.ok(netflix.sources.some(source => /790318904468/.test(source.url)));
+  assert.ok(netflix.faqs.some(([question, answer]) => /how much/i.test(question) && /\$40–\$110 per hour/.test(answer)));
+  assert.ok(netflix.faqs.some(([question, answer]) => /who can apply/i.test(question) && /December 2027/.test(answer)));
+
+  const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
+  assert.ok(summer.programIds.includes(netflix.id));
+
+  const html = await readFile(`dist${programPath(netflix)}.html`, "utf8");
+  assert.ok(html.includes(netflix.seoTitle.replace(/&/g, "&amp;")));
+  assert.match(html, /Summer 2027 software engineering role available/);
+  assert.match(html, /January 1, 2027/);
+});
 test("October 22 environment wave adds sourced programs and one useful search cluster", () => {
   const ids = [
     "student-conservation-association-internships",

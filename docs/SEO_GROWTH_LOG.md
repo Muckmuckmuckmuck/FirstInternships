@@ -2,6 +2,30 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-23 — NSA and Evercore high-impression CTR refresh
+
+### Baseline
+
+- Window: September 24–October 21, 2026, the latest complete 28 days available in Search Console on October 23.
+- Site totals: 490 clicks, 51,100 impressions, 1.0% CTR and average position 9.4.
+- `/programs/nsa-summer-internships` recorded 20 clicks, 1,539 impressions, 1.3% CTR and average position 8.2. The visible exact query `nsa internships` produced 182 impressions, no clicks and average position 9.8; several Summer 2027 variants also appeared on page one with no clicks.
+- `/programs/evercore-investment-banking-summer-analyst` recorded 2 clicks, 640 impressions, 0.3% CTR and average position 8.5. Visible demand includes `evercore internships` and multiple Summer 2028 analyst variants while the official Summer 2028 New York Generalist posting remains available.
+- NVIDIA Ignite, World Bank and Pfizer remain higher raw opportunities, but their snippets were refreshed on October 20. This release preserves those experiments until they accrue enough post-change evidence.
+
+### Changes
+
+- Reframed the NSA title and description around the exact `NSA summer internships` language while leading with the closed Summer 2027 status rather than implying current availability.
+- Rechecked NSA's detailed official student-program page, made it the primary outbound source and added decision-useful answers about focus areas and the unpublished acceptance rate. August 15 remains a monitoring date, not a promise that Summer 2028 will repeat the prior cycle.
+- Reframed the Evercore snippet around `Summer Analyst 2028`, the November 15 deadline and the two-application limit after verifying the official posting remained available on October 23.
+- Added visible answers that distinguish the posting's annualized $120,000 base-salary figure from total ten-week internship pay and state the review-date availability without creating false evergreen urgency.
+
+### Measurement
+
+- Primary metric: clicks and CTR for the two existing program URLs, interpreted alongside average position.
+- Supporting query families: `nsa internships`, `nsa summer internships 2027`, `evercore internships`, `evercore summer analyst 2028` and `evercore 2028 internship`.
+- Guardrails: no URL changes, no unsupported acceptance-rate estimate, no invented Summer 2028 NSA dates, no duplicate keyword pages and no changes to the October 20 snippet cohort.
+- Reassess after each changed URL accumulates at least another 200 impressions or after 28 days. Prefer another improvement to these URLs over splitting their search intent.
+
 ## 2026-10-23 — supply-chain and logistics opportunity cluster
 
 ### Baseline

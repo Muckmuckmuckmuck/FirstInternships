@@ -713,7 +713,8 @@ test("October 13 finance expansion preserves official cycle facts and honest unk
   ];
   const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
   assert.ok(batch.every(Boolean));
-  assert.ok(batch.every(program => program.verified === "2026-10-13"));
+  assert.ok(batch.filter(program => program.id !== "evercore-investment-banking-summer-analyst").every(program => program.verified === "2026-10-13"));
+  assert.equal(PROGRAMS.find(program => program.id === "evercore-investment-banking-summer-analyst").verified, "2026-10-23", "Evercore was rechecked while its Summer 2028 posting remained live");
   assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
   assert.ok(batch.every(program => program.sources.some(source => source.url === program.url)));
 
@@ -1686,6 +1687,31 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
   assert.ok(footerIds.includes("gilead-internship-program"));
   assert.ok(!footerIds.includes("netflix-internships"));
   assert.ok(!footerIds.includes("meta-internships"));
+});
+test("October 23 Search Console refresh improves NSA and Evercore search intent", async () => {
+  const nsa = PROGRAMS.find(program => program.id === "nsa-summer-internships");
+  const evercore = PROGRAMS.find(program => program.id === "evercore-investment-banking-summer-analyst");
+  assert.ok(nsa && evercore);
+
+  assert.equal(nsa.seoTitle, "NSA Summer Internships 2027: Eligibility & Dates");
+  assert.equal(nsa.url, "https://www.nsa.gov/Careers/Student-Programs/");
+  assert.ok(nsa.sources.some(source => source.url === nsa.url));
+  assert.equal(nsa.verified, "2026-10-23");
+  assert.match(nsa.timing, /August 15/);
+  assert.ok(nsa.faqs.some(([question, answer]) => /acceptance rate/i.test(question) && /does not publish/i.test(answer)));
+
+  assert.equal(evercore.seoTitle, "Evercore Summer Analyst 2028: Deadline & Eligibility");
+  assert.equal(evercore.deadlineDate, "2026-11-15");
+  assert.equal(evercore.verified, "2026-10-23");
+  assert.ok(evercore.faqs.some(([question, answer]) => /accepting applications/i.test(question) && /October 23, 2026/i.test(answer)));
+  assert.ok(evercore.faqs.some(([question, answer]) => /\$120,000/.test(question) && /not the amount paid/i.test(answer)));
+
+  for (const program of [nsa, evercore]) {
+    assert.ok(program.seoTitle.length <= 52);
+    assert.ok(program.seoDescription.length >= 120 && program.seoDescription.length <= 180);
+    const html = await readFile(`dist${programPath(program)}.html`, "utf8");
+    assert.ok(html.includes(program.seoTitle.replace(/&/g, "&amp;")));
+  }
 });
 test("October 22 environment wave adds sourced programs and one useful search cluster", () => {
   const ids = [

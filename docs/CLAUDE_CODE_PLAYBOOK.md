@@ -417,12 +417,17 @@ Do not enable it unless all of the following are true:
 1. The owner has approved the AdSense account and site configuration.
 2. Required privacy messaging and a Google-certified CMP are configured for applicable regions.
 3. Valid publisher and slot IDs are present in deployment environment variables.
-4. `VITE_ADSENSE_ENABLED=true` is an intentional launch action.
-5. The deployed site is tested with ads loaded, blocked, and unavailable.
+4. `VITE_ADSENSE_CONSENT_READY=true` records that the certified CMP, applicable messages, and privacy-choice flow were published and tested. It is not a substitute for them.
+5. `VITE_ADSENSE_ENABLED=true` is an intentional launch action.
+6. The deployed site is tested with ads loaded, blocked, rejected, and unavailable.
+
+Use `VITE_ADSENSE_SITE_VERIFICATION=true` with live ads still off to publish the official publisher meta tag and `/ads.txt` during site review. The build fails closed when review/live mode has an invalid publisher ID, or live mode lacks consent readiness or the required numeric unit IDs. Follow `docs/ADSENSE_READINESS.md` for the full account and deployment sequence.
 
 Never put private credentials in `VITE_` variables; they are public in the browser bundle. Publisher and slot IDs are public identifiers, but API keys and service credentials are not.
 
 Keep ad density modest. Ads must be labeled “Advertisement,” remain visually distinct from listings, and never interfere with search, filters, official apply links, planner controls, or mobile navigation. Never encourage ad clicks or promise revenue.
+
+The initial launch deliberately does not render sidebar units. Do not bypass that safeguard without reviewing every nearby navigation and application control on desktop and mobile.
 
 ## 17. External service boundaries
 

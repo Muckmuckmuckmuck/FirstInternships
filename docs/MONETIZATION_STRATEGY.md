@@ -1,6 +1,6 @@
 # FirstInternships monetization strategy
 
-Updated October 21, 2026.
+Updated October 25, 2026.
 
 The product has two assets: qualified organic traffic from students actively researching internships, and a permission-based audience that can receive relevant alerts. Monetization should increase the value of those assets without turning employer facts into paid claims or making indexed content difficult to read.
 
@@ -38,10 +38,11 @@ The site already contains gated, labeled ad slots for the top, in-feed and deskt
 1. The operator owns an approved AdSense account and approved site.
 2. Applicable consent messaging uses a Google-certified CMP.
 3. The Vercel production environment contains the public publisher and slot identifiers.
-4. `VITE_ADSENSE_ENABLED=true` is intentionally enabled.
-5. Production is tested with ads loaded, blocked and unavailable.
+4. `VITE_ADSENSE_CONSENT_READY=true` is set only after the CMP, applicable regional messages and privacy-choice flow are published and tested.
+5. `VITE_ADSENSE_ENABLED=true` is intentionally enabled.
+6. Production is tested with ads loaded, blocked, rejected and unavailable.
 
-Start with modest density. The first page viewport should deliver useful content before an ad on mobile. Track page RPM and viewability beside Core Web Vitals, organic clicks, bounce/engagement and outbound application clicks. Never encourage ad clicks or style advertising like an employer application control.
+Use `VITE_ADSENSE_SITE_VERIFICATION=true` during site review so the public publisher meta tag and root `ads.txt` can be verified without requesting ads. Start with the two manual in-content/banner units in `docs/ADSENSE_READINESS.md`; sidebar units and Auto ads stay off for the initial launch. The first page viewport should deliver useful content before an ad on mobile. Track page RPM and viewability beside Core Web Vitals, organic clicks, bounce/engagement and outbound application clicks. Never encourage ad clicks or style advertising like an employer application control.
 
 ### 3. Newsletter sponsorship
 
@@ -69,11 +70,24 @@ Review these metrics together each week:
 
 Do not optimize revenue per session in isolation. A change that raises short-term ad revenue but reduces search traffic, trust or subscriber retention can reduce total enterprise value.
 
+### Conversion target and measurement contract
+
+The working target is a 25% conversion rate for qualified signup opportunities. It is an experiment target, not a guarantee and not a license to mislabel accounts as subscribers. Measure compatible events from the same period and surface:
+
+1. `signup_prompt_viewed` to `account_google_start` or `account_email_link_sent` measures prompt response.
+2. Authentication starts to `account_auth_completed` measures provider and callback completion.
+3. `newsletter_activation_viewed` to `newsletter_opt_in_completed` measures explicit newsletter activation after authentication.
+4. Active database subscriptions divided by unique eligible sessions is the north-star retained-audience rate once a privacy-respecting unique-session denominator is available.
+
+Search Console clicks are neither unique people nor prompt views. Do not divide a current database total by a mismatched lifetime or 28-day click number and call it a conversion rate. Report account creation and confirmed newsletter activation separately. A newsletter placeholder in `needs_consent` is not a subscriber.
+
+The October 25 production audit found 14 auth accounts and 15 newsletter rows, with every newsletter row still in `needs_consent` and zero active subscribers. The immediate product priority is therefore the post-authentication activation step, not more aggressive interruption frequency. Recheck this baseline after a full traffic window with the new funnel events before changing prompt cadence.
+
 ### Current measurement boundary
 
 Production page measurement uses cookieless Vercel and Cloudflare Web Analytics and never receives browser-planner data. When the active Vercel plan supports custom events, the public interface queues anonymous fixed-name events for product-specific partnership inquiries, official-application clicks, account-sign-in starts and successful newsletter-consent milestones. These events add no email address, search term, saved-program state, note, checklist, newsletter preference or other visitor input. Vercel associates an event with its public page path, so a conversion can be analyzed by public landing-page route without adding a private identifier. Cloudflare Web Analytics does not currently support custom events, so its role remains aggregate page and performance measurement.
 
-The `/partners` page publishes only inventory counts computed from maintained site data: sourced program guides, original application playbooks, field hubs and college-year paths. Those counts describe editorial surfaces, not reach or results. Do not publish traffic, subscriber, open, click or conversion figures in a media kit until the reporting system can reproduce the number and its measurement window.
+The `/partners` page publishes only inventory counts computed from maintained site data: sourced program guides, original application playbooks, field hubs and college-year paths. Those counts describe editorial surfaces, not reach or results. Do not publish traffic, subscriber, open, click or conversion figures in a media kit until the reporting system can reproduce the number and its measurement window. The conversion events remain fixed-name aggregate events; never attach email addresses, selected preferences, planner state or another visitor identifier.
 
 ## Next commercial milestones
 

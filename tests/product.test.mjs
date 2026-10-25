@@ -298,6 +298,42 @@ test("the free-forever promise protects student access while commercial revenue 
   assert.match(strategy, /AdSense baseline:[\s\S]*primary passive layer/);
   assert.match(strategy, /Never charge an application fee, sell ordinary directory rank, sell subscriber data/);
 });
+
+test("AdSense review and launch paths fail closed around verification, consent, placement and disclosure", async () => {
+  const [appSource, styles, buildSource, exampleEnv, privacy, terms, robots, readiness] = await Promise.all([
+    readFile("src/FirstInternships.jsx", "utf8"),
+    readFile("src/styles.css", "utf8"),
+    readFile("scripts/build.mjs", "utf8"),
+    readFile(".env.example", "utf8"),
+    readFile("public/privacy.html", "utf8"),
+    readFile("public/terms.html", "utf8"),
+    readFile("dist/robots.txt", "utf8"),
+    readFile("docs/ADSENSE_READINESS.md", "utf8"),
+  ]);
+
+  assert.match(buildSource, /VITE_ADSENSE_SITE_VERIFICATION/);
+  assert.match(buildSource, /google-adsense-account/);
+  assert.match(buildSource, /adsenseLiveRequested && !adsenseConsentReady/);
+  assert.match(buildSource, /AdSense live mode requires numeric slot IDs/);
+  assert.match(buildSource, /adsenseConnectionEnabled[\s\S]*writeFile\(join\(out, "ads\.txt"\)/);
+  assert.match(exampleEnv, /VITE_ADSENSE_SITE_VERIFICATION=false[\s\S]*VITE_ADSENSE_ENABLED=false[\s\S]*VITE_ADSENSE_CONSENT_READY=false/);
+
+  assert.match(appSource, /VITE_ADSENSE_ENABLED === "true"[\s\S]*VITE_ADSENSE_CONSENT_READY === "true"/);
+  assert.match(appSource, /slot !== "VITE_ADSENSE_SLOT_SIDEBAR"/, "sidebar ads must stay dormant around navigation and application controls");
+  assert.match(appSource, /!document\.querySelector\("\.ad-slot"\)/, "pages without launch inventory must not load the ad-serving script");
+  assert.match(appSource, /aria-label="Advertisement" data-nosnippet/);
+  assert.match(appSource, /ad-slot-frame/);
+  assert.match(styles, /\.ad-slot\{[^}]*min-height:280px[^}]*margin:52px 0[^}]*border:/, "ad inventory must reserve space and remain visually separated");
+  assert.match(styles, /\.prose>\.ad-slot\+section\{[^}]*padding-top:28px[^}]*border-top:/, "an article ad must not visually merge into the next action section");
+  assert.match(robots, /User-agent: Mediapartners-Google\nAllow: \//);
+
+  for (const text of ["third-party vendors, including Google", "prior visits", "My Ad Center", "YourAdChoices", "Google-certified consent-management platform", "reopen privacy and cookie settings"]) assert.ok(privacy.includes(text), text);
+  assert.match(terms, /never required or encouraged to click an advertisement/i);
+  for (const text of ["cannot guarantee approval", "VITE_ADSENSE_SITE_VERIFICATION", "three-choice European message", "Do not enable Auto ads", "Never click the site's live ads"]) assert.ok(readiness.includes(text), text);
+
+  const defaultHome = await readFile("dist/index.html", "utf8");
+  assert.doesNotMatch(defaultHome, /google-adsense-account|pagead2\.googlesyndication\.com/, "the default build must not connect to or request AdSense");
+});
 test("the partnership page qualifies revenue leads with auditable inventory and anonymous events", async () => {
   const partners = render("/partners");
   const source = await readFile("src/FirstInternships.jsx", "utf8");
@@ -319,10 +355,23 @@ test("account and newsletter conversion events stay aggregate and contain no vis
     readFile("src/Account.jsx", "utf8"),
     readFile("src/analytics.js", "utf8"),
   ]);
-  for (const event of ["account_google_start", "newsletter_google_start", "account_email_link_sent", "newsletter_email_link_sent", "newsletter_opt_in_completed", "newsletter_preferences_saved"]) {
+  for (const event of [
+    "signup_prompt_viewed",
+    "signup_prompt_dismissed",
+    "signup_launcher_opened",
+    "newsletter_personalization_opened",
+    "account_google_start",
+    "newsletter_google_start",
+    "account_email_link_sent",
+    "newsletter_email_link_sent",
+    "account_auth_completed",
+    "newsletter_activation_viewed",
+    "newsletter_opt_in_completed",
+    "newsletter_preferences_saved",
+  ]) {
     assert.match(accountSource, new RegExp(`"${event}"`), event);
   }
-  assert.equal((accountSource.match(/trackPublicEvent\(/g) || []).length, 4);
+  assert.equal((accountSource.match(/trackPublicEvent\(/g) || []).length, 12);
   assert.match(analyticsSource, /window\.va\("event", \{ name \}\)/);
   assert.doesNotMatch(analyticsSource, /properties|email:|preferences:|planner:/i);
 });
@@ -481,7 +530,7 @@ test("account disclosures cover Google auth boundaries and separate newsletter c
     readFile("public/terms.html", "utf8"),
   ]);
   for (const [name, document] of [["privacy", privacy], ["terms", terms]]) {
-    assert.match(document, /Updated October 21, 2026/, `${name} disclosure date`);
+    assert.match(document, /Updated October 25, 2026/, `${name} disclosure date`);
     assert.match(document, /Supabase/, `${name} must identify the auth processor`);
     assert.match(document, /Gmail messages/, `${name} must explain that Gmail access is not requested`);
     assert.match(document, /Google Drive files/, `${name} must explain that Drive access is not requested`);
@@ -520,6 +569,9 @@ test("signed-in email settings cannot imply an active digest before consent", as
   assert.match(panelSource, /active \? \(account\.settings\?\.preferences\?\.frequency === "biweekly" \? "Every two weeks" : "Weekly"\) : "Not active"/);
   assert.match(panelSource, /disabled=\{busy \|\| !account\.settings \|\| suppressed \|\| !draft\.consent\}/);
   assert.match(panelSource, /!draft\.consent \? <>Check consent to turn on email<\//);
+  assert.match(panelSource, /needsActivation = Boolean\(account\.settings\) && !active && !suppressed/);
+  assert.match(panelSource, /className="account-activation-card"[\s\S]*<SignupEssentials[\s\S]*Turn on my personalized alerts/, "new and returning accounts need a short explicit-consent activation path before advanced filters");
+  assert.match(panelSource, /trackPublicEvent\("newsletter_activation_viewed"\)/, "the activation denominator must be measurable without visitor data");
   assert.doesNotMatch(accountSource, /uniqueProgramYear/, "an opening's year eligibility must not become a student profile value");
   assert.match(accountSource, /Your account is ready/, "auth onboarding copy should work for Google and email-link signups");
 });

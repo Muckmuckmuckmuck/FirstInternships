@@ -276,7 +276,9 @@ Roll out in stages; the send gates should default off.
 Measure the complete quality funnel, preferably in aggregate:
 
 - Account magic-link requests, completions, and failures.
+- Signup-prompt views, dismissals, launcher opens, and Google starts as aggregate fixed-name events.
 - Explicit opt-in starts, confirmations, confirmation latency, and expired-token rate.
+- Post-auth activation-card views and completed opt-ins, measured separately from account creation.
 - Active confirmed subscribers by chosen cadence and broad preference cohort.
 - Match coverage: subscribers receiving at least one honest match.
 - Recommendation diversity, repeated-program rate, and no-match rate.
@@ -285,6 +287,8 @@ Measure the complete quality funnel, preferably in aggregate:
 - Seven-, 30-, and 90-day active-subscriber retention by consent cohort.
 
 The primary health signals are confirmed retention, useful-match coverage, low complaint/bounce rates, and repeat engagement. Raw account count, emails sent, or list size alone do not establish enterprise value, product-market fit, revenue, or consent quality.
+
+The operating target may be expressed as 25% of qualified signup or activation opportunities, but the denominator and period must be stated. Search Console clicks are not unique visitors or prompt impressions, and a `needs_consent` row is not an active subscriber. Never combine incompatible windows or statuses to manufacture a conversion claim.
 
 Do not add opaque tracking pixels, cross-site advertising profiles, or sensitive per-person analytics merely to increase reported engagement. Any new analytics practice must be implemented, disclosed, and reviewed before launch.
 

@@ -97,6 +97,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
   const refreshSequence = useRef(0);
   const pendingCompletionRef = useRef({ intentId: "", promise: null });
   const authRequestRef = useRef("");
+  const authCompletionRef = useRef("");
 
   const patchState = useCallback(update => {
     if (!mountedRef.current) return;
@@ -108,6 +109,14 @@ export function AccountProvider({ children, active = false, settingsActive = fal
     if (!session?.user) {
       patchState({ status: "signed-out", session: null, settings: null, busy: "" });
       return;
+    }
+
+    if (typeof window !== "undefined") {
+      const welcome = new URLSearchParams(window.location.search).get("welcome") === "1";
+      if (welcome && authCompletionRef.current !== session.user.id) {
+        authCompletionRef.current = session.user.id;
+        trackPublicEvent("account_auth_completed");
+      }
     }
 
     // Organic pages only need the local Supabase session so their navigation,
@@ -292,6 +301,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
 
   const saveNewsletterSettings = useCallback(async ({ consent, preferences }) => {
     const cleanPreferences = cleanNewsletterPreferences(preferences, FIELD_IDS);
+    const wasSubscribed = ACTIVE_NEWSLETTER_STATUSES.has(state.settings?.subscription?.status);
     if (consent) {
       const validationError = validateNewsletterPreferences(cleanPreferences);
       if (validationError) {
@@ -302,7 +312,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
     patchState({ busy: "saving", feedback: null });
     try {
       await postNewsletterSubscription(clientRef.current, { consent, preferences: cleanPreferences });
-      if (consent) trackPublicEvent("newsletter_preferences_saved");
+      if (consent) trackPublicEvent(wasSubscribed ? "newsletter_preferences_saved" : "newsletter_opt_in_completed");
       await loadSession(state.session, { finishPending: false });
       patchState({
         busy: "",
@@ -316,7 +326,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
       patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error) } });
       return false;
     }
-  }, [loadSession, patchState, state.session]);
+  }, [loadSession, patchState, state.session, state.settings]);
 
   const unsubscribeNewsletter = useCallback(async preferences => {
     return saveNewsletterSettings({ consent: false, preferences });
@@ -514,7 +524,7 @@ function ConsentFields({ draft, setDraft, disabled = false, suppressed = false }
   </div>;
 }
 
-function SignupEssentials({ draft, setDraft, disabled = false }) {
+function SignupEssentials({ draft, setDraft, disabled = false, footer = "After sign-in, you can add locations, work arrangements, paid-only matching, and a biweekly cadence." }) {
   const update = (key, value) => setDraft(current => ({ ...current, [key]: value }));
   return <div className="account-signup-essentials">
     <div className="account-form-grid">
@@ -537,7 +547,7 @@ function SignupEssentials({ draft, setDraft, disabled = false }) {
       <input type="checkbox" checked={draft.consent} onChange={event => update("consent", event.target.checked)} disabled={disabled} />
       <span><strong>Email me personalized internship updates</strong><small>I agree to receive a focused weekly digest from FirstInternships. I can change the filters, frequency, or unsubscribe at any time. Read the <a href="/privacy">privacy policy</a>.</small></span>
     </label>
-    <p className="account-signup-next">After sign-in, you can add locations, work arrangements, paid-only matching, and a biweekly cadence.</p>
+    <p className="account-signup-next">{footer}</p>
   </div>;
 }
 
@@ -593,6 +603,7 @@ function SignedOutPanel({ source, initialDefaults = null }) {
       <button className="account-personalize-toggle" type="button" aria-expanded={showPersonalization} aria-controls="account-signup-personalization" onClick={() => {
         setShowPersonalization(current => {
           if (current) setDraft(value => ({ ...value, consent: false }));
+          else trackPublicEvent("newsletter_personalization_opened");
           return !current;
         });
       }}>
@@ -638,7 +649,12 @@ function SignedInPanel() {
   const busy = account.busy === "saving" || account.busy === "loading-settings";
   const active = ACTIVE_NEWSLETTER_STATUSES.has(status);
   const suppressed = ["bounced", "complained"].includes(status);
+  const needsActivation = Boolean(account.settings) && !active && !suppressed;
   const preferences = formPreferences(draft);
+
+  useEffect(() => {
+    if (needsActivation) trackPublicEvent("newsletter_activation_viewed");
+  }, [needsActivation]);
 
   const submit = async event => {
     event.preventDefault();
@@ -651,11 +667,19 @@ function SignedInPanel() {
       <div><small>Signed in as</small><strong>{account.user?.email}</strong></div>
       <button type="button" className="button secondary small" onClick={account.signOut} disabled={account.busy === "sign-out"}>{account.busy === "sign-out" ? <Loader2 size={14} className="account-spinner" /> : <LogOut size={14} />} Sign out</button>
     </section>
-    {welcome && status === "needs_consent" && <aside className="account-onboarding-nudge" aria-labelledby="account-onboarding-title">
-      <span aria-hidden="true"><BellRing size={21} /></span>
-      <div><p className="eyebrow">Your account is ready</p><h2 id="account-onboarding-title">Finish your match profile to turn on alerts.</h2><p>Choose your college year and at least one field below, then check the email consent box. Nothing is sent until you save that explicit choice.</p></div>
-      <a className="button small" href="#preferences">Choose my matches <ArrowRight size={15} /></a>
-    </aside>}
+    {needsActivation && <section className="account-activation-card" aria-labelledby="account-activation-title">
+      <div className="account-activation-heading">
+        <span aria-hidden="true"><BellRing size={22} /></span>
+        <div><p className="eyebrow">{welcome ? "Your account is ready · one step left" : status === "unsubscribed" ? "Restart personalized alerts" : "Turn your account into useful alerts"}</p><h2 id="account-activation-title">Choose two things. Get internships that fit.</h2><p>Select your college year and main interest, then explicitly turn on the free weekly digest. Advanced filters can wait.</p></div>
+      </div>
+      <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
+      <form className="account-activation-form" onSubmit={submit}>
+        <SignupEssentials draft={draft} setDraft={setDraft} disabled={busy} footer="That is enough to start. Add locations, work arrangements, paid-only matching, or a biweekly cadence below whenever you want." />
+        <button className="button account-primary-button" type="submit" disabled={busy || !draft.consent}>
+          {busy ? <><Loader2 size={16} className="account-spinner" /> Turning on alerts…</> : !draft.consent ? <>Check the email box to continue</> : <>Turn on my personalized alerts <ArrowRight size={16} /></>}
+        </button>
+      </form>
+    </section>}
     <div className="account-dashboard-grid">
       <aside className="account-status-card">
         <span className={`account-status-dot is-${status}`} aria-hidden="true" />
@@ -673,7 +697,7 @@ function SignedInPanel() {
           <div><p className="eyebrow">Preference center</p><h2 id="preferences-title">Make every email more relevant.</h2><p>Update this whenever your target changes.</p></div>
           <span><SlidersHorizontal size={18} /> Your filters</span>
         </div>
-        <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />
+        {!needsActivation && <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} />}
         {!account.settings && !busy && <div className="account-inline-warning" role="alert">We could not load your saved preferences. <button type="button" onClick={account.refresh}>Try again</button></div>}
         <form className="account-form" onSubmit={submit}>
           <PreferenceFields draft={draft} setDraft={setDraft} disabled={busy} />
@@ -743,10 +767,11 @@ export function SignupPrompt({ pageType = "", pathname = "/", year = null, field
       if (window.localStorage.getItem(SIGNUP_PROMPT_DISMISSED_KEY) !== dismissedAt) throw new Error("Prompt dismissal was not stored.");
     } catch { /* the session marker still prevents another interruption this visit */ }
     account.dismissFeedback();
+    if (open) trackPublicEvent("signup_prompt_dismissed");
     setLocalError("");
     setOpen(false);
     setShowLauncher(true);
-  }, [account.dismissFeedback]);
+  }, [account.dismissFeedback, open]);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 620px)");
@@ -854,6 +879,7 @@ export function SignupPrompt({ pageType = "", pathname = "/", year = null, field
         return;
       }
       revealed = true;
+      trackPublicEvent("signup_prompt_viewed");
       setShowLauncher(false);
       setOpen(true);
     };
@@ -955,6 +981,7 @@ export function SignupPrompt({ pageType = "", pathname = "/", year = null, field
     return <button ref={launcherRef} className="signup-prompt-launcher" type="button" onClick={event => {
       openedFromLauncherRef.current = true;
       previousFocusRef.current = event.currentTarget;
+      trackPublicEvent("signup_launcher_opened");
       setShowLauncher(false);
       setOpen(true);
     }} aria-haspopup="dialog"><Sparkles size={17} /> Create free account</button>;
@@ -1018,6 +1045,7 @@ export function SignupPrompt({ pageType = "", pathname = "/", year = null, field
       <button className="signup-prompt-alert-toggle" type="button" aria-expanded={showAlertOptions} aria-controls="signup-prompt-alert-options" onClick={() => {
         setShowAlertOptions(current => {
           if (current) setDraft(value => ({ ...value, consent: false }));
+          else trackPublicEvent("newsletter_personalization_opened");
           return !current;
         });
         setLocalError("");
@@ -1161,7 +1189,7 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
       : <div className="account-cta-quick">
         <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} target={feedbackTarget} />
         <GoogleSignInButton source={source} label="Continue with Google" feedbackTarget={feedbackTarget} />
-        <button className="account-cta-personalize" type="button" aria-expanded={expanded} aria-controls={formId} onClick={() => setExpanded(true)}>Add personalized weekly matches <ArrowRight size={14} /></button>
+        <button className="account-cta-personalize" type="button" aria-expanded={expanded} aria-controls={formId} onClick={() => { trackPublicEvent("newsletter_personalization_opened"); setExpanded(true); }}>Add personalized weekly matches <ArrowRight size={14} /></button>
         <small>Free account. No password. Email alerts stay off unless you separately opt in.</small>
       </div>}
   </aside>;

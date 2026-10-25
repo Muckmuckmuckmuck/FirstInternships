@@ -8,6 +8,27 @@ import { LEGACY_REDIRECTS } from "../src/legacy.js";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const out = resolve(root, "dist");
 const ssr = resolve(root, "node_modules/.cache/firstinternships-ssr");
+const env = loadEnv("production", root, "VITE_");
+const adsenseClient = env.VITE_ADSENSE_CLIENT || "";
+const adsenseClientValid = /^ca-pub-\d{16}$/.test(adsenseClient);
+const adsenseReviewRequested = env.VITE_ADSENSE_SITE_VERIFICATION === "true";
+const adsenseLiveRequested = env.VITE_ADSENSE_ENABLED === "true";
+const adsenseConsentReady = env.VITE_ADSENSE_CONSENT_READY === "true";
+const requiredAdSlots = ["VITE_ADSENSE_SLOT_TOP", "VITE_ADSENSE_SLOT_IN_FEED"];
+
+if ((adsenseReviewRequested || adsenseLiveRequested) && !adsenseClientValid) {
+  throw new Error("AdSense review/live mode requires VITE_ADSENSE_CLIENT in ca-pub-################ format.");
+}
+if (adsenseLiveRequested && !adsenseConsentReady) {
+  throw new Error("AdSense live mode requires VITE_ADSENSE_CONSENT_READY=true after the certified CMP and privacy messages are published and tested.");
+}
+if (adsenseLiveRequested) {
+  const invalidSlots = requiredAdSlots.filter(name => !/^\d+$/.test(env[name] || ""));
+  if (invalidSlots.length) throw new Error(`AdSense live mode requires numeric slot IDs: ${invalidSlots.join(", ")}.`);
+}
+
+const adsenseConnectionEnabled = (adsenseReviewRequested || adsenseLiveRequested) && adsenseClientValid;
+const adsenseAccountMeta = adsenseConnectionEnabled ? `<meta name="google-adsense-account" content="${adsenseClient}">` : "";
 const buildEnv = { ...process.env, VITE_RENDER_TIMESTAMP: new Date().toISOString() };
 const run = args => {
   const result = spawnSync(process.execPath, [resolve(root, "node_modules/vite/bin/vite.js"), ...args], { cwd: root, stdio: "inherit", env: buildEnv });
@@ -39,7 +60,7 @@ function metadata(page) {
   if (page.type === "guides") graph.push({ "@type": "ItemList", name: page.title, numberOfItems: GUIDES.length, itemListElement: GUIDES.map((guide, i) => ({ "@type": "ListItem", position: i + 1, name: guide.title, url: `${SITE}${guidePath(guide)}` })) });
   if (page.type === "timeline") graph.push({ "@type": "WebApplication", "@id": `${canonical}#tool`, name: "FirstInternships Application Timeline Builder", url: canonical, description: page.description, applicationCategory: "EducationalApplication", operatingSystem: "Any", browserRequirements: "JavaScript enabled for the interactive builder" });
   // Program overviews are articles. Do not misrepresent them as live JobPosting objects.
-  return `<title>${escape(title)}</title><meta name="description" content="${escape(page.description)}"><meta name="robots" content="${noindex ? "noindex, follow" : "index, follow, max-image-preview:large"}"><link rel="canonical" href="${escape(canonical)}"><meta property="og:type" content="${["guide", "program"].includes(page.type) ? "article" : "website"}"><meta property="og:site_name" content="FirstInternships"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${escape(canonical)}"><meta property="og:image" content="${SITE}/og-image.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(page.description)}"><meta name="twitter:image" content="${SITE}/og-image.png"><script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c")}</script>`;
+  return `${adsenseAccountMeta}<title>${escape(title)}</title><meta name="description" content="${escape(page.description)}"><meta name="robots" content="${noindex ? "noindex, follow" : "index, follow, max-image-preview:large"}"><link rel="canonical" href="${escape(canonical)}"><meta property="og:type" content="${["guide", "program"].includes(page.type) ? "article" : "website"}"><meta property="og:site_name" content="FirstInternships"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(page.description)}"><meta property="og:url" content="${escape(canonical)}"><meta property="og:image" content="${SITE}/og-image.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(page.description)}"><meta name="twitter:image" content="${SITE}/og-image.png"><script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@graph": graph }).replace(/</g, "\\u003c")}</script>`;
 }
 for (const route of ROUTES) {
   const page = resolvePage(route);
@@ -60,6 +81,13 @@ async function copyPublic(directory) {
   }
 }
 await copyPublic(join(root, "public"));
+if (adsenseConnectionEnabled) {
+  for (const name of ["privacy.html", "terms.html"]) {
+    const path = join(out, name);
+    const html = await readFile(path, "utf8");
+    await writeFile(path, html.replace("</head>", `  ${adsenseAccountMeta}\n</head>`));
+  }
+}
 const crawlable = ROUTES.filter(route => !["/saved", "/compare", "/account", "/404"].includes(route));
 const latestProgramReview = (programs, fallback = VERIFIED) => programs.reduce((latest, program) => {
   const reviewed = program.updated || program.verified;
@@ -86,12 +114,11 @@ function lastmodForRoute(route) {
 }
 const generatedPublic = {
   "sitemap.xml": `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...crawlable, "/privacy", "/terms"].map(route => `<url><loc>${SITE}${route}</loc><lastmod>${lastmodForRoute(route)}</lastmod></url>`).join("")}</urlset>`,
-  "robots.txt": `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE}/sitemap.xml\n`,
+  "robots.txt": `User-agent: Mediapartners-Google\nAllow: /\n\nUser-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE}/sitemap.xml\n`,
   "llms.txt": `# FirstInternships\n\nIndependent college internship directory. Program facts are reviewed against official sources; editorial preparation advice is separate. Not a live vacancies feed.\n\n${crawlable.map(route => `- [${resolvePage(route).title}](${SITE}${route})`).join("\n")}\n`,
 };
 await Promise.all(Object.entries(generatedPublic).flatMap(([name, value]) => [writeFile(join(out, name), value), writeFile(join(root, "public", name), value)]));
-const env = loadEnv("production", root, "VITE_");
-if (env.VITE_ADSENSE_ENABLED === "true" && /^ca-pub-\d{16}$/.test(env.VITE_ADSENSE_CLIENT || "")) await writeFile(join(out, "ads.txt"), `google.com, ${env.VITE_ADSENSE_CLIENT.replace("ca-", "")}, DIRECT, f08c47fec0942fa0\n`);
+if (adsenseConnectionEnabled) await writeFile(join(out, "ads.txt"), `google.com, ${adsenseClient.replace("ca-", "")}, DIRECT, f08c47fec0942fa0\n`);
 const deployment = JSON.parse(await readFile(join(root, "vercel.json"), "utf8"));
 const expected = Object.entries(LEGACY_REDIRECTS);
 for (const [from, to] of expected) if (!deployment.redirects?.some(r => r.source === from && r.destination === to)) throw new Error(`Missing deployment redirect: ${from} → ${to}`);

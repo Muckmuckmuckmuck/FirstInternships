@@ -72,22 +72,31 @@ function usePlanner() {
 const CF_BEACON_TOKEN = "fc6267440a7347e993e4af4ba8923369";
 const CF_BEACON_HOST = "firstinternships.com";
 
-const adsEnabled = () => import.meta.env.VITE_ADSENSE_ENABLED === "true" && /^ca-pub-\d{16}$/.test(import.meta.env.VITE_ADSENSE_CLIENT || "");
-function AdSlot({ slot }) {
-  const [ready, setReady] = useState(false);
+const adsEnabled = () => import.meta.env.VITE_ADSENSE_ENABLED === "true"
+  && import.meta.env.VITE_ADSENSE_CONSENT_READY === "true"
+  && /^ca-pub-\d{16}$/.test(import.meta.env.VITE_ADSENSE_CLIENT || "");
+function AdSlot({ slot, placement = "in-feed" }) {
+  const activated = useRef(false);
   const slotId = import.meta.env[slot];
+  // Sidebar units are intentionally dormant for the first launch. The existing
+  // sidebars contain navigation and application controls, so rendering an ad
+  // there would create avoidable accidental-click and policy risk.
+  const configured = slot !== "VITE_ADSENSE_SLOT_SIDEBAR" && adsEnabled() && /^\d+$/.test(slotId || "");
   useEffect(() => {
-    if (!adsEnabled() || !/^\d+$/.test(slotId || "")) return;
-    const activate = () => setReady(true);
+    if (!configured) return undefined;
+    const activate = () => {
+      if (!window.fiAdsLoaded || activated.current) return;
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        activated.current = true;
+      } catch { /* An unavailable ad must never break the directory. */ }
+    };
     if (window.fiAdsLoaded) activate();
     window.addEventListener("fi:ads-loaded", activate);
     return () => window.removeEventListener("fi:ads-loaded", activate);
-  }, [slotId]);
-  useEffect(() => {
-    if (ready) { try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch { /* Ads must not break the directory. */ } }
-  }, [ready]);
-  if (!ready) return null;
-  return <aside className="ad-slot" aria-label="Advertisement"><span>Advertisement</span><ins className="adsbygoogle" style={{ display: "block" }} data-ad-client={import.meta.env.VITE_ADSENSE_CLIENT} data-ad-slot={slotId} data-ad-format="auto" data-full-width-responsive="true" /></aside>;
+  }, [configured, slotId]);
+  if (!configured) return null;
+  return <aside className={`ad-slot ad-slot--${placement}`} aria-label="Advertisement" data-nosnippet><span>Advertisement</span><div className="ad-slot-frame"><ins className="adsbygoogle" style={{ display: "block", width: "100%" }} data-ad-client={import.meta.env.VITE_ADSENSE_CLIENT} data-ad-slot={slotId} data-ad-format="auto" data-full-width-responsive="true" /></div></aside>;
 }
 function Header({ planner, pageType }) {
   const [open, setOpen] = useState(false);
@@ -275,10 +284,10 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
       <fieldset><legend>Preferences</legend><label><input type="checkbox" checked={paid} onChange={e => setPaid(e.target.checked)} />Confirmed paid programs</label><label><input type="checkbox" checked={onlyPublishedDeadlines} onChange={e => setOnlyPublishedDeadlines(e.target.checked)} />Published future deadline</label><label><input type="checkbox" checked={savedOnly} onChange={e => setSavedOnly(e.target.checked)} />Only my saved programs</label></fieldset>
       <button className="button secondary small" onClick={share}>Put filters in the URL</button><p className="small-note url-notice" role="status">{urlNotice}</p>
       <div className="filter-note"><ShieldCheck size={19} /><p><strong>Eligibility is more than a number.</strong>A year match is a starting point. Check coursework, enrollment, citizenship, dates, and each opening's rules.</p></div>
-      <div className="filter-tool-links"><a className="text-link" href="/internship-deadlines">Deadline calendar <ArrowRight size={14} /></a><a className="text-link" href="/application-timeline">Build a preparation plan <ArrowRight size={14} /></a><a className="text-link" href="/about">Our verification process <ArrowRight size={14} /></a></div><AdSlot slot="VITE_ADSENSE_SLOT_SIDEBAR" />
+      <div className="filter-tool-links"><a className="text-link" href="/internship-deadlines">Deadline calendar <ArrowRight size={14} /></a><a className="text-link" href="/application-timeline">Build a preparation plan <ArrowRight size={14} /></a><a className="text-link" href="/about">Our verification process <ArrowRight size={14} /></a></div>
     </div></details></aside><div className="job-feed">{groups.length ? groups.map((group, i) => <section className="year-group" key={String(group.value)}>
       {group.value !== "sorted" && <div className="group-heading"><span className="group-number">{group.value ? `0${group.value}` : "?"}</span><div><p className="eyebrow">{group.value ? `Earliest undergraduate entry: year ${group.value}` : "No universal minimum confirmed"}</p><h3>{group.value ? "Start here. Check the details." : "Opening-specific pathways"}</h3></div></div>}
-      <div className="cards">{group.programs.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>{i === 0 && <AdSlot slot="VITE_ADSENSE_SLOT_IN_FEED" />}
+      <div className="cards">{group.programs.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>{i === 0 && <AdSlot slot="VITE_ADSENSE_SLOT_IN_FEED" placement="in-feed" />}
     </section>) : alsoCheck.length ? null : <div className="empty-state"><Search size={26} /><h3>No programs match your filters.</h3><p>Try another keyword or reset your preferences. An empty year match is not a claim that no internships exist.</p><button className="button" onClick={reset}>Reset filters</button></div>}{alsoCheck.length > 0 && <section className="year-group also-check" aria-labelledby="also-title">
       <div className="group-heading"><span className="group-number">?</span><div><p className="eyebrow">{alsoCheck.length} more worth checking</p><h3 id="also-title">No minimum year published</h3></div></div>
       <p className="also-note">These publishers do not state one universal minimum college year, or they describe a preferred year rather than a hard rule. That is not the same as being closed to you — the individual opening decides. Open a guide to check credits, enrollment, authorization and dates before ruling one in or out.</p>
@@ -309,7 +318,7 @@ function Home({ planner }) {
     <section className="discovery-tools container" aria-label="Application planning tools"><a href="/internship-deadlines"><span className="tool-icon"><CalendarDays size={24} /></span><div><p className="eyebrow">The application calendar</p><h2>Good timing is a head start.</h2><p>Published cutoffs, time zones, and a calendar you can take with you.</p></div><ArrowUpRight size={24} /></a><a href="/compare"><span className="tool-icon"><GitCompareArrows size={24} /></span><div><p className="eyebrow">A clearer shortlist</p><h2>Compare the way in.</h2><p>Requirements, pay, and preparation. Side by side, without the tab chaos.</p></div><ArrowUpRight size={24} /></a><a href="/application-timeline"><span className="tool-icon"><CalendarDays size={24} /></span><div><p className="eyebrow">Your preparation timeline</p><h2>Make room for the next step.</h2><p>Turn a target date into a plan. Take its checklist and calendar with you.</p></div><ArrowUpRight size={24} /></a></section>
     <section className="container section home-featured-programs"><div className="section-heading"><div><p className="eyebrow">02 / Start with a complete guide</p><h2>Popular pathways.<br />Requirements explained.</h2></div><a className="text-link" href="/internships">Browse all {PROGRAMS.length} pathways <ArrowRight size={17} /></a></div><p className="section-aside-wide">Open a guide for the college-year rules, timing, preparation steps, and official application route. Availability still comes from the employer.</p><div className="cards">{featuredPrograms().map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div></section>
     <section className="container section"><div className="section-heading"><div><p className="eyebrow">High-interest and newly reviewed</p><h2>What students are checking now.</h2></div><p className="section-aside">Current program guides.<br />Official sources one click away.</p></div><nav className="topic-crosslinks" aria-label="High-interest and newly reviewed internship guides">{currentPrograms().map(program => <a key={program.id} href={programPath(program)}>{program.company}: {program.title} <ArrowUpRight size={14} /></a>)}</nav></section>
-    <div className="container"><AdSlot slot="VITE_ADSENSE_SLOT_TOP" /></div>
+    <div className="container"><AdSlot slot="VITE_ADSENSE_SLOT_TOP" placement="banner" /></div>
     <section className="guide-section"><div className="container section"><div className="section-heading"><div><p className="eyebrow">03 / The application playbook</p><h2>Don't just find it.<br />Go for it.</h2></div><a className="text-link" href="/guides">All application guides <ArrowRight size={17} /></a></div><GuideCards items={featuredGuides()} /></div></section>
     <section className="planner-banner container"><div><p className="eyebrow">Small steps. Real momentum.</p><h2>Your next move,<br />all in one place.</h2><p>Save the possibilities. Check off preparation. Track the next step. Your personal planner stays private on this browser, separately from optional email-alert preferences.</p></div><div className="planner-banner-action"><Bookmark size={38} strokeWidth={1.4} /><a className="button" href="/saved">Make it a plan <ArrowRight size={17} /></a><span>Free. Private. On this browser.</span></div></section>
   </>;
@@ -365,7 +374,7 @@ function Collection({ page, planner }) {
   return <div className="container"><Breadcrumbs items={[["Internships", "/internships"], [item.name, null]]} /><PageIntro eyebrow={page.year ? `College year ${item.id}` : "Find your field"} title={item.title} description={item.intro} />
     <section className="collection-start" aria-labelledby="start-here"><div><p className="eyebrow">Start here · {visibleCount} options on this page</p><h2 id="start-here">Find a fit in three steps.</h2><p>Pick a promising program, check the exact eligibility, then apply on the employer's official site.</p></div><ol aria-label="How to use this page"><li><span>1</span><strong>Scan the matches</strong><small>Year, field, pay and location</small></li><li><span>2</span><strong>Open the guide</strong><small>Requirements and materials</small></li><li><span>3</span><strong>Apply officially</strong><small>We send you to the source</small></li></ol><a className="button" href="#program-list">See {visibleCount} options <ArrowRight size={16} /></a></section>
     <AccountConversionCTA compact source={page.year ? "year-page" : "field-page"} year={page.year?.id} field={page.field?.id} />
-    <AdSlot slot="VITE_ADSENSE_SLOT_TOP" />
+    <AdSlot slot="VITE_ADSENSE_SLOT_TOP" placement="banner" />
     <div className="collection-search-tools" aria-label="Narrow this collection">
       <div><label className="search-label" htmlFor="collection-query">Search within these opportunities</label><div className="filter-search"><Search size={18} /><input id="collection-query" maxLength={200} value={query} onChange={event => setQuery(event.target.value)} placeholder="Try procurement, airline, research, or a company" /></div></div>
       <label className="collection-paid"><input type="checkbox" checked={paidOnly} onChange={event => setPaidOnly(event.target.checked)} />Only confirmed paid programs</label>
@@ -571,7 +580,7 @@ function SiteContent({ pathname = "/" }) {
   useEffect(() => {
     document.title = page.path === "/" ? `FirstInternships: ${page.title}` : page.title;
     setStale(Boolean(pageReviewDate && Date.now() - Date.parse(`${pageReviewDate}T00:00:00Z`) > 60 * 86400000));
-    if (!adsEnabled() || document.querySelector("script[data-fi-adsense]")) return;
+    if (!adsEnabled() || !document.querySelector(".ad-slot") || document.querySelector("script[data-fi-adsense]")) return;
     // Launch only after approved AdSense Privacy & messaging/CMP is configured.
     const script = document.createElement("script"); script.async = true; script.crossOrigin = "anonymous"; script.dataset.fiAdsense = "true";
     script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${import.meta.env.VITE_ADSENSE_CLIENT}`;

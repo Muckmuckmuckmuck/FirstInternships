@@ -421,7 +421,7 @@ Do not enable it unless all of the following are true:
 5. `VITE_ADSENSE_ENABLED=true` is an intentional launch action.
 6. The deployed site is tested with ads loaded, blocked, rejected, and unavailable.
 
-Use `VITE_ADSENSE_SITE_VERIFICATION=true` with live ads still off to publish the official publisher meta tag and `/ads.txt` during site review. The build fails closed when review/live mode has an invalid publisher ID, or live mode lacks consent readiness or the required numeric unit IDs. Follow `docs/ADSENSE_READINESS.md` for the full account and deployment sequence.
+Production ownership verification is pinned in the public, non-secret `config/adsense.json`; `VITE_ADSENSE_SITE_VERIFICATION=true` and `VITE_ADSENSE_CLIENT` remain supported deployment overrides. Live ads stay off during review. The build fails closed when review/live mode has an invalid publisher ID, or live mode lacks consent readiness or the required numeric unit IDs. Follow `docs/ADSENSE_READINESS.md` for the full account and deployment sequence.
 
 Never put private credentials in `VITE_` variables; they are public in the browser bundle. Publisher and slot IDs are public identifiers, but API keys and service credentials are not.
 

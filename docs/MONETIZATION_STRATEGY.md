@@ -42,7 +42,7 @@ The site already contains gated, labeled ad slots for the top, in-feed and deskt
 5. `VITE_ADSENSE_ENABLED=true` is intentionally enabled.
 6. Production is tested with ads loaded, blocked, rejected and unavailable.
 
-Use `VITE_ADSENSE_SITE_VERIFICATION=true` during site review so the public publisher meta tag and root `ads.txt` can be verified without requesting ads. Start with the two manual in-content/banner units in `docs/ADSENSE_READINESS.md`; sidebar units and Auto ads stay off for the initial launch. The first page viewport should deliver useful content before an ad on mobile. Track page RPM and viewability beside Core Web Vitals, organic clicks, bounce/engagement and outbound application clicks. Never encourage ad clicks or style advertising like an employer application control.
+Keep the public publisher identity and review switch in `config/adsense.json` during site review so the publisher meta tag and root `ads.txt` can be verified without requesting ads. Environment overrides remain available for alternate deployments. Start with the two manual in-content/banner units in `docs/ADSENSE_READINESS.md`; sidebar units and Auto ads stay off for the initial launch. The first page viewport should deliver useful content before an ad on mobile. Track page RPM and viewability beside Core Web Vitals, organic clicks, bounce/engagement and outbound application clicks. Never encourage ad clicks or style advertising like an employer application control.
 
 ### 3. Newsletter sponsorship
 

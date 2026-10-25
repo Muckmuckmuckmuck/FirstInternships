@@ -300,11 +300,12 @@ test("the free-forever promise protects student access while commercial revenue 
 });
 
 test("AdSense review and launch paths fail closed around verification, consent, placement and disclosure", async () => {
-  const [appSource, styles, buildSource, exampleEnv, privacy, terms, robots, readiness] = await Promise.all([
+  const [appSource, styles, buildSource, exampleEnv, publicConfig, privacy, terms, robots, readiness] = await Promise.all([
     readFile("src/FirstInternships.jsx", "utf8"),
     readFile("src/styles.css", "utf8"),
     readFile("scripts/build.mjs", "utf8"),
     readFile(".env.example", "utf8"),
+    readFile("config/adsense.json", "utf8"),
     readFile("public/privacy.html", "utf8"),
     readFile("public/terms.html", "utf8"),
     readFile("dist/robots.txt", "utf8"),
@@ -317,6 +318,8 @@ test("AdSense review and launch paths fail closed around verification, consent, 
   assert.match(buildSource, /AdSense live mode requires numeric slot IDs/);
   assert.match(buildSource, /adsenseConnectionEnabled[\s\S]*writeFile\(join\(out, "ads\.txt"\)/);
   assert.match(exampleEnv, /VITE_ADSENSE_SITE_VERIFICATION=false[\s\S]*VITE_ADSENSE_ENABLED=false[\s\S]*VITE_ADSENSE_CONSENT_READY=false/);
+  assert.match(publicConfig, /"siteVerification": true/);
+  assert.match(publicConfig, /"client": "ca-pub-\d{16}"/);
 
   assert.match(appSource, /VITE_ADSENSE_ENABLED === "true"[\s\S]*VITE_ADSENSE_CONSENT_READY === "true"/);
   assert.match(appSource, /slot !== "VITE_ADSENSE_SLOT_SIDEBAR"/, "sidebar ads must stay dormant around navigation and application controls");
@@ -332,7 +335,9 @@ test("AdSense review and launch paths fail closed around verification, consent, 
   for (const text of ["cannot guarantee approval", "VITE_ADSENSE_SITE_VERIFICATION", "three-choice European message", "Do not enable Auto ads", "Never click the site's live ads"]) assert.ok(readiness.includes(text), text);
 
   const defaultHome = await readFile("dist/index.html", "utf8");
-  assert.doesNotMatch(defaultHome, /google-adsense-account|pagead2\.googlesyndication\.com/, "the default build must not connect to or request AdSense");
+  assert.match(defaultHome, /<meta name="google-adsense-account" content="ca-pub-8699000461416332">/, "the production build must preserve the public ownership signal");
+  assert.doesNotMatch(defaultHome, /pagead2\.googlesyndication\.com/, "verification must not request ads before consent and launch configuration are ready");
+  assert.equal(await readFile("dist/ads.txt", "utf8"), "google.com, pub-8699000461416332, DIRECT, f08c47fec0942fa0\n");
 });
 test("the partnership page qualifies revenue leads with auditable inventory and anonymous events", async () => {
   const partners = render("/partners");

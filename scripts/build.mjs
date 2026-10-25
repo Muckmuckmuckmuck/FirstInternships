@@ -9,9 +9,13 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const out = resolve(root, "dist");
 const ssr = resolve(root, "node_modules/.cache/firstinternships-ssr");
 const env = loadEnv("production", root, "VITE_");
-const adsenseClient = env.VITE_ADSENSE_CLIENT || "";
+// The publisher identifier and site-verification switch are public, non-secret
+// deployment metadata. Keep them in version control so a hosting-dashboard
+// reset cannot silently disconnect the reviewed domain from AdSense.
+const adsensePublicConfig = JSON.parse(await readFile(join(root, "config/adsense.json"), "utf8"));
+const adsenseClient = env.VITE_ADSENSE_CLIENT || adsensePublicConfig.client || "";
 const adsenseClientValid = /^ca-pub-\d{16}$/.test(adsenseClient);
-const adsenseReviewRequested = env.VITE_ADSENSE_SITE_VERIFICATION === "true";
+const adsenseReviewRequested = adsensePublicConfig.siteVerification === true || env.VITE_ADSENSE_SITE_VERIFICATION === "true";
 const adsenseLiveRequested = env.VITE_ADSENSE_ENABLED === "true";
 const adsenseConsentReady = env.VITE_ADSENSE_CONSENT_READY === "true";
 const requiredAdSlots = ["VITE_ADSENSE_SLOT_TOP", "VITE_ADSENSE_SLOT_IN_FEED"];
@@ -107,7 +111,7 @@ function lastmodForRoute(route) {
   const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
   if (programs.length) return latestProgramReview(programs, page.field?.updated || page.year?.updated || page.topic?.updated || VERIFIED);
   const explicit = {
-    "/application-timeline": "2026-09-20", "/about": "2026-10-21", "/partners": "2026-10-21", "/contact": "2026-10-21", "/privacy": "2026-10-21", "/terms": "2026-10-21",
+    "/application-timeline": "2026-09-20", "/about": "2026-10-21", "/partners": "2026-10-21", "/contact": "2026-10-21", "/privacy": "2026-10-25", "/terms": "2026-10-25",
   }[route];
   if (explicit) return explicit;
   return VERIFIED;

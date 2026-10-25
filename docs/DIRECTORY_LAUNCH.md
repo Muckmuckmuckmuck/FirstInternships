@@ -39,7 +39,7 @@ The contact form opens an email draft; it does not claim to send or collect a su
 Actual revenue is not active and cannot be promised. The owner must supply and approve the account configuration; no AdSense account has been created or linked by this work.
 
 1. Obtain AdSense account/site approval. Follow the account's verification instructions.
-2. Use `VITE_ADSENSE_SITE_VERIFICATION=true` with a valid `VITE_ADSENSE_CLIENT` while live ads remain off. This publishes Google's publisher meta tag and `/ads.txt` for site review without intentionally requesting ads.
+2. Keep the public publisher identity in `config/adsense.json` accurate while live ads remain off. The environment variables remain supported overrides. This publishes Google's publisher meta tag and `/ads.txt` for site review without intentionally requesting ads.
 3. Configure the appropriate consent messages and a Google-certified CMP where required. AdSense Privacy & messaging is one supported route; confirm regional requirements for the site's audience. A custom generic cookie banner or this project's environment flag is not a substitute.
 4. Create the two initial display units in that account. Add `VITE_ADSENSE_SLOT_TOP` and `VITE_ADSENSE_SLOT_IN_FEED` in the deployment environment. The sidebar unit is intentionally dormant at launch.
 5. Only after approval and live privacy validation, set `VITE_ADSENSE_CONSENT_READY=true` and `VITE_ADSENSE_ENABLED=true`, then rebuild. The build fails if the publisher, consent, or required slot configuration is incomplete.

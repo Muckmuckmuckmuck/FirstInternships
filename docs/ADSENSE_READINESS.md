@@ -36,6 +36,12 @@ External account and legal gates remain incomplete until the owner finishes them
    VITE_ADSENSE_CONSENT_READY=false
    ```
 
+   These are public identifiers, not secrets. FirstInternships also pins the
+   verified publisher ID and ownership switch in `config/adsense.json`, so the
+   meta tag and `ads.txt` survive a missing or reset hosting environment. An
+   environment client still overrides the public client for an intentional
+   alternate deployment.
+
 5. Deploy. Confirm the public homepage source contains exactly one `google-adsense-account` meta tag with that publisher ID.
 6. Confirm `https://firstinternships.com/ads.txt` returns status 200 and exactly the AdSense line supplied for that account. It may take Google several days to refresh its ads.txt status.
 7. In AdSense, choose the meta-tag verification method, verify, and request site review. Review mode does not intentionally load the ad-serving script or render units.

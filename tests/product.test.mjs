@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 538, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 543, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 45, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -1677,7 +1677,7 @@ test("October 19 international-affairs wave builds a sourced development and hum
 });
 test("October 20 Search Console refresh sharpens high-impression snippets and current status", async () => {
   const expectedTitles = new Map([
-    ["world-bank-wbg-pioneers", "World Bank Internship: Eligibility, Pay & Apply"],
+    ["world-bank-wbg-pioneers", "World Bank Internship 2027: Dates, Pay & Eligibility"],
     ["nvidia-ignite", "NVIDIA Ignite 2027: Eligibility, Pay & Apply"],
     ["capital-one-early-internship", "Capital One Early Internship: Eligibility & Housing"],
     ["paramount-internships", "Paramount Internships: Eligibility & How to Apply"],
@@ -1695,7 +1695,9 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
   const worldBank = PROGRAMS.find(program => program.id === "world-bank-wbg-pioneers");
   const capitalOne = PROGRAMS.find(program => program.id === "capital-one-early-internship");
   const nvidia = PROGRAMS.find(program => program.id === "nvidia-ignite");
-  assert.equal(worldBank.verified, "2026-10-20");
+  assert.equal(worldBank.verified, "2026-10-24");
+  assert.match(worldBank.status, /next general window Jan–Feb/);
+  assert.ok(worldBank.sources.some(source => /fall-winter-cycle-2026/.test(source.url)));
   assert.equal(capitalOne.verified, "2026-10-20");
   assert.match(nvidia.status, /ended Oct\. 18/);
   assert.match(nvidia.steps[0], /window ended/i);
@@ -1874,6 +1876,42 @@ test("October 24 cloud-software wave adds live 2027 roles without guessing colle
 
   const html = await readFile(`dist${programPath(programs[0])}.html`, "utf8");
   for (const text of ["Vercel Software Engineering Internships 2027", "Who can apply?", "Check official program &amp; apply", "Official sources &amp; update notes"]) assert.ok(html.includes(text), text);
+});
+test("October 24 product-software wave adds current employer-intent pages with source-specific rules", async () => {
+  const ids = [
+    "notion-software-engineer-intern-summer-2027",
+    "patreon-software-engineering-intern-summer-2027",
+    "ibotta-software-engineer-intern-summer-2027",
+    "niantic-spatial-software-engineering-intern-2027",
+    "sentry-software-engineer-intern-vienna-2027",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-24" && program.updated === "2026-10-24"));
+  assert.ok(programs.every(program => program.pay === "Paid"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 4));
+  assert.ok(programs.every(program => program.sources.some(item => item.url === program.url)));
+  assert.ok(programs.every(program => program.fields.includes("technology") && program.fields.includes("engineering")));
+
+  for (const program of programs.filter(program => program.id !== "ibotta-software-engineer-intern-summer-2027")) {
+    assert.equal(program.firstYear, null, `${program.id}: degree or graduation wording is not a universal class-year filter`);
+    assert.deepEqual(program.years, []);
+  }
+  const ibotta = PROGRAMS.find(program => program.id === "ibotta-software-engineer-intern-summer-2027");
+  assert.equal(ibotta.firstYear, 3);
+  assert.deepEqual(ibotta.years, [3]);
+  assert.match(ibotta.eligibility[0], /juniors/i);
+
+  const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
+  for (const id of ids) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
+
+  assert.match(PROGRAMS.find(program => program.id === ids[0]).timing, /May 17–August 6/);
+  assert.match(PROGRAMS.find(program => program.id === ids[1]).yearLabel, /December 2027–June 2028/);
+  assert.match(PROGRAMS.find(program => program.id === ids[3]).eligibility.join(" "), /ML\/AI Infrastructure/);
+  assert.match(PROGRAMS.find(program => program.id === ids[4]).timing, /€2,800–€3,285/);
+
+  const html = await readFile(`dist${programPath(programs[0])}.html`, "utf8");
+  for (const text of ["Notion Software Engineer Intern — Summer 2027", "Who can apply?", "Check official program &amp; apply", "Official sources &amp; update notes"]) assert.ok(html.includes(text), text);
 });
 test("navigation puts the simplest internship path first", async () => {
   const home = render("/");

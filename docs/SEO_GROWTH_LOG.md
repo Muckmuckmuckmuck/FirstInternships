@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-24 — World Bank CTR refresh and product-software expansion
+
+### Baseline
+
+- Window: September 25–October 22, 2026, the latest complete 28 days available in Search Console on October 24.
+- Site totals: 525 clicks, 55,100 impressions, 1.0% CTR and average position 9.4.
+- `/programs/world-bank-wbg-pioneers` recorded 1 click from 4,914 impressions at average position 8.9. The exact visible query `world bank internship` accounted for 4,851 impressions, no clicks and average position 8.8, making this the largest measured click-through opportunity on the site.
+- The five new product-software program URLs are source-verified inventory hypotheses. They did not have FirstInternships URL-level Search Console history before release and should not be described as proven traffic opportunities yet.
+
+### Changes
+
+- Kept the existing World Bank URL, led its title with the exact employer intent and added 2027, dates, pay and eligibility to the snippet. Updated the page to say that Fall/Winter 2026 closed, the next general cycle is January–February and final-year undergraduate eligibility still applies.
+- Rechecked the World Bank's official WBG Pioneers page and 2026 information session. The guide now reflects the main page's paid-hourly language while preserving its explicit warning that the materials section still describes paperwork for no-fee exceptions.
+- Added official-source Summer 2027 guides for Notion, Patreon, Ibotta, Niantic Spatial and Sentry. Each guide preserves the employer's own degree or graduation rule, office schedule, pay language and prior-experience requirements instead of forcing a class-year label.
+- Added all five current roles to the existing Summer 2027 collection and related-program graph. The build now prerenders 631 pages and emits 629 maintained sitemap URLs.
+
+### Measurement
+
+- Primary metric: clicks and CTR for `/programs/world-bank-wbg-pioneers`, interpreted with average position and query mix.
+- Supporting query families: `world bank internship`, employer name plus `software engineering internship 2027`, `summer 2027 internship`, pay, location and graduation-window modifiers.
+- Guardrails: no duplicate World Bank page, no false open status, no guessed class-year conversion, no JobPosting markup and no application gate.
+- Reassess the World Bank URL after another 200 impressions or 28 days. Reassess each new program URL after 200 impressions or 28 days, and improve the same URL before creating another page for the same employer intent.
+
 ## 2026-10-24 — navigation, Vercel delivery and live cloud-software expansion
 
 ### Baseline

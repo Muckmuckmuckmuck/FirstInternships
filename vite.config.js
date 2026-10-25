@@ -54,6 +54,11 @@ export default defineConfig(({ isSsrBuild }) => ({
             // Split waves 16+ before the catch-all so every browser data chunk
             // remains below the 500 kB warning threshold as the catalog grows.
             { name: "directory-employers-newest", test: /\/src\/employers-(?:accounting-advisory-wave-1[67]|policy-research-wave-18|sports-wave-19|aerospace-wave-20|insurance-wave-21|real-estate-wave-22|marketing-wave-23|international-affairs-wave-24)-expansion\.js$/, priority: 23 },
+            // The specialist topic waves carry longer editorial records and are
+            // updated independently. Claim them before the catch-all employer
+            // group so one frequently changed catalog asset does not invalidate
+            // the larger, stable employer slice on every Vercel deployment.
+            { name: "directory-employers-specialist", test: /\/src\/employers-(?:international-affairs-wave-24|environment-conservation-wave-25|logistics-wave-26|cloud-software-wave-27)-expansion\.js$/, priority: 24 },
             // The established employer batches remain a long-cached parallel
             // chunk that does not churn when a current-cycle program is added.
             { name: "directory-employers", test: /\/src\/employers-[^/]+-expansion\.js$/, priority: 20 },

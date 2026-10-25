@@ -89,18 +89,23 @@ function AdSlot({ slot }) {
   if (!ready) return null;
   return <aside className="ad-slot" aria-label="Advertisement"><span>Advertisement</span><ins className="adsbygoogle" style={{ display: "block" }} data-ad-client={import.meta.env.VITE_ADSENSE_CLIENT} data-ad-slot={slotId} data-ad-format="auto" data-full-width-responsive="true" /></aside>;
 }
-function Header({ planner }) {
+function Header({ planner, pageType }) {
   const [open, setOpen] = useState(false);
   const account = useAccount();
   const accountLabel = account.status === "signed-in" ? "My alerts" : "Get matches";
-  const links = [["Browse internships", "/internships"], ["Deadlines", "/internship-deadlines"], ["Application guides", "/guides"], ["Build a plan", "/application-timeline"], ["Compare", "/compare"]];
+  const links = [
+    ["Find internships", "/internships", ["directory", "year", "field", "topic", "program"]],
+    ["Application help", "/guides", ["guides", "guide"]],
+    ["Deadlines", "/internship-deadlines", ["deadlines"]],
+    ["Plan an application", "/application-timeline", ["timeline"]],
+  ];
   return <header className="site-header">
     <a className="brand" href="/" aria-label="FirstInternships home"><span className="brand-mark">fi<span>↗</span></span>firstinternships</a>
-    <nav className="main-nav" aria-label="Main navigation">{links.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</nav>
+    <nav className="main-nav" aria-label="Main navigation">{links.map(([label, href, types], index) => <a className={index === 0 ? "nav-primary" : undefined} aria-current={types.includes(pageType) ? "page" : undefined} key={href} href={href}>{label}</a>)}</nav>
     {accountFeatureEnabled() && <a className="account-nav" href="/account"><BellRing size={16} /> {accountLabel}</a>}
     <a className="saved-nav" href="/saved"><Bookmark size={16} /> Saved <span>{planner.saved.length}</span></a>
     <button className="menu-button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls={open ? "mobile-menu" : undefined} aria-label={open ? "Close navigation" : "Open navigation"}>{open ? <X size={21} /> : <Menu size={21} />}</button>
-    {open && <nav id="mobile-menu" className="mobile-menu" aria-label="Mobile navigation">{accountFeatureEnabled() && <a href="/account">{accountLabel}</a>}{links.map(([label, href]) => <a key={href} href={href}>{label}</a>)}<a href="/about">How we verify</a><a href="/saved">Saved internships</a></nav>}
+    {open && <nav id="mobile-menu" className="mobile-menu" aria-label="Mobile navigation"><a className="mobile-menu-primary" aria-current={["directory", "year", "field", "topic", "program"].includes(pageType) ? "page" : undefined} href="/internships">Find internships</a><div className="mobile-year-links" aria-label="Find internships by college year">{YEARS.map(year => <a key={year.id} href={yearPath(year)}>{year.short}</a>)}</div>{links.slice(1).map(([label, href, types]) => <a aria-current={types.includes(pageType) ? "page" : undefined} key={href} href={href}>{label}</a>)}<a href="/compare">Compare internships</a>{accountFeatureEnabled() && <a href="/account">{accountLabel}</a>}<a href="/saved">Saved internships</a><a href="/about">How we verify</a></nav>}
   </header>;
 }
 function Footer() {
@@ -284,22 +289,22 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
 function Home({ planner }) {
   return <>
     <section className="hero"><div className="hero-inner">
-      <div className="hero-copy"><p className="hero-eyebrow"><span className="live-dot" /><GraduationCap size={16} /> College students. Big possibilities.</p>
-        <h1>Your next chapter<br />starts <em>right here.</em><svg className="hero-spark" viewBox="0 0 50 50" aria-hidden="true"><path d="M25 2v46M2 25h46M9 9l32 32M9 41L41 9" /></svg></h1>
-        <p className="hero-subtitle">Internships for your college year. The requirements explained. A clearer path from <span>“could I?”</span> to <span>“I applied.”</span></p>
-        <form className="hero-search" action="/internships#internships"><Search size={21} /><label className="sr-only" htmlFor="hero-query">Search internships</label><input id="hero-query" name="search" maxLength={200} placeholder="Company, field, or your next interest" /><button type="submit">Find my fit <ArrowRight size={17} /></button></form>
+      <div className="hero-copy"><p className="hero-eyebrow"><span className="live-dot" /><GraduationCap size={16} /> College-only internship directory</p>
+        <h1>Find internships<br />that fit <em>your year.</em><svg className="hero-spark" viewBox="0 0 50 50" aria-hidden="true"><path d="M25 2v46M2 25h46M9 9l32 32M9 41L41 9" /></svg></h1>
+        <p className="hero-subtitle">Choose your college year. Pick what interests you. Open a guide, check the requirements, and apply on the <span>official employer site.</span></p>
+        <form className="hero-search" action="/internships#internships"><Search size={21} /><label className="sr-only" htmlFor="hero-query">Search internships</label><input id="hero-query" name="search" maxLength={200} placeholder="Try Microsoft, finance, research…" /><button type="submit">Search internships <ArrowRight size={17} /></button></form>
         <div className="hero-trust"><span><ShieldCheck size={16} /> Official-source guides</span><span><Bookmark size={16} /> Free forever to use</span></div>
         <div className="hero-popular"><span>Start exploring</span><a href="/internships/technology">Technology ↗</a><a href="/internships/research">Research ↗</a><a href="/internships/finance">Finance ↗</a></div>
       </div>
-      <div className="hero-visual"><div className="visual-heading"><span>THE YEAR-BY-YEAR EDIT</span><span>01—04</span></div><h2>Start where<br />you are.</h2><p className="visual-description">No experience? Still figuring it out?<br />There's a starting point for that.</p>
+      <div className="hero-visual"><div className="visual-heading"><span>STEP 1 OF 2</span><span>01—04</span></div><h2>Pick your<br />college year.</h2><p className="visual-description">We will show confirmed year matches first.<br />You can change this anytime.</p>
         {YEARS.map(y => <a href={yearPath(y)} key={y.id} style={{ "--year-color": y.color }}><span>0{y.id}</span><div><strong>{y.name}</strong><small>{["Build your first real-world story", "Turn learning into doing", "Find your focus. Go deeper.", "Make the timeline count"][y.id - 1]}</small></div><ArrowUpRight size={21} /></a>)}
         <div className="visual-footnote"><ShieldCheck size={16} /><span>Year labels are a starting point.<br />We explain the conditions, too.</span></div><span className="visual-edge" aria-hidden="true">NEXT STOP: YOUR NEXT MOVE ↗</span>
       </div>
     </div></section>
     <section className="source-strip container" aria-label="Programs in the directory"><p><span>{PROGRAMS.length} sourced pathways</span><small>Independent guides. Not employer endorsements.</small></p><div>{["microsoft-explore", "nasa-ostem", "doe-suli", "goldman-sachs-summer-analyst"].map(id => { const p = PROGRAMS.find(item => item.id === id); return <a href={programPath(p)} key={id}>{p.company === "US Department of Energy" ? "DOE Labs" : p.company}<ArrowUpRight size={13} /></a>; })}</div></section>
+    <section className="container section" id="year-guide"><div className="section-heading"><div><p className="eyebrow">Start here / choose one</p><h2>What year are you in?</h2></div><p className="section-aside">One tap gets you to internships<br />with confirmed year eligibility.</p></div><YearLinks /><div className="explore-fields"><span>Not sure? Browse by interest instead</span><FieldLinks /></div></section>
     {accountFeatureEnabled() && <section className="container account-home-cta"><AccountConversionCTA source="home" /></section>}
     <section className="free-forever container" aria-labelledby="free-forever-title"><div><p className="eyebrow">Our student promise</p><h2 id="free-forever-title">Free forever. No premium tier between you and the facts.</h2><p>The internship directory, application guides, deadlines, comparison tools and private browser planner stay free for students. Clearly labeled advertising and partnerships fund the work instead of student subscriptions or application fees.</p></div><a className="button secondary" href="/about#funding">How funding works <ArrowRight size={16} /></a></section>
-    <section className="container section" id="year-guide"><div className="section-heading"><div><p className="eyebrow">01 / Find your starting point</p><h2>A little direction.<br />A lot of possibility.</h2></div><p className="section-aside">First-year through senior.<br />Real requirements, not a guessing game.</p></div><YearLinks /><div className="explore-fields"><span>Or follow your interests</span><FieldLinks /></div></section>
     <section className="container focused-edit"><div className="section-heading"><div><p className="eyebrow">A more specific starting point</p><h2>Find your kind of opportunity.</h2></div><p className="section-aside">Paid pathways. Transfer routes.<br />A summer of research.</p></div><TopicCards /></section>
     <section className="discovery-tools container" aria-label="Application planning tools"><a href="/internship-deadlines"><span className="tool-icon"><CalendarDays size={24} /></span><div><p className="eyebrow">The application calendar</p><h2>Good timing is a head start.</h2><p>Published cutoffs, time zones, and a calendar you can take with you.</p></div><ArrowUpRight size={24} /></a><a href="/compare"><span className="tool-icon"><GitCompareArrows size={24} /></span><div><p className="eyebrow">A clearer shortlist</p><h2>Compare the way in.</h2><p>Requirements, pay, and preparation. Side by side, without the tab chaos.</p></div><ArrowUpRight size={24} /></a><a href="/application-timeline"><span className="tool-icon"><CalendarDays size={24} /></span><div><p className="eyebrow">Your preparation timeline</p><h2>Make room for the next step.</h2><p>Turn a target date into a plan. Take its checklist and calendar with you.</p></div><ArrowUpRight size={24} /></a></section>
     <section className="container section home-featured-programs"><div className="section-heading"><div><p className="eyebrow">02 / Start with a complete guide</p><h2>Popular pathways.<br />Requirements explained.</h2></div><a className="text-link" href="/internships">Browse all {PROGRAMS.length} pathways <ArrowRight size={17} /></a></div><p className="section-aside-wide">Open a guide for the college-year rules, timing, preparation steps, and official application route. Availability still comes from the employer.</p><div className="cards">{featuredPrograms().map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div></section>
@@ -573,7 +578,7 @@ function SiteContent({ pathname = "/" }) {
     script.onload = () => { window.fiAdsLoaded = true; window.dispatchEvent(new Event("fi:ads-loaded")); };
     document.head.appendChild(script);
   }, [page.title, pageReviewDate]);
-  return <div className="site-shell"><a className="skip-link" href="#main">Skip to content</a><Header planner={planner} />
+  return <div className="site-shell"><a className="skip-link" href="#main">Skip to content</a><Header planner={planner} pageType={page.type} />
     {planner.storageError && <p className="storage-warning" role="status">Your browser blocked saved-list storage. You can still browse and plan this session; export your list before leaving.</p>}
     {stale && <p className="storage-warning">This program was last reviewed on {reviewLabel(pageReviewDate)}. Check its official sources for the current cycle.</p>}
     <main id="main">

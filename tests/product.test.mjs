@@ -9,7 +9,7 @@ import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQu
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 526, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 538, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 45, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -385,8 +385,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-23</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-23</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-24</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-24</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -399,6 +399,13 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const deployment = JSON.parse(await readFile("vercel.json", "utf8"));
   assert.ok(!deployment.crons?.some(job => job.path === "/api/process-queue"), "retired outreach cron must not run");
   assert.deepEqual(deployment.crons, [{ path: "/api/newsletter-run", schedule: "0 16 * * 1" }], "only the isolated weekly newsletter job may be scheduled");
+  const globalHeaders = deployment.headers.find(rule => rule.source === "/(.*)")?.headers || [];
+  for (const name of ["X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy"]) assert.ok(globalHeaders.some(header => header.key === name), `global Vercel header: ${name}`);
+  const assetCache = deployment.headers.find(rule => rule.source === "/assets/(.*)")?.headers.find(header => header.key === "Cache-Control")?.value;
+  assert.equal(assetCache, "public, max-age=31536000, immutable");
+  for (const source of ["/sitemap.xml", "/robots.txt", "/llms.txt"]) {
+    assert.match(deployment.headers.find(rule => rule.source === source)?.headers.find(header => header.key === "Cache-Control")?.value || "", /s-maxage=3600/);
+  }
   const vercelIgnore = await readFile(".vercelignore", "utf8");
   assert.match(vercelIgnore, /^api\/\*$/m, "API files must remain denylisted by default");
   assert.match(vercelIgnore, /^lib\/\*$/m, "server helpers must remain denylisted by default");
@@ -1836,6 +1843,47 @@ test("October 23 logistics wave expands sourced pathways and improves the existi
   assert.equal(PROGRAMS.filter(program => program.fields.includes("operations")).length, 152);
   const html = await readFile(`dist${fieldPath(field)}.html`, "utf8");
   for (const text of ["Search within these opportunities", "Only confirmed paid programs", guide.title, "Union Pacific"]) assert.ok(html.includes(text), text);
+});
+test("October 24 cloud-software wave adds live 2027 roles without guessing college years", async () => {
+  const ids = [
+    "vercel-software-engineering-internships-2027",
+    "cloudflare-software-engineer-intern-austin-2027",
+    "datadog-software-engineering-intern-summer-2027",
+    "mongodb-software-engineering-intern-amer-2027",
+    "atlassian-software-engineer-intern-summer-2027",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-10-24" && program.updated === "2026-10-24"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
+  assert.ok(programs.every(program => program.sources.some(item => item.url === program.url)));
+  assert.ok(programs.every(program => program.fields.includes("technology") && program.fields.includes("engineering")));
+  for (const program of programs) {
+    assert.equal(program.firstYear, null, `${program.id}: graduation or return-to-school wording is not a universal class-year filter`);
+    assert.deepEqual(program.years, []);
+  }
+
+  assert.match(PROGRAMS.find(program => program.id === ids[0]).timing, /Summer 2027 and Winter 2027/);
+  assert.match(PROGRAMS.find(program => program.id === ids[1]).timing, /rolling until the roles are filled/);
+  assert.match(PROGRAMS.find(program => program.id === ids[2]).timing, /annualized salary/);
+  assert.match(PROGRAMS.find(program => program.id === ids[3]).eligibility.join(" "), /quarter or semester remaining/);
+  assert.match(PROGRAMS.find(program => program.id === ids[4]).eligibility.join(" "), /not eligible for F-1 or J-1/);
+
+  const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
+  for (const id of ids) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
+
+  const html = await readFile(`dist${programPath(programs[0])}.html`, "utf8");
+  for (const text of ["Vercel Software Engineering Internships 2027", "Who can apply?", "Check official program &amp; apply", "Official sources &amp; update notes"]) assert.ok(html.includes(text), text);
+});
+test("navigation puts the simplest internship path first", async () => {
+  const home = render("/");
+  const directory = render("/internships");
+  const source = await readFile("src/FirstInternships.jsx", "utf8");
+  for (const text of ["Find internships", "that fit", "Search internships", "What year are you in?", "Not sure? Browse by interest instead"]) assert.ok(home.includes(text), text);
+  assert.ok(home.indexOf("What year are you in?") < home.indexOf("Our student promise"), "year selection should come before promotional or funding copy");
+  for (const label of ["Find internships", "Application help", "Deadlines", "Plan an application"]) assert.ok(directory.includes(label), label);
+  assert.match(directory, /class="nav-primary" aria-current="page"[^>]*href="\/internships"/);
+  assert.match(source, /Find internships by college year/);
 });
 test("the community-college collection lists only records that name a two-year or associate route", () => {
   const topic = TOPICS.find(t => t.slug === "community-college-internships");

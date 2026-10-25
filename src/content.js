@@ -60,13 +60,22 @@ import { EMPLOYERS_MARKETING_WAVE_23_PROGRAMS, MARKETING_EXISTING_PROGRAM_IDS, M
 import { EMPLOYERS_INTERNATIONAL_AFFAIRS_WAVE_24_PROGRAMS, INTERNATIONAL_AFFAIRS_EXISTING_PROGRAM_IDS, INTERNATIONAL_AFFAIRS_GUIDES } from "./employers-international-affairs-wave-24-expansion.js";
 import { EMPLOYERS_ENVIRONMENT_CONSERVATION_WAVE_25_PROGRAMS, ENVIRONMENT_CONSERVATION_GUIDES, ENVIRONMENT_CONSERVATION_TOPIC } from "./employers-environment-conservation-wave-25-expansion.js";
 import { EMPLOYERS_LOGISTICS_WAVE_26_PROGRAMS, LOGISTICS_GUIDES } from "./employers-logistics-wave-26-expansion.js";
+import { EMPLOYERS_CLOUD_SOFTWARE_WAVE_27_PROGRAMS } from "./employers-cloud-software-wave-27-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
 import { PUBLIC_PROGRAMS } from "./programs-public-expansion.js";
 export const TOPICS = [
   ...BASE_TOPICS.map(topic => topic.slug === "summer-2027-college-internships"
-    ? { ...topic, programIds: [...topic.programIds, "wwf-bridge-internships-2027", "ryder-summer-internship-program"] }
+    ? { ...topic, programIds: [...topic.programIds,
+      "wwf-bridge-internships-2027",
+      "ryder-summer-internship-program",
+      "vercel-software-engineering-internships-2027",
+      "cloudflare-software-engineer-intern-austin-2027",
+      "datadog-software-engineering-intern-summer-2027",
+      "mongodb-software-engineering-intern-amer-2027",
+      "atlassian-software-engineer-intern-summer-2027",
+    ] }
     : topic),
   ENVIRONMENT_CONSERVATION_TOPIC,
 ];
@@ -279,6 +288,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_INTERNATIONAL_AFFAIRS_WAVE_24_PROGRAMS,
   ...EMPLOYERS_ENVIRONMENT_CONSERVATION_WAVE_25_PROGRAMS,
   ...EMPLOYERS_LOGISTICS_WAVE_26_PROGRAMS,
+  ...EMPLOYERS_CLOUD_SOFTWARE_WAVE_27_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,

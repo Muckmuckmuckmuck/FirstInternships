@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-24 — navigation, Vercel delivery and live cloud-software expansion
+
+### Baseline
+
+- Window: September 25–October 22, 2026, the latest complete 28 days available in Search Console on October 24.
+- Site totals: 525 clicks, 55,100 impressions, 1.0% CTR and average position 9.4.
+- This release does not claim a proven new cloud-software query cluster. The content additions are a source-verified inventory hypothesis; their individual landing pages need impression data before snippet changes are justified.
+- The homepage and global header exposed several competing destinations before the core directory and college-year choice, adding avoidable decision effort for a first-time visitor.
+
+### Changes
+
+- Made `Find internships` the single primary navigation action, reduced the desktop header to four plain-language destinations and added four immediately visible college-year shortcuts to the mobile menu.
+- Moved the homepage college-year choice directly beneath the hero, clarified the search action and presented the experience as three steps: choose a year, pick an interest and apply on the official employer site.
+- Added five official-source 2027 software-engineering pathways for Vercel, Cloudflare, Datadog, MongoDB and Atlassian. Graduation windows, work authorization, office attendance and annualized-salary language remain specific to each opening.
+- Isolated the new fast-changing employer records in their own production chunk, retained immutable asset caching and added conservative security and edge-cache headers for Vercel-hosted public files.
+
+### Measurement
+
+- Primary metrics: organic landing-page clicks to the five new program guides, homepage-to-directory engagement and directory-to-official-application clicks.
+- Supporting query families: employer name plus `software engineering internship 2027`, `summer 2027 internship`, location and graduation-year modifiers.
+- Guardrails: no guessed college-year eligibility, no JobPosting markup, no claim that an annualized salary is internship-term pay, no forced account wall and no duplicate employer-intent pages.
+- Reassess a new program URL after it accumulates at least 200 impressions or after 28 days. Use Search Console evidence to improve the existing URL before considering another page for the same intent.
+
 ## 2026-10-24 — transcript-request guide CTR and utility refresh
 
 ### Baseline

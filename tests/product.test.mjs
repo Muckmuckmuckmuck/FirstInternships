@@ -79,12 +79,30 @@ test("October 14 guide expansion answers high-intent eligibility and timing ques
   ];
   const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
   assert.ok(guides.every(Boolean));
-  assert.ok(guides.every(guide => guide.updated === "2026-10-14"));
-  assert.ok(guides.every(guide => guide.sections.length === 8 && guide.example?.text));
+  assert.ok(guides.filter(guide => guide.slug !== "do-internships-ask-for-transcripts").every(guide => guide.updated === "2026-10-14"));
+  assert.equal(GUIDES.find(guide => guide.slug === "do-internships-ask-for-transcripts").updated, "2026-10-24");
+  assert.ok(guides.every(guide => guide.sections.length >= 8 && guide.example?.text));
   assert.ok(guides.every(guide => guide.sections.flat().join(" ").split(/\s+/).length >= 500), "new search guides must remain substantive, not thin keyword pages");
   assert.ok(guides.every(guide => guide.programIds.length >= 4));
   assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
   assert.equal(GUIDES.find(guide => guide.slug === "what-does-rolling-basis-mean-internships").topicSlug, "summer-2027-college-internships");
+});
+test("October 24 transcript guide gives an answer-first path and related document help", async () => {
+  const transcript = GUIDES.find(guide => guide.slug === "do-internships-ask-for-transcripts");
+  const fileFormat = GUIDES.find(guide => guide.slug === "internship-application-file-format");
+  assert.equal(transcript.title, "Do Internships Ask for Transcripts? What to Expect");
+  assert.ok(transcript.description.length >= 120 && transcript.description.length <= 180);
+  assert.equal(transcript.updated, "2026-10-24");
+  assert.equal(transcript.quickAnswers.length, 4);
+  assert.match(transcript.sections[0][1], /no universal internship transcript rule/i);
+  assert.ok(transcript.relatedGuideSlugs.includes(fileFormat.slug));
+  assert.equal(fileFormat.updated, "2026-10-24");
+  assert.ok(fileFormat.relatedGuideSlugs.includes(transcript.slug));
+
+  const html = await readFile(`dist${guidePath(transcript)}.html`, "utf8");
+  assert.match(html, /Transcript requests at a glance/);
+  assert.match(html, /Do most internships require one\?/);
+  assert.match(html, /The short answer: sometimes/);
 });
 test("October 14 guide wave four covers GPA, graduation, schedules and offer decisions", () => {
   const slugs = [

@@ -492,6 +492,12 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
 .guide-library-toolbar>p { white-space: nowrap; font-size: 13px; color: var(--muted); padding-bottom: 15px; margin: 0; }
 .guide-library-group { margin-block: 55px; }
 .guide-library-group>h2 { font-size: 29px; margin-bottom: 25px; letter-spacing: -.8px; }
+.guide-quick-answer { margin: 4px 0 34px; padding: 28px; border: 1px solid #d1dcc8; border-radius: 17px; background: #edf2e8; }
+.guide-quick-answer>h2 { margin: 8px 0 22px; font-size: 28px; line-height: 1.2; letter-spacing: -.8px; }
+.guide-quick-answer dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.guide-quick-answer dl>div { min-width: 0; padding: 18px; border: 1px solid #d5decf; border-radius: 12px; background: #fffdf8; }
+.guide-quick-answer dt { margin-bottom: 8px; font-size: 13px; font-weight: 800; line-height: 1.45; color: var(--ink); }
+.guide-quick-answer dd { margin: 0; font-size: 13px; line-height: 1.7; color: var(--muted); }
 .guide-example { margin: 45px 0; padding: 30px; background: #edf2e8; border: 1px solid #d1dcc8; border-radius: 16px; }
 .guide-example h2 { font-size: 26px; line-height: 1.2; letter-spacing: -.7px; }
 .guide-example pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: 15px; line-height: 1.8; padding-block: 12px; }
@@ -556,6 +562,10 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
   .guide-library-toolbar { padding: 20px; gap: 20px; }
   .guide-library-group { margin-block: 38px; }
   .guide-library-group>h2 { font-size: 24px; }
+  .guide-quick-answer { padding: 22px 18px; margin-bottom: 27px; }
+  .guide-quick-answer>h2 { font-size: 24px; }
+  .guide-quick-answer dl { grid-template-columns: 1fr; }
+  .guide-quick-answer dl>div { padding: 16px; }
   .guide-example { padding: 23px; }
   .guide-example h2 { font-size: 24px; }
   .topic-crosslinks { gap: 10px; }

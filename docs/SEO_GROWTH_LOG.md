@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-24 — transcript-request guide CTR and utility refresh
+
+### Baseline
+
+- Window: September 25–October 22, 2026, the latest complete 28 days available in Search Console on October 24.
+- Site totals: 525 clicks, 55,100 impressions, 1.0% CTR and average position 9.4.
+- `/guides/do-internships-ask-for-transcripts` recorded 2 clicks, 261 impressions, 0.8% CTR and average position 5.0. Its visible query set was led by `do internships ask for transcripts` at 18 impressions, 5.6% CTR and average position 5.2, with additional variants asking whether internships require, look at or ask for a transcript.
+- `/guides/internship-application-file-format` recorded no clicks, 152 impressions and average position 5.8, but Search Console exposed no useful English query sample for that URL. Its snippet remains unchanged rather than guessing at hidden intent.
+
+### Changes
+
+- Kept the proven transcript-guide URL and exact query language, then added `What to Expect` to the title and made the description answer the question before describing unofficial versus official records, GPA checks and safe submission.
+- Added a server-rendered at-a-glance answer panel covering whether transcripts are universal, which document type to use, what employers can verify and whether an optional transcript should be uploaded.
+- Added a direct first section explaining that transcript requirements vary by program and naming the places in a current posting where a student should check.
+- Connected the transcript and document-upload guides with reciprocal related-reading links, while leaving the file-format guide's title and description stable because its visible query evidence was insufficient.
+
+### Measurement
+
+- Primary metric: clicks and CTR for `/guides/do-internships-ask-for-transcripts`, interpreted alongside average position.
+- Supporting query families: `do internships ask for transcripts`, `do internships require transcripts`, `do internships look at transcripts` and `do companies ask for transcripts for internships`.
+- Guardrails: no claim that every internship checks GPA or academic records, no advice to upload an unrequested transcript, no duplicate transcript page and no speculative rewrite of the file-format snippet.
+- Reassess after the transcript URL accumulates at least another 200 impressions or after 28 days. Improve the existing URL again if the task remains the same.
+
 ## 2026-10-23 — Netflix live-role and CTR refresh
 
 ### Baseline

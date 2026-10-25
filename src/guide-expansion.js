@@ -32,10 +32,11 @@ export const GUIDE_EXPANSION = [
     },
   },
   {
-    slug: "internship-application-file-format", updated: "2026-09-20",
+    slug: "internship-application-file-format", updated: "2026-10-24",
     title: "Submit Internship Documents That Arrive Intact",
     description: "Stop an internship application failing on mechanics: file naming, PDF export, portal parsing, transcript uploads, and checking what the employer actually received.",
     category: "Resumes & applications",
+    relatedGuideSlugs: ["do-internships-ask-for-transcripts", "internship-resume-with-no-experience", "ask-for-internship-recommendation-letter"],
     programIds: ["nasa-pathways", "deloitte-internships", "ibm-university-internships", "nsf-reu"],
     intro: "A strong application can still fail for a dull reason: a document the portal could not read, a file that exceeded a size limit, or an export that dropped half the formatting. These are the mechanics of submitting, and they are worth ten quiet minutes. Requirements differ by employer and portal, so the opening's own upload instructions always come first.",
     sections: [

@@ -439,8 +439,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-24</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-24</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-25</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-25</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -593,6 +593,10 @@ test("contextual signup keeps account creation separate and preserves an explici
   assert.match(ctaSource, /aria-controls=\{formId\}/, "the expanding CTA must identify the form it reveals");
   assert.match(ctaSource, /yearRef\.current\?\.focus\(\)/, "focus must move into the revealed form");
   assert.match(ctaSource, /className="account-cta-quick">[\s\S]*<Feedback feedback=\{account\.feedback\}[\s\S]*target=\{feedbackTarget\}[\s\S]*<GoogleSignInButton/, "Google errors must render beside only the contextual action that caused them");
+  assert.match(ctaSource, /alertsNeedActivation = signedIn && Boolean\(account\.settings\) && !alertsActive && !alertsSuppressed/, "signed-in accounts with email still off need a distinct activation state");
+  assert.match(ctaSource, /alertsNeedActivation \? "#activate-alerts" : "#preferences"/, "the activation CTA must land on the short consent flow rather than advanced settings");
+  assert.match(ctaSource, /Your account is ready · emails are off[\s\S]*Finish alert setup/, "signed-in activation copy must make the remaining action explicit");
+  assert.match(accountSource, /className="account-activation-card" id="activate-alerts"/, "the short activation flow needs a stable anchor target");
 });
 
 test("signup prompt styles keep mobile browsing available and avoid fixed-tray collisions", async () => {
@@ -771,6 +775,7 @@ test("October growth batch preserves publisher-specific years, dates and applica
     "capital-one-early-internship", "paramount-internships",
     "cleveland-clinic-lih-2027", "smithsonian-air-space-summer-2027", "whitney-marketing-spring-2027", "port-authority-summer-2027",
     "aig-summer-internship-2027", "la-times-summer-internships-2027", "kp-launch-college-program-2027", "nordstrom-corporate-internships-2027",
+    "health-career-connection-summer-2027",
   ]);
   const home = await readFile(join("dist", "index.html"), "utf8");
   assert.match(home, /High-interest and newly reviewed/);
@@ -873,7 +878,8 @@ test("October 11 expansion preserves sourced eligibility, cycle status and dates
   ];
   const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
   assert.ok(batch.every(Boolean));
-  assert.ok(batch.every(program => program.verified === "2026-10-11"));
+  assert.ok(batch.filter(program => program.id !== "health-career-connection-summer-2027").every(program => program.verified === "2026-10-11"));
+  assert.equal(PROGRAMS.find(program => program.id === "health-career-connection-summer-2027").verified, "2026-10-25");
   assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
   assert.ok(batch.every(program => ["Paid", "Unpaid", "Check opening", "Check program"].includes(program.pay)));
 
@@ -882,6 +888,7 @@ test("October 11 expansion preserves sourced eligibility, cycle status and dates
   assert.deepEqual(PROGRAMS.find(p => p.id === "aon-us-summer-internship").years, [3]);
   assert.equal(PROGRAMS.find(p => p.id === "chubb-north-america-internship").firstYear, null, "bachelor's enrollment is not an all-years rule");
   assert.deepEqual(PROGRAMS.find(p => p.id === "gallagher-sales-internship-2027").years, [2, 3]);
+  assert.match(PROGRAMS.find(p => p.id === "health-career-connection-summer-2027").status, /applications open/i);
   assert.equal(PROGRAMS.find(p => p.id === "kp-launch-college-program-2027").deadline, "2027-01-09T01:00:00Z");
   assert.equal(PROGRAMS.find(p => p.id === "chci-congressional-internship-2027").deadline, "2026-12-02T04:59:00Z");
   assert.equal(PROGRAMS.find(p => p.id === "noaa-lapenta-internship-2027").deadlineDate, "2026-12-24");

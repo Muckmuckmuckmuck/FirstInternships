@@ -2,6 +2,30 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-25 — HCC open-status CTR and subscriber-activation refresh
+
+### Baseline
+
+- Window: September 26–October 23, 2026, the latest complete 28 days available in Search Console on October 25.
+- Site totals: 552 clicks, 58,200 impressions, 0.9% CTR and average position 9.4. The previous comparable window recorded 33 clicks and 3,640 impressions with the same 0.9% CTR, so the immediate sitewide opportunity is winning more clicks from existing visibility rather than rewriting every recent page.
+- `/programs/health-career-connection-summer-2027` recorded 1 click, 312 impressions, 0.3% CTR and average position 7.1. Visible queries included `health career connection internship`, `health career connection summer internship` and `health career connection summer internship program`.
+- The page still said the 2027 application was coming soon. HCC's official site now states that Summer 2027 applications are open, creating a factual freshness problem and a high-confidence click opportunity on an established page-one URL.
+- The latest production account audit recorded 14 auth accounts, 15 newsletter rows and no active subscribers. That means the next conversion constraint is the explicit post-auth activation step, not more frequent interruption of unsigned visitors.
+
+### Changes
+
+- Kept the existing HCC URL and aligned its title with the visible `Health Career Connection summer internship` query family. The description now leads with the open, paid, ten-week 2027 opportunity and the useful eligibility/application details on the page.
+- Reverified the official HCC program and application pages, changed the page from `coming soon` to `applications open`, linked the primary action to the live 2027 application page and added a direct answer about the open status. No deadline or stipend amount was invented because HCC does not publish either on the reviewed pages.
+- Added the newly open HCC page to the homepage's reviewed-current program links without adding a duplicate keyword page or expanding the global footer.
+- Changed contextual account cards for signed-in people whose alerts are still off: they now say that email is off, offer `Finish alert setup` and land on the short year/field/consent activation flow. Active, pending and suppressed accounts retain status-appropriate management copy, and the consent box remains separate and unchecked.
+
+### Measurement
+
+- Primary search metric: clicks and CTR for `/programs/health-career-connection-summer-2027`, interpreted with average position and query mix.
+- Primary conversion metric: `newsletter_activation_viewed` to `newsletter_opt_in_completed` for signed-in accounts, with status counts checked separately from raw account creation.
+- Guardrails: no content gate, no automatic newsletter enrollment, no invented application deadline or pay amount, no popup-cadence increase and no rewrite of the October 20–24 snippet experiments before their thresholds.
+- Reassess the HCC URL after another 200 impressions or after 28 days. Reassess the activation step after a complete traffic window with enough signed-in opportunities to produce a meaningful denominator.
+
 ## 2026-10-24 — World Bank CTR refresh and product-software expansion
 
 ### Baseline

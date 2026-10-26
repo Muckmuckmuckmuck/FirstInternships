@@ -667,7 +667,7 @@ function SignedInPanel() {
       <div><small>Signed in as</small><strong>{account.user?.email}</strong></div>
       <button type="button" className="button secondary small" onClick={account.signOut} disabled={account.busy === "sign-out"}>{account.busy === "sign-out" ? <Loader2 size={14} className="account-spinner" /> : <LogOut size={14} />} Sign out</button>
     </section>
-    {needsActivation && <section className="account-activation-card" aria-labelledby="account-activation-title">
+    {needsActivation && <section className="account-activation-card" id="activate-alerts" aria-labelledby="account-activation-title">
       <div className="account-activation-heading">
         <span aria-hidden="true"><BellRing size={22} /></span>
         <div><p className="eyebrow">{welcome ? "Your account is ready · one step left" : status === "unsubscribed" ? "Restart personalized alerts" : "Turn your account into useful alerts"}</p><h2 id="account-activation-title">Choose two things. Get internships that fit.</h2><p>Select your college year and main interest, then explicitly turn on the free weekly digest. Advanced filters can wait.</p></div>
@@ -1107,6 +1107,10 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
   const signedIn = account.status === "signed-in";
   const ready = account.status === "signed-out";
   if (account.status === "unavailable") return null;
+  const newsletterStatus = account.settings?.subscription?.status || "";
+  const alertsActive = ACTIVE_NEWSLETTER_STATUSES.has(newsletterStatus);
+  const alertsSuppressed = ["bounced", "complained"].includes(newsletterStatus);
+  const alertsNeedActivation = signedIn && Boolean(account.settings) && !alertsActive && !alertsSuppressed;
   const selectedYear = YEARS.find(item => item.id === draft.collegeYear);
   const selectedField = FIELDS.find(item => item.id === draft.field);
   const query = [
@@ -1115,7 +1119,7 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
     ["field", draft.field],
     ["program", validProgram],
   ].filter(([, value]) => value !== null && value !== "").map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join("&");
-  const href = signedIn ? `${ACCOUNT_PATH}#preferences` : `${ACCOUNT_PATH}?${query}`;
+  const href = signedIn ? `${ACCOUNT_PATH}${alertsNeedActivation ? "#activate-alerts" : "#preferences"}` : `${ACCOUNT_PATH}?${query}`;
   const preferences = cleanNewsletterPreferences({
     ...EMPTY_PREFERENCES,
     collegeYear: draft.collegeYear,
@@ -1154,12 +1158,17 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
       : selectedField
         ? `Get ${selectedField.name.toLowerCase()} internship matches.`
         : "Get internship matches shaped around you.";
-  return <aside className={`account-conversion-cta ${compact ? "is-compact" : ""} ${ready && !signedIn && expanded ? "is-signup" : ""} ${className}`.trim()} aria-labelledby={titleId}>
+  const signedInTitle = alertsNeedActivation
+    ? selectedField ? `Turn on ${selectedField.name.toLowerCase()} internship alerts.` : "Turn on personalized internship alerts."
+    : alertsSuppressed ? "Review your email delivery status." : alertsActive ? "Fine-tune what reaches your inbox." : "Manage your account and alerts.";
+  const signedInEyebrow = alertsNeedActivation ? "Your account is ready · emails are off" : alertsSuppressed ? "Email delivery needs attention" : "Your internship alerts";
+  const signedInAction = alertsNeedActivation ? "Finish alert setup" : alertsSuppressed ? "Review email status" : "Manage alerts";
+  return <aside className={`account-conversion-cta ${compact ? "is-compact" : ""} ${ready && !signedIn && expanded ? "is-signup" : ""} ${alertsNeedActivation ? "needs-activation" : ""} ${className}`.trim()} aria-labelledby={titleId}>
     <span className="account-cta-icon" aria-hidden="true">{signedIn ? <BellRing size={22} /> : <Sparkles size={22} />}</span>
     <div>
-      <p className="eyebrow">{signedIn ? "Your internship alerts" : "Free student account"}</p>
-      <h2 id={titleId}>{signedIn ? "Fine-tune what reaches your inbox." : contextTitle}</h2>
-      {!compact && <p>{signedIn ? "Change your year, fields, locations, or email cadence in one place." : "Create your account with Google in one tap. Personalized weekly matches are available as a separate option."}</p>}
+      <p className="eyebrow">{signedIn ? signedInEyebrow : "Free student account"}</p>
+      <h2 id={titleId}>{signedIn ? signedInTitle : contextTitle}</h2>
+      {!compact && <p>{signedIn ? alertsNeedActivation ? "Choose your college year and main interest, then explicitly opt in to the free digest." : "Change your year, fields, locations, or email cadence in one place." : "Create your account with Google in one tap. Personalized weekly matches are available as a separate option."}</p>}
     </div>
     {ready && !signedIn && expanded ? <form className="account-cta-form" id={formId} onSubmit={beginGoogleSignup}>
       <div className="account-cta-fields">
@@ -1185,7 +1194,7 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
       </div>
       <small className="account-cta-disclosure">The consent box starts unchecked. Creating an account alone never subscribes you.</small>
     </form> : signedIn || !ready
-      ? <a className="button" href={href}>{signedIn ? "Manage alerts" : "Build my match profile"} <ArrowRight size={16} /></a>
+      ? <a className="button" href={href}>{signedIn ? signedInAction : "Build my match profile"} <ArrowRight size={16} /></a>
       : <div className="account-cta-quick">
         <Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} target={feedbackTarget} />
         <GoogleSignInButton source={source} label="Continue with Google" feedbackTarget={feedbackTarget} />

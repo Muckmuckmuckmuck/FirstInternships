@@ -94,8 +94,8 @@ export const OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS = [
   },
   {
     id: "health-career-connection-summer-2027", company: "Health Career Connection", title: "Summer Health Internship Program", initials: "HC", color: "#11856d",
-    seoTitle: "Health Career Connection Internship 2027 Guide",
-    seoDescription: "Health Career Connection offers paid 10-week health and public health internships to undergraduates and recent graduates. The 2027 application is coming soon.",
+    seoTitle: "Health Career Connection Summer Internship 2027",
+    seoDescription: "Health Career Connection's paid 10-week Summer 2027 internship is open. Check undergraduate eligibility, 16 regions, application steps and how to apply.",
     fields: ["healthcare", "public-service", "research"], firstYear: 1, years: [1, 2, 3, 4], yearLabel: "Undergraduates and graduates up to three years out", pay: "Paid", location: "Sixteen US regions plus some remote opportunities", mode: "Full time for 10 consecutive weeks; in-person, hybrid and remote placements",
     summary: "A matched summer placement at a health organization combining a full-time project, a dedicated preceptor, career workshops and exposure to public health, care delivery, policy, advocacy, data and health-equity work.",
     eligibility: [
@@ -103,15 +103,15 @@ export const OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS = [
       "Applicants must commit full time for ten consecutive weeks during daytime business hours. HCC does not permit summer classes, standardized-test preparation, another job or another paid or volunteer position during the internship.",
       "International students attending school in the United States may apply if they independently hold the authorization needed for the internship; HCC does not sponsor or supply immigration documentation. HCC says DACA students and applicants are eligible.",
     ],
-    timing: "HCC's official site labels the 2027 intern application as coming soon but publishes no opening date, deadline, exact summer dates or stipend amount. Summer internships are paid, full time and ten consecutive weeks, typically beginning in late May or June. Do not treat registration or an information-webinar form as the internship application.",
-    status: "2027 application coming soon",
-    url: "https://healthcareerconnection.org/students-aspiring-health-professionals/",
+    timing: "HCC's official site says Summer 2027 internship applications are open, but the reviewed pages publish no national deadline, exact summer dates or stipend amount. Summer internships are paid, full time and ten consecutive weeks, typically beginning in late May or June. Apply through the official 2027 form rather than treating webinar registration as the internship application.",
+    status: "Summer 2027 applications open at review",
+    url: "https://healthcareerconnection.org/program-registration/",
     sources: [
       { name: "Summer-program eligibility, paid status, regions, format, required commitment and application stages", url: "https://healthcareerconnection.org/students-aspiring-health-professionals/" },
-      { name: "Official 2027 program-registration page and coming-soon application status", url: "https://healthcareerconnection.org/program-registration/" },
+      { name: "Official Summer 2027 application page and open status", url: "https://healthcareerconnection.org/program-registration/" },
     ],
     steps: [
-      "Use HCC's official page to register for updates and wait for the 2027 internship application; the program has not published a deadline on the reviewed pages.",
+      "Open HCC's official Summer 2027 application page and begin the live form. The reviewed pages do not publish a national deadline, so do not wait for an assumed closing date.",
       "Prepare the stated first-stage materials: application questions, a resume or CV and short essay responses. Select only regions where you can supply your own housing and transportation.",
       "If invited, complete the HCC fit interview and then the host-organization interview. A placement is final only after the mutual-fit process, not after the first application or interview.",
     ],
@@ -122,11 +122,12 @@ export const OCTOBER_2026_PUBLIC_SERVICE_PROGRAMS = [
     pitfall: "HCC requires the internship to be the student's main summer commitment. Summer school, MCAT or GRE preparation and another job or volunteer role are specifically not permitted during the ten weeks.",
     materials: ["Resume or CV", "Short essay responses", "Preferred focus areas and regions", "Ten-week full-time availability", "Housing, transportation or remote-internet plan"],
     faqs: [
+      ["Are Health Career Connection Summer 2027 applications open?", "Yes. HCC's official site says 2027 internship applications are open and links to the live application page. The reviewed pages do not publish a national deadline, so use the official form rather than waiting for a date that HCC has not stated."],
       ["Are Health Career Connection internships paid?", "Yes. HCC describes the summer placements as paid, but the reviewed official page does not publish a 2027 amount."],
       ["Can a first-year student apply?", "Yes. HCC says it considers freshmen and sophomores who demonstrate community commitment, health interest, academic achievement, maturity and prior work experience."],
       ["Does HCC provide housing?", "No. HCC says interns must arrange their own housing and transportation and should select only regions where housing is available to them."],
     ],
-    guideSlugs: [G.resume, G.interview, G.offer], verified: "2026-10-11", updated: "2026-10-11",
+    guideSlugs: [G.resume, G.interview, G.offer], verified: "2026-10-25", updated: "2026-10-25",
   },
   {
     id: "kp-launch-college-program-2027", company: "Kaiser Permanente Northern California", title: "KP LAUNCH College Program", initials: "KP", color: "#006b5b",

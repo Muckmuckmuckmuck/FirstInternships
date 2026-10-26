@@ -501,6 +501,7 @@ export const CURRENT_PROGRAM_IDS = [
   "la-times-summer-internships-2027",
   "kp-launch-college-program-2027",
   "nordstrom-corporate-internships-2027",
+  "health-career-connection-summer-2027",
 ];
 export const FEATURED_GUIDE_SLUGS = ["how-many-internships-should-i-apply-to", "internship-application-status-meanings", "email-templates-for-internships", "how-to-apply-for-an-internship"];
 // Sitewide footer links to the guides that answer the broadest student

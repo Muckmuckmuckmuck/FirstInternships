@@ -36,7 +36,12 @@ The contact form opens an email draft; it does not claim to send or collect a su
 
 ## AdSense activation gates
 
-Actual revenue is not active and cannot be promised. The owner must supply and approve the account configuration; no AdSense account has been created or linked by this work.
+Actual revenue is not active and cannot be promised. The existing AdSense
+account now has `firstinternships.com` connected and ownership verified, a clean
+Policy Center at the last check, and published European and US-state privacy
+messages. Site review remains pending, and live ad requests remain deliberately
+disabled until Google approves the site and the remaining consent and placement
+tests pass.
 
 1. Obtain AdSense account/site approval. Follow the account's verification instructions.
 2. Keep the public publisher identity in `config/adsense.json` accurate while live ads remain off. The environment variables remain supported overrides. This publishes Google's publisher meta tag and `/ads.txt` for site review without intentionally requesting ads.

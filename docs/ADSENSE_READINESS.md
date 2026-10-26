@@ -20,13 +20,31 @@ Repository-controlled launch protections are complete:
 - `robots.txt` explicitly permits `Mediapartners-Google`; the general crawler group also permits public pages.
 - The privacy policy contains Google's required advertising-cookie disclosures and opt-out routes.
 
-External account and legal gates remain incomplete until the owner finishes them in AdSense. Do not describe the site as approved before the AdSense Sites page says it is ready.
+The account-side setup was checked on October 25, 2026:
+
+- AdSense verified ownership of `firstinternships.com` with publisher
+  `ca-pub-8699000461416332`.
+- The AdSense Policy Center reported no current issues that stop or limit ad
+  serving.
+- A three-choice European message (consent, do not consent, and manage options)
+  is published for the site.
+- A US state privacy message covering all current and future supported states is
+  published for the site.
+- The AdSense onboarding screen reports the payments profile complete and the
+  site connected.
+- The public verification tag and exact publisher line in `/ads.txt` are live.
+
+Site review is still pending. Do not describe the site as approved before the
+AdSense Sites page says it is ready. Google's ads.txt status may also lag the
+public file while it is recrawled. Live ad requests must remain disabled until
+approval, regional consent testing, and the launch-unit configuration are all
+complete.
 
 ## Phase 1: connect the site for review
 
-1. Create or open the correct AdSense account and complete its identity, address, payment, and tax prompts accurately. Do not create a duplicate account.
-2. Add exactly `firstinternships.com` in the AdSense Sites area.
-3. Copy the publisher ID shown by AdSense. It is public and should have the form `ca-pub-` followed by 16 digits.
+1. Open the existing AdSense account. Do not create a duplicate account. Complete any future identity, address, payment, or tax prompts accurately when Google requests them.
+2. Keep exactly `firstinternships.com` in the AdSense Sites area.
+3. Keep the verified public publisher ID `ca-pub-8699000461416332` consistent between AdSense and the site.
 4. In the Vercel Production environment set:
 
    ```text
@@ -44,13 +62,15 @@ External account and legal gates remain incomplete until the owner finishes them
 
 5. Deploy. Confirm the public homepage source contains exactly one `google-adsense-account` meta tag with that publisher ID.
 6. Confirm `https://firstinternships.com/ads.txt` returns status 200 and exactly the AdSense line supplied for that account. It may take Google several days to refresh its ads.txt status.
-7. In AdSense, choose the meta-tag verification method, verify, and request site review. Review mode does not intentionally load the ad-serving script or render units.
+7. Ownership verification is complete. Request site review only from the
+   `firstinternships.com` detail page after confirming the account selector is
+   showing that domain. Review mode does not intentionally load the ad-serving
+   script or render units.
 
 ## Phase 2: configure privacy before live ads
 
-1. In AdSense **Privacy & messaging**, configure and publish the European regulations message for `firstinternships.com`. Use Google's certified CMP or another Google-certified CMP integrated with the IAB Transparency and Consent Framework where required.
-2. Prefer the three-choice European message: consent, do not consent, and manage options. Confirm selected ad technology providers are disclosed.
-3. Configure the applicable US state regulations message and include the supported regulated states. Legal obligations vary; the operator should obtain qualified legal review for the actual audience and business.
+1. Keep the published European regulations message associated with `firstinternships.com`. It uses Google's certified CMP and the three-choice design: consent, do not consent, and manage options.
+2. Keep the published US state regulations message associated with `firstinternships.com`; it targets all current and future states supported by Google's message. Legal obligations vary, so the operator should obtain qualified legal review for the actual audience and business.
 4. Confirm visitors can reopen privacy and cookie settings. Google's approved-site integration should add the revocation link; verify it on the real domain and add the documented API link if it does not appear.
 5. Test the published messages with AdSense's supported test parameters in a clean browser profile. Test accept, reject, manage options, refresh persistence, and revocation. Test EEA/UK/Swiss behavior and applicable US state behavior rather than assuming a US-local test covers all regions.
 6. Keep `VITE_ADSENSE_CONSENT_READY=false` until those checks pass. This flag is an operational lock, not a CMP and not legal certification.

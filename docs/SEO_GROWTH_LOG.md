@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-26 — Paramount Summer 2027 CTR and source refresh
+
+### Baseline
+
+- Window: the latest 28 days available in Search Console on October 26, 2026.
+- Site totals: 569 clicks, 60,400 impressions, 0.9% CTR and average position 9.3.
+- `/programs/paramount-internships` recorded 6 clicks, 726 impressions, 0.8% CTR and average position 8.9. Its largest visible query families were `paramount internships summer 2027`, close word-order variants, and questions about when Paramount summer internships open.
+- The guide's last source review predated Paramount's restored first-party internship section. Its search snippet did not name Summer 2027 even though that is the dominant visible query intent.
+
+### Changes
+
+- Preserved the established Paramount URL and changed its title to lead with the exact Summer 2027 internship intent. The description now answers the opening question directly: Paramount has not published one universal 2027 application window.
+- Reverified Paramount's restored official internship page and live Interns board. The guide now uses Paramount's own program facts, enrollment rule, departments, application-status policy and current listing route rather than presenting the Skydance overview as the primary destination.
+- Added direct answers about current Summer 2027 availability, opening timing, recent-graduate eligibility, compensation, departments and application updates. The page distinguishes a role-specific current posting from a company-wide US summer intake.
+- Added a regression test that prevents a future edit from turning a role-specific listing into a false universal opening claim.
+
+### Measurement
+
+- Primary metric: clicks and CTR for `/programs/paramount-internships`, interpreted with average position and query mix.
+- Supporting query families: `paramount internships summer 2027`, `paramount summer internships 2027`, `paramount internships` and `when do paramount summer internships open`.
+- Guardrails: no new Paramount URL, no invented opening or deadline, no universal pay claim, no guessed college year and no change to the site's optional-account boundary.
+- Reassess after another 200 impressions or 28 days. Improve the same URL again if the task remains Paramount internship timing rather than splitting authority across near-duplicate pages.
+
 ## 2026-10-26 — email-intent consolidation and AdSense review submission
 
 ### Baseline

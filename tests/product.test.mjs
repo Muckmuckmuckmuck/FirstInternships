@@ -483,8 +483,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-25</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-25</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-26</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-26</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1788,7 +1788,6 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
     ["world-bank-wbg-pioneers", "World Bank Internship 2027: Dates, Pay & Eligibility"],
     ["nvidia-ignite", "NVIDIA Ignite 2027: Eligibility, Pay & Apply"],
     ["capital-one-early-internship", "Capital One Early Internship: Eligibility & Housing"],
-    ["paramount-internships", "Paramount Internships: Eligibility & How to Apply"],
     ["gilead-internship-program", "Gilead Internship 2027: Eligibility & How to Apply"],
   ]);
   for (const [id, title] of expectedTitles) {
@@ -1822,6 +1821,22 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
   assert.ok(footerIds.includes("gilead-internship-program"));
   assert.ok(!footerIds.includes("netflix-internships"));
   assert.ok(!footerIds.includes("meta-internships"));
+});
+test("October 26 Paramount refresh answers Summer 2027 search intent without inventing an opening", () => {
+  const paramount = PROGRAMS.find(program => program.id === "paramount-internships");
+  assert.ok(paramount);
+  assert.equal(paramount.updated, "2026-10-26");
+  assert.equal(paramount.verified, "2026-10-26");
+  assert.equal(paramount.seoTitle, "Paramount Internships Summer 2027: When to Apply");
+  assert.match(paramount.seoDescription, /has not published one Summer 2027 application window/);
+  assert.match(paramount.status, /No universal Summer 2027 window published/);
+  assert.equal(paramount.url, "https://careers.paramount.com/go/Interns/8710100/");
+  assert.ok(paramount.sources.some(source => source.url === "https://www.paramount.com/careers"));
+  assert.ok(paramount.sources.some(source => source.url === paramount.url));
+  assert.ok(paramount.faqs.some(([question]) => /Summer 2027 internships open/i.test(question)));
+  assert.ok(paramount.faqs.some(([question]) => /internships paid/i.test(question)));
+  assert.match(paramount.eligibility.join(" "), /currently enrolled at an accredited college or university/);
+  assert.doesNotMatch(`${paramount.status} ${paramount.timing}`, /applications are open|Summer 2027 intake is open/i);
 });
 test("October 23 Search Console refresh improves NSA and Evercore search intent", async () => {
   const nsa = PROGRAMS.find(program => program.id === "nsa-summer-internships");

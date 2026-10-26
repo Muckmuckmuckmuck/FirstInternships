@@ -281,6 +281,24 @@ test("October 21 interview search expansion adds distinct, substantive answer gu
   assert.ok(guides.every(guide => guide.relatedGuideSlugs.includes("internship-interview-guide")));
   assert.deepEqual(GUIDES.find(guide => guide.slug === "internship-interview-guide").relatedGuideSlugs, slugs);
 });
+test("October 26 email-intent expansion answers two distinct student tasks", () => {
+  const slugs = [
+    "how-to-follow-up-on-an-internship-email",
+    "email-professor-for-research-internship",
+  ];
+  const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
+  assert.ok(guides.every(Boolean));
+  assert.ok(guides.every(guide => guide.updated === "2026-10-26"));
+  assert.ok(guides.every(guide => guide.sections.length === 8 && guide.example?.text));
+  assert.ok(guides.every(guide => guide.sections.flat().join(" ").split(/\s+/).length >= 700), "email-intent guides must answer the complete task rather than become thin template pages");
+  assert.ok(guides.every(guide => guide.programIds.length >= 4));
+  assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
+  assert.ok(guides.every(guide => guide.relatedGuideSlugs.includes("email-templates-for-internships")));
+
+  const parent = GUIDES.find(guide => guide.slug === "email-templates-for-internships");
+  assert.ok(slugs.every(slug => parent.relatedGuideSlugs.includes(slug)));
+  assert.equal(parent.updated, "2026-10-20", "internal links must not pretend the existing CTR-tested guide was substantively rewritten");
+});
 test("the free-forever promise protects student access while commercial revenue stays separate", async () => {
   const home = render("/");
   const about = render("/about");

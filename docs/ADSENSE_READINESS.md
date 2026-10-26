@@ -1,6 +1,6 @@
 # AdSense readiness and launch runbook
 
-Updated October 25, 2026.
+Updated October 26, 2026.
 
 This runbook makes FirstInternships technically ready to connect to AdSense without turning on ad requests prematurely. It cannot guarantee approval: Google reviews the full live site, account, traffic, content, and policy compliance, and only Google can approve or reject it.
 
@@ -34,11 +34,13 @@ The account-side setup was checked on October 25, 2026:
   site connected.
 - The public verification tag and exact publisher line in `/ads.txt` are live.
 
-Site review is still pending. Do not describe the site as approved before the
-AdSense Sites page says it is ready. Google's ads.txt status may also lag the
-public file while it is recrawled. Live ad requests must remain disabled until
-approval, regional consent testing, and the launch-unit configuration are all
-complete.
+Site review was requested from the `firstinternships.com` detail page on
+October 26, 2026. AdSense now labels the site `Getting ready`; that means review
+is in progress, not that the site is approved. The public ownership meta tag and
+exact publisher line in `/ads.txt` were rechecked immediately before submission.
+Google's ads.txt status still showed `Not found` and may lag the live public file
+while it is recrawled. Live ad requests must remain disabled until approval,
+regional consent testing, and the launch-unit configuration are all complete.
 
 ## Phase 1: connect the site for review
 

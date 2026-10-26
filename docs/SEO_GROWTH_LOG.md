@@ -2,6 +2,31 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-26 — email-intent consolidation and AdSense review submission
+
+### Baseline
+
+- Window: September 27–October 24, 2026, the latest complete 28 days available in Search Console during this release.
+- Site totals: 552 clicks, 58,200 impressions, 0.9% CTR and average position 9.4.
+- `/guides/email-templates-for-internships` recorded 2 clicks, 614 impressions, 0.3% CTR and average position 17.5. Its privacy-filtered query sample included internship application email, cold-email, application follow-up and research-professor template intent.
+- The broad email-template URL was refreshed on October 20, so its title, description and main copy remain stable. The repository already had a canonical application-follow-up URL; publishing another one would split authority and create duplicate intent.
+- AdSense showed `Requires review`. The public ownership meta tag and exact root `ads.txt` publisher line were both live, while Google's dashboard still reported the lagging ads.txt status as `Not found`.
+
+### Changes
+
+- Expanded the established `/guides/how-to-follow-up-on-an-internship-email` URL from a short answer into an eight-part application follow-up playbook covering portal checks, timing, recipient choice, interview follow-up, genuine offer deadlines, stopping rules and recordkeeping.
+- Added one distinct guide for emailing a professor about undergraduate research, with decision-useful sections on formal-program boundaries, lab selection, evidence, attachments, one follow-up and clarifying supervision or compensation before committing.
+- Added reciprocal related-reading links from the existing broad email-template guide without changing its October 20 title, description, primary copy or review date. The build now produces 47 original guides, 632 prerendered pages and 630 sitemap URLs.
+- Submitted `firstinternships.com` for AdSense review using the deployed meta-tag verification method. The dashboard moved to `Getting ready`; live ad requests remain disabled until approval and consent/placement validation are complete.
+
+### Measurement
+
+- Primary search metrics: clicks, impressions, CTR and position for the established application-follow-up URL and the new professor-research guide.
+- Supporting query families: `follow up email for internship`, `internship application follow up email`, `email professor for research internship`, `research internship email template` and adjacent terms that map to one of these two distinct tasks.
+- Commercial milestone: AdSense approval state and ads.txt recrawl status; approval is external and is not promised.
+- Guardrails: no duplicate application-follow-up page, no rewrite of the still-running October 20 parent-page snippet test, no bulk-outreach advice, no promised replies, no ad requests before approval and no student-content gate.
+- Reassess each guide after 200 impressions or 28 days. Recheck AdSense only for a status change or required action rather than repeatedly resubmitting the same site.
+
 ## 2026-10-26 — aggregate traffic, conversion and owner-scorecard measurement
 
 ### Baseline

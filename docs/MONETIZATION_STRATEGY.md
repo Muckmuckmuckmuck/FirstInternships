@@ -1,6 +1,6 @@
 # FirstInternships monetization strategy
 
-Updated October 25, 2026.
+Updated October 26, 2026.
 
 The product has two assets: qualified organic traffic from students actively researching internships, and a permission-based audience that can receive relevant alerts. Monetization should increase the value of those assets without turning employer facts into paid claims or making indexed content difficult to read.
 
@@ -93,8 +93,8 @@ The `/partners` page publishes only inventory counts computed from maintained si
 
 1. Connect first-party Search Console/analytics reporting and establish a weekly baseline.
 2. Confirm account and newsletter production metrics are observable without exposing personal data.
-3. Apply for and configure AdSense plus the required consent system.
-4. Turn on the smallest tested ad configuration and measure it before adding density.
+3. AdSense review was requested on October 26; monitor the `Getting ready` state without enabling ad requests prematurely.
+4. After approval and regional consent testing, turn on the smallest tested ad configuration and measure it before adding density.
 5. Use `/partners` to collect sponsor and employer demand.
 6. Create a rate card only after audience and engagement numbers are defensible.
 7. Publish sponsorship/disclosure language before the first paid campaign goes live.

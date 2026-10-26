@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-26 — Capital One exact-query CTR and eligibility refresh
+
+### Baseline
+
+- Window: the latest 28 days available in Search Console on October 26, 2026.
+- Site totals: 569 clicks, 60,400 impressions, 0.9% CTR and average position 9.3.
+- `/programs/capital-one-early-internship` recorded 6 clicks, 1,270 impressions, 0.5% CTR and average position 11.8. Over the latest seven days it recorded 1 click, 325 impressions, 0.3% CTR and average position 13.4.
+- The exact query `capital one early internship program` recorded 421 impressions, no clicks and average position 8.9 over 28 days. The page title omitted `Program`, and its sophomore-only answer did not reflect Capital One's separate current guidance for the Analyst track.
+- Spotify was intentionally left unchanged: its established page recorded 13 clicks, 676 impressions, 1.9% CTR and average position 8.2 in the latest seven days, meaning 13 of its 14 measured 28-day clicks arrived in that recent window.
+
+### Changes
+
+- Preserved the canonical Capital One URL and matched the title to the exact program-name query. The description now answers the high-intent eligibility question and surfaces the paid ten-week format, quantitative/STEM focus, housing and current-opening check.
+- Reverified three current Capital One sources. The guide now explains that the dedicated program page says second-year undergraduates, while Capital One's early-career article says the Analyst track looks for first-year students or sophomores; the August 2029 through August 2030 graduation window and active posting remain the decisive checks.
+- Added the program to both first-year and sophomore discovery while retaining the explicit source conflict on the page. Updated the no-open-roles review date, application steps, FAQ, sources and regression coverage without creating a duplicate URL.
+
+### Measurement
+
+- Primary metric: clicks and CTR for `/programs/capital-one-early-internship`, interpreted with average position and query mix.
+- Supporting query families: `capital one early internship program`, `capital one freshman internship`, `capital one analyst early internship program`, `capital one early internship program application` and `capital one intern housing`.
+- Guardrails: no new Capital One URL, no invented opening or deadline, no promise that every freshman qualifies, no conflation of short summits with the ten-week internship and no change to the site's optional-account boundary.
+- Reassess after another 200 impressions or 28 days. Improve the same URL again only if the search task remains the Early Internship Program rather than splitting authority across near-duplicate pages.
+
 ## 2026-10-26 — Paramount Summer 2027 CTR and source refresh
 
 ### Baseline

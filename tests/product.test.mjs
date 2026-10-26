@@ -781,6 +781,7 @@ test("expanded content preserves conditional years and unknown requirements", ()
   assert.ok(searchPrograms({ field: "public-service" }).some(p => p.id === "epa-pathways-internships"));
   assert.ok(searchPrograms({ field: "consulting" }).some(p => p.id === "bcg-consulting-internships"));
   assert.ok(searchPrograms({ field: "aerospace" }).some(p => p.id === "delta-student-internships"));
+  assert.ok(programsForYear(1).some(p => p.id === "capital-one-early-internship"));
   assert.ok(programsForYear(2).some(p => p.id === "capital-one-early-internship"));
   assert.ok(!programsForYear(3).some(p => p.id === "capital-one-early-internship"));
   assert.ok(searchPrograms({ field: "life-sciences" }).some(p => p.id === "lilly-undergraduate-internships"));
@@ -1787,7 +1788,6 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
   const expectedTitles = new Map([
     ["world-bank-wbg-pioneers", "World Bank Internship 2027: Dates, Pay & Eligibility"],
     ["nvidia-ignite", "NVIDIA Ignite 2027: Eligibility, Pay & Apply"],
-    ["capital-one-early-internship", "Capital One Early Internship: Eligibility & Housing"],
     ["gilead-internship-program", "Gilead Internship 2027: Eligibility & How to Apply"],
   ]);
   for (const [id, title] of expectedTitles) {
@@ -1800,12 +1800,10 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
   }
 
   const worldBank = PROGRAMS.find(program => program.id === "world-bank-wbg-pioneers");
-  const capitalOne = PROGRAMS.find(program => program.id === "capital-one-early-internship");
   const nvidia = PROGRAMS.find(program => program.id === "nvidia-ignite");
   assert.equal(worldBank.verified, "2026-10-24");
   assert.match(worldBank.status, /next general window Jan–Feb/);
   assert.ok(worldBank.sources.some(source => /fall-winter-cycle-2026/.test(source.url)));
-  assert.equal(capitalOne.verified, "2026-10-20");
   assert.match(nvidia.status, /ended Oct\. 18/);
   assert.match(nvidia.steps[0], /window ended/i);
   assert.doesNotMatch(PROGRAMS.find(program => program.id === "paramount-internships").seoDescription, /Summer 2027 status/);
@@ -1821,6 +1819,27 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
   assert.ok(footerIds.includes("gilead-internship-program"));
   assert.ok(!footerIds.includes("netflix-internships"));
   assert.ok(!footerIds.includes("meta-internships"));
+});
+test("October 26 Capital One refresh answers exact program-name and freshman eligibility intent", async () => {
+  const capitalOne = PROGRAMS.find(program => program.id === "capital-one-early-internship");
+  assert.ok(capitalOne);
+  assert.equal(capitalOne.updated, "2026-10-26");
+  assert.equal(capitalOne.verified, "2026-10-26");
+  assert.equal(capitalOne.seoTitle, "Capital One Early Internship Program: Who Can Apply");
+  assert.ok(capitalOne.seoDescription.length >= 120 && capitalOne.seoDescription.length <= 180);
+  assert.deepEqual(capitalOne.years, [1, 2]);
+  assert.equal(capitalOne.firstYear, 1);
+  assert.match(capitalOne.eligibility.join(" "), /first-year students or sophomores/i);
+  assert.match(capitalOne.eligibility.join(" "), /August 2029 and August 2030/);
+  assert.match(capitalOne.timing, /corporate housing/);
+  assert.match(capitalOne.status, /No related roles at Oct\. 26 review/);
+  assert.ok(capitalOne.sources.some(source => /get-ahead-with-early-career-programs-for-students/.test(source.url)));
+  assert.ok(capitalOne.faqs.some(([question, answer]) => /freshmen apply/i.test(question) && /Potentially/.test(answer)));
+  assert.doesNotMatch(`${capitalOne.status} ${capitalOne.timing}`, /applications are open|roles are open/i);
+
+  const html = await readFile(`dist${programPath(capitalOne)}.html`, "utf8");
+  assert.match(html, /<title>Capital One Early Internship Program: Who Can Apply<\/title>/);
+  assert.match(html, /Can freshmen apply to the Capital One Early Internship Program\?/);
 });
 test("October 26 Paramount refresh answers Summer 2027 search intent without inventing an opening", () => {
   const paramount = PROGRAMS.find(program => program.id === "paramount-internships");

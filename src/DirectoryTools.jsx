@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, CalendarDays, Check, Download, GitCompareArrows, X } from "lucide-react";
 import { PROGRAMS, RENDERED_AT, programPath } from "./content.js";
 import { COMPARE_LIMIT, comparisonPath, cutoffDateTime, cutoffLabel, deadlineCalendar, deadlineState, downloadFile, hasPublishedCutoff, sanitizeComparison, sortPrograms } from "./directory-tools.js";
+import { trackPublicEventOnce } from "./analytics.js";
 
 const ComparisonContext = createContext(null);
 const COMPARE_STORE = "fi_compare_v1";
@@ -73,6 +74,7 @@ export function CalendarDownload({ programs, small = false }) {
   const upcoming = programs.filter(p => ["soon", "future"].includes(deadlineState(p, now).kind));
   return <div className="calendar-download"><button className={`button secondary ${small ? "small" : ""}`} disabled={!upcoming.length} onClick={() => {
     downloadFile(deadlineCalendar(upcoming, Date.now()), "text/calendar;charset=utf-8", "firstinternships-deadlines.ics");
+    trackPublicEventOnce("public_deadline_calendar_downloaded");
     setNotice("Calendar file downloaded. Import it in your calendar, verify the source, and set an earlier personal reminder. This is not a live subscription.");
   }}><Download size={16} />{small ? "Download cutoff (.ics)" : `Download ${upcoming.length} published cutoffs (.ics)`}</button><p className="small-note" role="status">{notice}</p></div>;
 }

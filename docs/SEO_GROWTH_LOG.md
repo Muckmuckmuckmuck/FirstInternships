@@ -2,6 +2,28 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-26 — aggregate traffic, conversion and owner-scorecard measurement
+
+### Baseline
+
+- The latest documented complete Search Console window remains September 26–October 23: 552 clicks, 58,200 impressions, 0.9% CTR and average position 9.4. This release does not restate a newer total without a complete provider export.
+- Production already counts cookieless page views and estimated visitors through Vercel and Cloudflare and records the account, newsletter, official-application and partnership funnel with fixed event names.
+- The missing operating layer was consistent engagement/tool measurement and one private report joining traffic with aggregate Supabase account/subscriber states. Raw dashboard numbers were too easy to mix across incompatible windows and denominators.
+
+### Changes
+
+- Added one privacy-minimized engaged-page event based on visible time or meaningful page depth, plus aggregate events for directory/guide filtering, public deadline-calendar downloads and timeline creation/download. No search text, filter choice, program selection, target date or planner data is attached.
+- Added an owner-only reporting command that reads Vercel's aggregate Web Analytics API and aggregate Supabase account, subscription and delivery counts without creating a public metrics endpoint or printing personal data.
+- Added a maintained scorecard for traffic, organic demand, usefulness, owned-audience conversion, delivery quality, revenue per thousand page views, contribution, sponsor close rate and explicitly labeled run rate.
+- Expanded the privacy notice to describe the new fixed-name aggregate events and the visitor-supplied values they exclude.
+
+### Measurement
+
+- Primary metrics: current versus prior 28-day visitors/page views, engaged visitor rate, program-guide to official-site rate, new account rate and new active-subscriber rate.
+- Commercial metrics: qualified partnership inquiries, wins, AdSense and sponsorship revenue, site revenue per thousand page views, contribution and revenue concentration.
+- Guardrails: Vercel and Cloudflare counts are compared rather than added; provider visitors are not called distinct lifetime people; account creation is not newsletter consent; same-window ratios are not presented as user-level cohorts; no public dashboard exposes business or subscriber data.
+- Keep one same-day monthly snapshot. Reassess new events only after a complete 28-day collection window rather than optimizing on a few days of noise.
+
 ## 2026-10-25 — HCC open-status CTR and subscriber-activation refresh
 
 ### Baseline

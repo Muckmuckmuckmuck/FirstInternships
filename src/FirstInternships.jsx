@@ -4,7 +4,7 @@ import { CONTACT, FIELDS, GUIDES, PROGRAMS, TOPICS, VERIFIED, YEARS, currentProg
 import { CalendarDownload, CompareButton, ComparisonPage, ComparisonProvider, DeadlineBadge, DeadlinesPage, useReviewClock } from "./DirectoryTools.jsx";
 import { deadlineState, filterQuery, hasPublishedCutoff, readFilters, sortPrograms } from "./directory-tools.js";
 import { ABOUT_FAQS, ABOUT_SECTIONS, CONTACT_LIMITS, CONTACT_TOPICS } from "./editorial-pages.js";
-import { analyticsEnabled, trackPublicEvent } from "./analytics.js";
+import { analyticsEnabled, startEngagedPageMeasurement, trackPublicEvent, trackPublicEventOnce } from "./analytics.js";
 import ApplicationTimeline from "./ApplicationTimeline.jsx";
 import { AccountConversionCTA, AccountPage, AccountProvider, SignupPrompt, accountFeatureEnabled, useAccount } from "./Account.jsx";
 import SavedPlanner from "./SavedPlanner.jsx";
@@ -163,7 +163,7 @@ function GuideLibrary() {
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const matches = GUIDES.filter(g => (category === "all" || guideCategory(g) === category) && words.every(word => `${g.title} ${g.description} ${g.sections.flat().join(" ")}`.toLowerCase().includes(word)));
   return <div className="container"><Breadcrumbs items={[["Application guides", null]]} /><PageIntro eyebrow="The application playbook" title="College Internship Application Guides" description="Practical college internship guides for finding roles, application volume, resumes, career fairs, interviews, portal statuses, remote work, relocation, offers, and your first week." />
-    <div className="guide-library-toolbar"><div><label className="search-label" htmlFor="guide-query">Search the playbooks</label><div className="filter-search"><Search size={18} /><input id="guide-query" maxLength={200} value={query} onChange={e => setQuery(e.target.value)} placeholder="Try application status, housing, or career fair" /></div></div><div><label className="search-label" htmlFor="guide-category">What are you working on?</label><select id="guide-category" value={category} onChange={e => setCategory(e.target.value)}><option value="all">All application stages</option>{categories.map(name => <option key={name}>{name}</option>)}</select></div><p role="status">{matches.length} {matches.length === 1 ? "guide" : "guides"}</p></div>
+    <div className="guide-library-toolbar"><div><label className="search-label" htmlFor="guide-query">Search the playbooks</label><div className="filter-search"><Search size={18} /><input id="guide-query" maxLength={200} value={query} onChange={e => { trackPublicEventOnce("guide_filter_used"); setQuery(e.target.value); }} placeholder="Try application status, housing, or career fair" /></div></div><div><label className="search-label" htmlFor="guide-category">What are you working on?</label><select id="guide-category" value={category} onChange={e => { trackPublicEventOnce("guide_filter_used"); setCategory(e.target.value); }}><option value="all">All application stages</option>{categories.map(name => <option key={name}>{name}</option>)}</select></div><p role="status">{matches.length} {matches.length === 1 ? "guide" : "guides"}</p></div>
     <AccountConversionCTA compact source="guide-library" />
     {matches.length ? categories.filter(name => matches.some(g => guideCategory(g) === name)).map(name => <section className="guide-library-group" key={name}><h2>{name}</h2><GuideCards items={matches.filter(g => guideCategory(g) === name)} /></section>) : <div className="empty-state"><h2>No guides match yet.</h2><p>Try a shorter keyword or another stage.</p><button className="button secondary" onClick={() => { setQuery(""); setCategory("all"); }}>Reset guide search</button></div>}
     <section className="section"><h2>Put the advice to work</h2><TopicCards /></section></div>;
@@ -230,6 +230,8 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
   const [sort, setSort] = useState("year");
   const [filtersOpen, setFiltersOpen] = useState(true);
   const now = useReviewClock();
+  const chooseYear = value => { trackPublicEventOnce("directory_filter_used"); setYear(value); };
+  const chooseField = value => { trackPublicEventOnce("directory_filter_used"); setField(value); };
   useEffect(() => {
     const screen = window.matchMedia("(min-width: 761px)");
     const fit = () => setFiltersOpen(screen.matches);
@@ -273,15 +275,15 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
   const activeFilters = [query && `Search: “${query}”`, year !== "all" && `College year ${year}`, field !== "all" && FIELDS.find(f => f.id === field)?.name, paid && "Confirmed paid", onlyPublishedDeadlines && "Future published cutoff", savedOnly && "Saved only"].filter(Boolean);
   return <section className="board-section" id="internships" aria-labelledby="board-title">
     <div className="section-heading"><div><p className="eyebrow">02 / The college directory</p><h2 id="board-title">Find your next move.</h2><p>{sort === "year" ? "Sorted by earliest program-level undergraduate entry. Unknown minimums stay visible." : sort === "deadline" ? "Future published cutoffs first. Passed and unconfirmed dates follow." : "Sorted alphabetically by employer. Eligibility still needs a closer look."}</p></div><span className="result-count" aria-live="polite">{filtered.length} {filtered.length === 1 ? "program" : "programs"}</span></div>
-    <FitFinder year={year} setYear={setYear} field={field} setField={setField} matching={filtered.length} also={alsoCheck.length} total={PROGRAMS.length} />
+    <FitFinder year={year} setYear={chooseYear} field={field} setField={chooseField} matching={filtered.length} also={alsoCheck.length} total={PROGRAMS.length} />
     {activeFilters.length > 0 && <div className="active-filter-summary"><p>{activeFilters.join(" · ")}</p><button className="quiet-button" onClick={reset}>Clear filters</button></div>}
     <div className="board-layout"><aside className="filters"><details className="filter-disclosure" open={filtersOpen} onToggle={e => setFiltersOpen(e.currentTarget.open)}><summary><span>More filters &amp; sorting</span><small>Keyword, pay, deadlines, order</small></summary><div className="filter-disclosure-body">
       <div className="filter-heading"><strong>Refine further</strong><button onClick={reset}>Reset</button></div>
-      <label className="search-label" htmlFor="board-query">Search programs</label><div className="filter-search"><Search size={16} /><input id="board-query" maxLength={200} value={query} onChange={e => setQuery(e.target.value)} placeholder="Company, field, keyword" /></div>
-      <label className="search-label" htmlFor="year-filter">Your college year</label><select id="year-filter" value={year} onChange={e => setYear(e.target.value)}><option value="all">All years & unconfirmed</option>{YEARS.map(y => <option key={y.id} value={y.id}>{y.short} · {y.name}</option>)}</select>
-      <label className="search-label" htmlFor="field-filter">Field</label><select id="field-filter" value={field} onChange={e => setField(e.target.value)}><option value="all">All fields</option>{FIELDS.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}</select>
-      <label className="search-label" htmlFor="sort-filter">Sort programs</label><select id="sort-filter" value={sort} onChange={e => setSort(e.target.value)}><option value="year">Earliest college year</option><option value="deadline">Next published cutoff</option><option value="company">Employer A–Z</option></select>
-      <fieldset><legend>Preferences</legend><label><input type="checkbox" checked={paid} onChange={e => setPaid(e.target.checked)} />Confirmed paid programs</label><label><input type="checkbox" checked={onlyPublishedDeadlines} onChange={e => setOnlyPublishedDeadlines(e.target.checked)} />Published future deadline</label><label><input type="checkbox" checked={savedOnly} onChange={e => setSavedOnly(e.target.checked)} />Only my saved programs</label></fieldset>
+      <label className="search-label" htmlFor="board-query">Search programs</label><div className="filter-search"><Search size={16} /><input id="board-query" maxLength={200} value={query} onChange={e => { trackPublicEventOnce("directory_filter_used"); setQuery(e.target.value); }} placeholder="Company, field, keyword" /></div>
+      <label className="search-label" htmlFor="year-filter">Your college year</label><select id="year-filter" value={year} onChange={e => chooseYear(e.target.value)}><option value="all">All years & unconfirmed</option>{YEARS.map(y => <option key={y.id} value={y.id}>{y.short} · {y.name}</option>)}</select>
+      <label className="search-label" htmlFor="field-filter">Field</label><select id="field-filter" value={field} onChange={e => chooseField(e.target.value)}><option value="all">All fields</option>{FIELDS.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}</select>
+      <label className="search-label" htmlFor="sort-filter">Sort programs</label><select id="sort-filter" value={sort} onChange={e => { trackPublicEventOnce("directory_filter_used"); setSort(e.target.value); }}><option value="year">Earliest college year</option><option value="deadline">Next published cutoff</option><option value="company">Employer A–Z</option></select>
+      <fieldset><legend>Preferences</legend><label><input type="checkbox" checked={paid} onChange={e => { trackPublicEventOnce("directory_filter_used"); setPaid(e.target.checked); }} />Confirmed paid programs</label><label><input type="checkbox" checked={onlyPublishedDeadlines} onChange={e => { trackPublicEventOnce("directory_filter_used"); setOnlyPublishedDeadlines(e.target.checked); }} />Published future deadline</label><label><input type="checkbox" checked={savedOnly} onChange={e => setSavedOnly(e.target.checked)} />Only my saved programs</label></fieldset>
       <button className="button secondary small" onClick={share}>Put filters in the URL</button><p className="small-note url-notice" role="status">{urlNotice}</p>
       <div className="filter-note"><ShieldCheck size={19} /><p><strong>Eligibility is more than a number.</strong>A year match is a starting point. Check coursework, enrollment, citizenship, dates, and each opening's rules.</p></div>
       <div className="filter-tool-links"><a className="text-link" href="/internship-deadlines">Deadline calendar <ArrowRight size={14} /></a><a className="text-link" href="/application-timeline">Build a preparation plan <ArrowRight size={14} /></a><a className="text-link" href="/about">Our verification process <ArrowRight size={14} /></a></div>
@@ -577,6 +579,7 @@ function SiteContent({ pathname = "/" }) {
       document.head.appendChild(beacon);
     }
   }, []);
+  useEffect(() => startEngagedPageMeasurement(), []);
   useEffect(() => {
     document.title = page.path === "/" ? `FirstInternships: ${page.title}` : page.title;
     setStale(Boolean(pageReviewDate && Date.now() - Date.parse(`${pageReviewDate}T00:00:00Z`) > 60 * 86400000));

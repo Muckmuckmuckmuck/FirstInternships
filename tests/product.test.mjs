@@ -380,6 +380,32 @@ test("account and newsletter conversion events stay aggregate and contain no vis
   assert.match(analyticsSource, /window\.va\("event", \{ name \}\)/);
   assert.doesNotMatch(analyticsSource, /properties|email:|preferences:|planner:/i);
 });
+test("traffic, engagement, utility, and owner metrics stay aggregate and private", async () => {
+  const [appSource, directoryTools, timelineSource, analyticsSource, reportSource, scorecard, privacy, packageJson] = await Promise.all([
+    readFile("src/FirstInternships.jsx", "utf8"),
+    readFile("src/DirectoryTools.jsx", "utf8"),
+    readFile("src/ApplicationTimeline.jsx", "utf8"),
+    readFile("src/analytics.js", "utf8"),
+    readFile("scripts/metrics-report.mjs", "utf8"),
+    readFile("docs/METRICS_SCORECARD.md", "utf8"),
+    readFile("public/privacy.html", "utf8"),
+    readFile("package.json", "utf8"),
+  ]);
+
+  for (const event of ["engaged_page_view", "directory_filter_used", "guide_filter_used"]) assert.match(`${appSource}\n${analyticsSource}`, new RegExp(`"${event}"`));
+  assert.match(directoryTools, /trackPublicEventOnce\("public_deadline_calendar_downloaded"\)/);
+  for (const event of ["timeline_plan_created", "timeline_plan_downloaded"]) assert.match(timelineSource, new RegExp(`trackPublicEventOnce\\("${event}"\\)`));
+  assert.match(analyticsSource, /visibleSeconds >= 20[\s\S]*visibleSeconds >= 5 && deepestScroll >= 0\.5/);
+  assert.doesNotMatch(analyticsSource, /eventData|properties|email:|preferences:|planner:/i);
+
+  for (const source of ["visits/count", "events/aggregate", "newsletter_subscriptions", "newsletter_deliveries", "auth.admin.listUsers"]) assert.ok(reportSource.includes(source), source);
+  assert.match(reportSource, /select\(column, \{ count: "exact", head: true \}\)/);
+  assert.doesNotMatch(reportSource, /user\.email|console\.log\([^)]*process\.env/);
+  assert.match(scorecard, /Vercel and Cloudflare measure overlapping traffic\. Compare them; never add them\./);
+  assert.match(scorecard, /does \*\*not\*\* assign a company valuation/);
+  assert.match(privacy, /broad, fixed-name events[\s\S]*do not include the search text/);
+  assert.equal(JSON.parse(packageJson).scripts["metrics:report"], "node scripts/metrics-report.mjs");
+});
 test("planner data is validated and deduplicated", () => {
   assert.deepEqual(sanitizePlanner(null), { saved: [], entries: {} });
   assert.deepEqual(sanitizePlanner({ saved: "not-an-array" }), { saved: [], entries: {} });

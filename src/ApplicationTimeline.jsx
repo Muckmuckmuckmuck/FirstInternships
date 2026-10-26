@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight, CalendarDays, Check, Download } from "lucide-
 import { PROGRAMS, VERIFIED, guidePath, programPath } from "./content.js";
 import { downloadFile } from "./directory-tools.js";
 import { addDays, buildTimeline, localDate, suggestedTarget, timelineCalendar, timelineText } from "./timeline.js";
+import { trackPublicEventOnce } from "./analytics.js";
 
 const dayLabel = date => new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short", month: "short", day: "numeric", year: "numeric" }).format(new Date(`${date}T00:00:00Z`));
 export default function ApplicationTimeline({ planner }) {
@@ -51,11 +52,12 @@ export default function ApplicationTimeline({ planner }) {
     // do not all dispatch their completion events at the same point.
     const submittedTarget = event.currentTarget.elements.namedItem("target").value;
     setTarget(submittedTarget);
-    try { setPlan(buildTimeline({ today, target: submittedTarget, programId, references })); setChecks([]); setError(""); setNotice("Your plan is ready. Review the suggested dates and official requirements before using it."); }
+    try { setPlan(buildTimeline({ today, target: submittedTarget, programId, references })); trackPublicEventOnce("timeline_plan_created"); setChecks([]); setError(""); setNotice("Your plan is ready. Review the suggested dates and official requirements before using it."); }
     catch (problem) { setPlan(null); setError(problem.message); }
   };
   const exportPlan = calendar => {
     downloadFile(calendar ? timelineCalendar(plan) : timelineText(plan), calendar ? "text/calendar;charset=utf-8" : "text/plain;charset=utf-8", calendar ? "firstinternships-personal-plan.ics" : "firstinternships-personal-plan.txt");
+    trackPublicEventOnce("timeline_plan_downloaded");
     setNotice(calendar ? "Personal-plan calendar downloaded. Import its all-day checkpoints and add your own reminders. It does not contain or replace the employer's exact cutoff." : "Preparation checklist downloaded. It includes all suggested steps; page checkmarks are not included.");
   };
   return <div className="container"><nav className="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><span aria-current="page">Application timeline builder</span></nav>

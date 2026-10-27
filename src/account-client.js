@@ -2,6 +2,7 @@ const SUPABASE_URL_KEY = "VITE_SUPABASE_URL";
 const SUPABASE_ANON_KEY = "VITE_SUPABASE_ANON_KEY";
 
 export const ACCOUNT_PATH = "/account";
+export const AUTH_RETURN_PATHS = Object.freeze([ACCOUNT_PATH, "/talent-network"]);
 export const CONSENT_VERSION = "2026-10-07";
 export const PENDING_NEWSLETTER_KEY = "fi_pending_newsletter_v1";
 export const NEWSLETTER_INTENT_PARAM = "newsletter_intent";
@@ -248,8 +249,12 @@ export async function getAccountClient() {
   return browserClientPromise;
 }
 
-export function accountAuthRedirect({ source = "account", intentId = "", origin = typeof window === "undefined" ? "https://firstinternships.com" : window.location.origin } = {}) {
-  const redirect = new URL(ACCOUNT_PATH, origin);
+export function safeAuthReturnPath(value) {
+  return AUTH_RETURN_PATHS.includes(value) ? value : ACCOUNT_PATH;
+}
+
+export function accountAuthRedirect({ source = "account", intentId = "", returnPath = ACCOUNT_PATH, origin = typeof window === "undefined" ? "https://firstinternships.com" : window.location.origin } = {}) {
+  const redirect = new URL(safeAuthReturnPath(returnPath), origin);
   redirect.searchParams.set("welcome", "1");
   const cleanSource = cleanText(source, 60);
   if (cleanSource) redirect.searchParams.set("source", cleanSource);
@@ -257,11 +262,11 @@ export function accountAuthRedirect({ source = "account", intentId = "", origin 
   return redirect.toString();
 }
 
-export async function signInWithGoogle(client, { source = "account", intentId = "" } = {}) {
+export async function signInWithGoogle(client, { source = "account", intentId = "", returnPath = ACCOUNT_PATH } = {}) {
   if (!client?.auth?.signInWithOAuth) throw new Error("Google sign-in is not available right now.");
   const { data, error } = await client.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: accountAuthRedirect({ source, intentId }) },
+    options: { redirectTo: accountAuthRedirect({ source, intentId, returnPath }) },
   });
   if (error) throw error;
   return data;

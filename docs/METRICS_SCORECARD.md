@@ -94,6 +94,8 @@ Save one snapshot on the same day each month. Use complete 28-day windows and ke
 - Activation view → explicit opt-in completion.
 - Seven-, 30-, and 90-day active-subscriber retention when the delivery data is mature enough to calculate it honestly.
 - Match coverage, no-match rate, repeated-program rate, and digest click usefulness.
+- Active and paused private Talent Network profiles, new profiles in the period, profile deletion rate, resume freshness, and progress toward 10,000 active current profiles. Never count deleted, paused, resume-missing, or stale records as placement-ready inventory.
+- Talent Network view → Google start → completed-profile conversion. Keep these as aggregate same-window ratios unless a consented first-party cohort system is deliberately built.
 
 ### Revenue quality
 
@@ -124,3 +126,4 @@ Track the metrics; do not manufacture a valuation multiple. Any future valuation
 - Custom Vercel events depend on the active plan and production Web Analytics setup. Zero may mean no activity, unavailable custom events, or a configuration problem; check the provider before drawing a conclusion.
 - Event ratios in the report are same-window aggregate ratios, not a reconstructed person-level journey.
 - No growth target overrides the free directory, optional account, explicit newsletter consent, local-only planner, accurate source facts, or a visible way to dismiss signup prompts.
+- The 10,000-profile target does not override candidate privacy, opportunity-specific employer-sharing approval, anti-discrimination controls, deletion rights, security review, or applicable employment-agency obligations.

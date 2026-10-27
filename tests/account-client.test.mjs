@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  ACCOUNT_PATH,
+  AUTH_RETURN_PATHS,
   CONSENT_VERSION,
   PENDING_NEWSLETTER_KEY,
   accountAuthRedirect,
@@ -8,6 +10,7 @@ import {
   cleanNewsletterPreferences,
   normalizeNewsletterSettings,
   readPendingNewsletterPreferences,
+  safeAuthReturnPath,
   savePendingNewsletterPreferences,
   signInWithGoogle,
 } from "../src/account-client.js";
@@ -101,6 +104,30 @@ test("account auth redirect keeps signup source and matching consent nonce on th
   assert.equal(redirect.pathname, "/account");
   assert.equal(redirect.searchParams.get("source"), "program-page");
   assert.equal(redirect.searchParams.get("newsletter_intent"), intentId);
+});
+
+test("Google auth can return to the allowlisted Talent Network without creating an open redirect", async () => {
+  let request;
+  const client = {
+    auth: {
+      async signInWithOAuth(value) {
+        request = value;
+        return { data: { provider: "google" }, error: null };
+      },
+    },
+  };
+
+  assert.deepEqual(AUTH_RETURN_PATHS, ["/account", "/talent-network"]);
+  assert.equal(safeAuthReturnPath("/talent-network"), "/talent-network");
+  assert.equal(safeAuthReturnPath("https://attacker.example/collect"), ACCOUNT_PATH);
+  await signInWithGoogle(client, { source: "talent-network", returnPath: "/talent-network" });
+  const talentRedirect = new URL(request.options.redirectTo);
+  assert.equal(talentRedirect.origin, "https://firstinternships.com");
+  assert.equal(talentRedirect.pathname, "/talent-network");
+  assert.equal(talentRedirect.searchParams.get("source"), "talent-network");
+
+  await signInWithGoogle(client, { returnPath: "//attacker.example/collect" });
+  assert.equal(new URL(request.options.redirectTo).pathname, ACCOUNT_PATH);
 });
 
 test("consumed account welcome parameters are removed without losing consent state or the page anchor", () => {

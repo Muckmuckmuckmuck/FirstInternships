@@ -56,3 +56,11 @@
 
 @media(max-width:960px){.account-conversion-cta.is-signup{grid-template-columns:auto 1fr}.account-cta-form,.account-cta-quick{grid-column:1/-1;max-width:none}.account-cta-actions{grid-template-columns:minmax(0,1fr) auto}}
 @media(max-width:620px){.account-cta-fields,.account-cta-actions{grid-template-columns:1fr}.account-cta-actions>a{justify-content:center;min-height:34px}.account-conversion-cta.is-signup{display:grid}.account-cta-disclosure{text-align:center}.signup-prompt-benefits{display:grid;grid-template-columns:1fr 1fr;gap:6px}.account-fast-signin-primary{padding:13px}.account-personalize-toggle>span{align-items:flex-start}.account-personalize-toggle small{display:none}}
+.account-talent-cta { margin-top: 1.25rem; padding: 1.35rem 1.45rem; border: 1px solid #cfe0d8; border-radius: 18px; background: #f1f8f4; display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; }
+.account-talent-cta h2 { margin: .25rem 0 .4rem; font-size: clamp(1.35rem, 2.5vw, 2rem); }
+.account-talent-cta p:not(.eyebrow) { max-width: 720px; margin: 0; color: #5c7069; line-height: 1.55; }
+.account-talent-cta .button { flex: 0 0 auto; }
+@media (max-width: 680px) {
+  .account-talent-cta { align-items: flex-start; flex-direction: column; }
+  .account-talent-cta .button { width: 100%; }
+}

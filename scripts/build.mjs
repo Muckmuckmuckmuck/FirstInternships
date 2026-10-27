@@ -111,7 +111,7 @@ function lastmodForRoute(route) {
   const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
   if (programs.length) return latestProgramReview(programs, page.field?.updated || page.year?.updated || page.topic?.updated || VERIFIED);
   const explicit = {
-    "/application-timeline": "2026-09-20", "/about": "2026-10-21", "/partners": "2026-10-21", "/contact": "2026-10-21", "/privacy": "2026-10-25", "/terms": "2026-10-25",
+    "/application-timeline": "2026-09-20", "/talent-network": "2026-10-27", "/about": "2026-10-27", "/partners": "2026-10-27", "/contact": "2026-10-27", "/privacy": "2026-10-27", "/terms": "2026-10-27",
   }[route];
   if (explicit) return explicit;
   return VERIFIED;

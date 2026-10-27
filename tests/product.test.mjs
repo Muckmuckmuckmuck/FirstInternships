@@ -238,6 +238,7 @@ test("route resolution supports clean URLs and rejects unknown routes", () => {
   assert.equal(resolvePage("/programs/nasa-ostem.html").program.id, "nasa-ostem");
   assert.equal(resolvePage("/guides/").type, "guides");
   assert.equal(resolvePage("/account").type, "account");
+  assert.equal(resolvePage("/talent-network").type, "talent");
   assert.equal(resolvePage("/partners").type, "partners");
   assert.equal(resolvePage("/not-a-page").type, "404");
   assert.equal(YEARS.length, 4);
@@ -309,7 +310,7 @@ test("the free-forever promise protects student access while commercial revenue 
   assert.match(home, /Free forever\. No premium tier between you and the facts\./);
   assert.match(home, /href="\/about#funding"/);
   assert.match(home, /Free forever for college students/);
-  assert.match(about, /The directory, application guides, deadlines, comparisons, private browser planner, account and opted-in internship alerts do not require a student subscription or application fee/);
+  assert.match(about, /The directory, application guides, deadlines, comparisons, private browser planner, account, opted-in internship alerts and private Talent Network profile do not require a student subscription, application fee or placement fee/);
   assert.match(partners, /Free forever for students/);
   assert.match(partners, /Commercial support funds access instead of putting the directory behind a paywall/);
   assert.match(accountSource, /The account, opted-in alerts and directory stay free/);
@@ -416,7 +417,7 @@ test("traffic, engagement, utility, and owner metrics stay aggregate and private
   assert.match(analyticsSource, /visibleSeconds >= 20[\s\S]*visibleSeconds >= 5 && deepestScroll >= 0\.5/);
   assert.doesNotMatch(analyticsSource, /eventData|properties|email:|preferences:|planner:/i);
 
-  for (const source of ["visits/count", "events/aggregate", "newsletter_subscriptions", "newsletter_deliveries", "auth.admin.listUsers"]) assert.ok(reportSource.includes(source), source);
+  for (const source of ["visits/count", "events/aggregate", "newsletter_subscriptions", "newsletter_deliveries", "talent_profiles", "auth.admin.listUsers"]) assert.ok(reportSource.includes(source), source);
   assert.match(reportSource, /select\(column, \{ count: "exact", head: true \}\)/);
   assert.doesNotMatch(reportSource, /user\.email|console\.log\([^)]*process\.env/);
   assert.match(scorecard, /Vercel and Cloudflare measure overlapping traffic\. Compare them; never add them\./);
@@ -579,7 +580,7 @@ test("account disclosures cover Google auth boundaries and separate newsletter c
     readFile("public/terms.html", "utf8"),
   ]);
   for (const [name, document] of [["privacy", privacy], ["terms", terms]]) {
-    assert.match(document, /Updated October 25, 2026/, `${name} disclosure date`);
+    assert.match(document, /Updated October 27, 2026/, `${name} disclosure date`);
     assert.match(document, /Supabase/, `${name} must identify the auth processor`);
     assert.match(document, /Gmail messages/, `${name} must explain that Gmail access is not requested`);
     assert.match(document, /Google Drive files/, `${name} must explain that Drive access is not requested`);

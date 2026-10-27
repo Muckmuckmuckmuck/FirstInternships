@@ -122,6 +122,13 @@ async function collectSupabase() {
   try {
     newActiveSubscribers = await exactCount(client, "newsletter_subscriptions", "user_id", query => query.eq("status", "active").gte("confirmed_at", currentSince));
   } catch (error) { warnings.push(error.message); }
+  const talent = { active: null, paused: null, total: null, newProfiles: null };
+  try {
+    talent.active = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active"));
+    talent.paused = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "paused"));
+    talent.total = talent.active + talent.paused;
+    talent.newProfiles = await exactCount(client, "talent_profiles", "user_id", query => query.gte("created_at", currentSince));
+  } catch (error) { warnings.push(error.message); }
 
   return {
     available: true,
@@ -131,6 +138,7 @@ async function collectSupabase() {
     subscriptions,
     deliveries,
     newActiveSubscribers,
+    talent,
     warnings,
   };
 }
@@ -189,10 +197,17 @@ function renderReport(vercel, supabase) {
       ["newsletter_activation_viewed", "Newsletter activation viewers"],
       ["newsletter_opt_in_completed", "Completed newsletter opt-ins"],
       ["newsletter_preferences_saved", "Newsletter preference saves"],
+      ["talent_network_viewed", "Talent Network visitors"],
+      ["talent_signup_started", "Talent account starts"],
+      ["talent_profile_completed", "Completed talent profiles"],
+      ["talent_profile_updated", "Talent profile updates"],
+      ["talent_profile_paused", "Talent profile pauses"],
+      ["talent_profile_deleted", "Talent profile deletions"],
       ["partner_general_inquiry", "General partnership inquiries"],
       ["partner_newsletter_inquiry", "Newsletter sponsorship inquiries"],
       ["partner_employer_inquiry", "Employer campaign inquiries"],
       ["partner_display_inquiry", "Display advertising inquiries"],
+      ["partner_talent_inquiry", "Placement-service employer inquiries"],
     ];
     for (const [name, label] of eventRows) {
       const count = eventValue(events, name);
@@ -223,6 +238,10 @@ function renderReport(vercel, supabase) {
       `- Last-28-day delivery states: ${DELIVERY_STATUSES.map(status => `${status} ${integer(supabase.deliveries[status])}`).join(" · ")}.`,
       `- Recorded send success: **${percent(sent, sent + failed)}**. Provider delivery, bounce, complaint, unsubscribe, and click reports remain separate quality checks.`,
       `- Period account conversion: **${percent(supabase.newAccounts, Number(vercel.current?.visitors || 0))}** of measured visitors; period active-subscriber conversion: **${percent(supabase.newActiveSubscribers || 0, Number(vercel.current?.visitors || 0))}**. These are aligned-period aggregate ratios, not attributed cohorts.`,
+    );
+    if (supabase.talent?.total !== null) lines.push(
+      `- Private Talent Network: **${integer(supabase.talent.active)} active** and ${integer(supabase.talent.paused)} paused profiles; ${integer(supabase.talent.newProfiles)} created in the last 28 days.`,
+      `- Progress toward the 10,000 active-profile operating milestone: **${percent(supabase.talent.active, 10_000)}**. The milestone is a planning threshold, not permission to launch placements without legal, fairness, security, employer-contract, and candidate-consent readiness.`,
     );
   } else lines.push(`- ${supabase.warning || "Supabase metrics were unavailable."}`);
 

@@ -265,7 +265,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
     }
   }, [patchState]);
 
-  const requestGoogleSignIn = useCallback(async ({ source = "account", consent = false, preferences = EMPTY_PREFERENCES, feedbackTarget = "account-google" } = {}) => {
+  const requestGoogleSignIn = useCallback(async ({ source = "account", consent = false, preferences = EMPTY_PREFERENCES, feedbackTarget = "account-google", returnPath = ACCOUNT_PATH } = {}) => {
     const cleanPreferences = cleanNewsletterPreferences(preferences, FIELD_IDS);
     if (consent) {
       const validationError = validateNewsletterPreferences(cleanPreferences);
@@ -287,7 +287,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
       const client = clientRef.current || await getAccountClient();
       clientRef.current = client;
       trackPublicEvent(consent ? "newsletter_google_start" : "account_google_start");
-      await signInWithGoogle(client, { source, intentId: pendingIntent?.intentId || "" });
+      await signInWithGoogle(client, { source, intentId: pendingIntent?.intentId || "", returnPath });
       patchState({ busy: "" });
       return true;
     } catch (error) {
@@ -1215,6 +1215,7 @@ export function AccountPage({ source = "account-page" }) {
     {account.status === "unavailable" && <section className="account-panel account-unavailable" role="alert"><p className="eyebrow">Account service</p><h2>Sign-in is temporarily unavailable.</h2><Feedback feedback={account.feedback} onDismiss={account.dismissFeedback} /><p>You can keep browsing every internship guide and using the private planner without an account.</p><a className="button secondary" href="/internships">Browse internships</a></section>}
     {account.status === "signed-out" && <SignedOutPanel source={source} initialDefaults={queryDefaults} />}
     {account.status === "signed-in" && <SignedInPanel />}
+    <section className="account-talent-cta"><div><p className="eyebrow">Optional private candidate pool</p><h2>Ready to be considered for future matches?</h2><p>Build a separate Talent Network profile and upload one private PDF resume. Employers cannot browse it, and sharing requires your approval for a specific opportunity.</p></div><a className="button secondary" href="/talent-network">Open Talent Network <ArrowRight size={16} /></a></section>
     <section className="account-trust-grid" aria-label="How personalized alerts work">
       <article><span><BellRing size={19} /></span><h2>Relevant by design</h2><p>Your year and chosen fields narrow what belongs in your digest. You can change them whenever your plans change.</p></article>
       <article><span><ShieldCheck size={19} /></span><h2>Consent stays clear</h2><p>An account alone does not turn on marketing email. Subscription requires the separate, unchecked consent choice above.</p></article>

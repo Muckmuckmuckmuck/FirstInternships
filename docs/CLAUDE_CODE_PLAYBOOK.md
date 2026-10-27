@@ -30,6 +30,7 @@ FirstInternships is:
 - A set of editorial application guides backed by official publisher sources.
 - A static, crawlable site with optional browser-local planning tools.
 - A site with an optional, isolated passwordless account for explicitly consented personalized internship emails.
+- A site with an optional, separately consented, adult-only private Talent Network profile and one private PDF resume.
 - Free to use; applications happen on official employer or institution sites.
 
 FirstInternships is not:
@@ -37,11 +38,11 @@ FirstInternships is not:
 - An employer, recruiter, staffing firm, or representative of a listed organization.
 - A live, automatically synchronized job feed.
 - A guarantee that a recurring program is currently open.
-- An application submission service, referral service, resume host, or general-purpose student profile system. The optional account stores only an auth email and newsletter preferences.
+- An application submission service or current placement/referral service. The limited Talent Network is not a public profile or employer-searchable resume database, and every future introduction needs separate approval for a named opportunity.
 - A reason to invent dates, pay, remote status, class years, or future cycles.
 - A license to create hundreds of near-duplicate keyword pages.
 
-As of October 26, 2026, the maintained baseline is 543 sourced program guides, 47 original preparation guides, 632 prerendered pages, and 630 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
+As of October 27, 2026, the maintained baseline is 543 sourced program guides, 47 original preparation guides, 633 prerendered pages, and 631 sitemap URLs. These figures are a checkpoint, not magic constants. After inventory changes, calculate the real totals from the code/build, update factual documentation and regression floors, and never guess.
 
 ## 3. Non-negotiable invariants
 
@@ -62,6 +63,8 @@ The following rules override convenience and growth pressure:
 13. Account creation never implies newsletter consent. Only an explicit optional opt-in from a verified account can become active, and existing Supabase users default to `needs_consent`.
 14. The account/newsletter subsystem never uploads, synchronizes, reads, or infers from browser-local planner data.
 15. Bounce and complaint suppression is terminal in the self-service UI. A normal unsubscribe may not downgrade those states, and a complaint always dominates a later bounce.
+16. Talent Network consent is separate from authentication and newsletter consent. The server enforces adult confirmation, the current consent version, a private owner path, and per-opportunity sharing mode.
+17. Employers cannot browse, search, export, or buy the candidate pool. Paid placement is not live; a future introduction needs separate candidate approval and the launch gate in `docs/TALENT_NETWORK_SYSTEM.md`.
 
 ## 4. Active architecture and ownership
 
@@ -86,6 +89,7 @@ Prefer a new, clearly named expansion module for a substantial researched batch.
 - `src/DirectoryTools.jsx` owns filtering, comparison, and published-deadline experiences.
 - `src/SavedPlanner.jsx` owns the browser-local saved workspace.
 - `src/Account.jsx` owns the optional Google/email account, Google-first signup decision dialog/mobile sheet, persistent reopen launcher, and newsletter-preference interface. `src/account-client.js` owns Supabase browser configuration, nonce-bound pending preference handoff, settings normalization, and authenticated subscription calls. `src/account.css` is the account-specific visual layer. Keep Google visible before any profile or newsletter fields so account creation is one action; email remains the secondary route. The interruption is prominent but must keep a visible 44px close control, Escape dismissal, a once-per-session exposure cap, and the documented 72-hour dismissal cooldown. Desktop is a true modal with focus containment/restoration and background scroll lock; the automatic mobile banner is nonmodal, no more than 30% of the viewport, and has no blocking scrim or focus theft. Its larger preference sheet requires an explicit expansion. If browser storage cannot enforce the cap, show only the launcher. Keep that launcher above the comparison tray and hide prompts/launchers over visible ad slots. A plain Google shortcut creates or enters an account only. The public prompt and editable `/account` form may carry a pending newsletter intent through Google only after the visitor separately checks an initially unchecked consent box and supplies a valid year plus field; bind that choice to the callback nonce and never encode the preferences or consent itself in the URL. The `/account` hero is account-only and must be hidden while such an intent is restored so a stale copy can never override the visitor's latest panel edits.
+- `src/TalentNetwork.jsx` owns the crawlable `/talent-network` explanation and signed-in profile controls. `src/talent-client.js` bounds and validates profile values, verifies the PDF signature, and uses authenticated RPCs plus the private `candidate-resumes` bucket. `src/talent.css` is the page-specific visual layer. Account and newsletter consent stay independent. Read `docs/TALENT_NETWORK_SYSTEM.md` before changing profile fields, consent, resume storage, employer access, placement claims, privacy copy, or the 10,000-active-profile milestone.
 - `src/ApplicationTimeline.jsx` owns the temporary preparation timeline builder.
 - `src/styles.css` and `src/polish.css` are the visual system. Preserve their cascade intentionally.
 - `src/index.jsx` hydrates prerendered HTML in production and performs a normal client render in development.
@@ -108,6 +112,7 @@ Keep logic that can be tested without a browser in these pure modules. Do not bu
 - `vercel.json` defines the production build, output directory, clean URLs, and redirects.
 - `api/newsletter-subscribe.js`, `api/newsletter-confirm.js`, `api/newsletter-unsubscribe.js`, `api/newsletter-digest.js`, and the raw-body/signature-verified `api/newsletter-webhook.js` are the active implementations; `api/newsletter-run.js` is the thin scheduled alias for the digest worker. Deployment ignore rules must include only those functions and their `lib/newsletter-*` helpers while continuing to exclude every legacy outreach endpoint. Vercel turns any deployed file under `api/` into a serverless function, so review the final deployment artifact rather than assuming an unused endpoint is harmless.
 - `supabase/migrations/202610070001_newsletter_accounts.sql` is the applied additive account/newsletter migration. `202610080001_newsletter_delivery_safety.sql` is the additive follow-up for authenticated provider suppression, consent-evidence retention, and bounded retries. Both preserve all existing auth/profile rows; never edit production history as a substitute for applying the follow-up. `docs/ACCOUNT_NEWSLETTER_SYSTEM.md` is the architecture, privacy, rollout, and incident runbook.
+- `supabase/migrations/202610270001_talent_network.sql` is the additive Talent Network migration. It creates no profile for existing users, preserves auth/newsletter rows, keeps resumes private and owner-scoped, and exposes no employer read or approval path. `docs/TALENT_NETWORK_SYSTEM.md` is the privacy, security, consent, placement-launch and incident contract.
 - `public/sitemap.xml` and `public/llms.txt` are generated and tracked. A build may update them.
 - `dist/` is generated and ignored. Do not commit it.
 
@@ -116,19 +121,20 @@ Keep logic that can be tested without a browser in these pure modules. Do not bu
 - `tests/product.test.mjs` protects content integrity, rendering, metadata, crawlability, links, sitemap behavior, filters, comparisons, and deadlines.
 - `tests/planner.test.mjs` protects private planner validation, backup/restore, CSV, calendars, and destructive-action safeguards.
 - `tests/timeline.test.mjs` protects date arithmetic, cutoff boundaries, timeline generation, and exports.
+- `tests/talent-network.test.mjs` protects candidate validation, PDF limits, private Storage/RLS invariants, separate consent, and candidate controls.
 
 When changing an invariant, update or add the test that proves the intended behavior. Do not weaken a test merely to make a new implementation pass.
 
-## 5. Active account/newsletter boundary and quarantined legacy code
+## 5. Active account/newsletter/Talent boundary and quarantined legacy code
 
-Most files in `api/`, `lib/`, old deployment documents, and seed files come from an earlier outreach SaaS. They are not part of the current directory experience. The narrowly named `newsletter-*` files and the migration documented in `docs/ACCOUNT_NEWSLETTER_SYSTEM.md` are the only active exception. They use Supabase Auth for a passwordless account and Resend for first-party editorial newsletters; they do not send from a student's Gmail or access recruiter data.
+Most files in `api/`, `lib/`, old deployment documents, and seed files come from an earlier outreach SaaS. They are not part of the current directory experience. The narrowly named `newsletter-*` files and migrations documented in `docs/ACCOUNT_NEWSLETTER_SYSTEM.md` are the only active serverless exception. The separate Talent Network uses only the reviewed client, RPCs, private Storage bucket and migration documented in `docs/TALENT_NETWORK_SYSTEM.md`; it does not revive recruiter discovery, outreach, credits, billing, or employer database access.
 
 Without an explicit, separately scoped migration plan, do not:
 
 - Enable Gmail or cold-outreach automation.
 - Restore queue processing or scheduled email jobs.
 - Connect the directory planner to Supabase.
-- Add credits, billing, Stripe, recruiter discovery, resume storage, or general profile flows to the account.
+- Add credits, billing, Stripe, recruiter discovery, a general-purpose profile, or any employer-browse/read path. Resume storage is limited to the private Talent Network design and must never reuse legacy outreach flows.
 - Reinstall legacy backend SDKs merely to make quarantined files executable.
 - Import recruiter data into the public directory.
 - Expose names, email addresses, ETL output, or seed data.

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">FirstInternships logo</title>
+  <rect width="120" height="120" rx="24" fill="#173f2c"/>
+  <circle cx="91" cy="29" r="16" fill="#f2c94c"/>
+  <path d="M84 34 96 22m-8 0h8v8" fill="none" stroke="#173f2c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="16" y="65" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800" letter-spacing="-4" fill="#ffffff">FI</text>
+  <text x="16" y="88" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="800" letter-spacing="1.7" fill="#ffffff">FIRST</text>
+  <text x="16" y="103" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="0.55" fill="#d8e4dc">INTERNSHIPS</text>
+</svg>

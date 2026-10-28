@@ -8,6 +8,7 @@ import {
   accountAuthRedirect,
   clearAccountWelcomeFromUrl,
   cleanNewsletterPreferences,
+  hasPersistedAccountSession,
   normalizeNewsletterSettings,
   readPendingNewsletterPreferences,
   safeAuthReturnPath,
@@ -23,6 +24,17 @@ function memoryStorage() {
     removeItem(key) { values.delete(key); },
   };
 }
+
+test("account session detection is scoped to this Supabase project", () => {
+  const storage = memoryStorage();
+  const url = "https://project-ref.supabase.co";
+  assert.equal(hasPersistedAccountSession(storage, url), false);
+  storage.setItem("sb-other-project-auth-token", "present");
+  assert.equal(hasPersistedAccountSession(storage, url), false);
+  storage.setItem("sb-project-ref-auth-token", "present");
+  assert.equal(hasPersistedAccountSession(storage, url), true);
+  assert.equal(hasPersistedAccountSession(storage, "not a url"), false);
+});
 
 test("newsletter preferences keep only canonical matcher values", () => {
   assert.deepEqual(cleanNewsletterPreferences({

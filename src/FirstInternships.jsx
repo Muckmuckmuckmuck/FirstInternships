@@ -11,6 +11,7 @@ import TalentNetworkPage, { TalentConversionCTA } from "./TalentNetwork.jsx";
 import SavedPlanner from "./SavedPlanner.jsx";
 import { fieldInterviewPrepFor, guideInterviewPrepFor, interviewPrepFor } from "./interview-prep.js";
 import { emptyPlanner, restorePlanner, sanitizePlanner } from "./planner.js";
+import { isPaidProgram } from "../lib/program-classification.js";
 export { sanitizePlanner, csvCell } from "./planner.js";
 
 const STORE = "fi_planner_v1";
@@ -191,6 +192,7 @@ function DirectoryStartingPoints() {
 // the page; these controls filter the exact-year inventory plus the compact
 // opening-specific sample that is already rendered.
 const FIT_FIELDS_SHOWN = 8;
+const DIRECTORY_PAGE_SIZE = 60;
 // Most-covered fields first: an arbitrary source order made a student scroll past
 // nine-program categories to reach the eighty-two-program one.
 const FIT_FIELDS = [...FIELDS].sort((a, b) => programsForField(b.id).length - programsForField(a.id).length);
@@ -242,6 +244,7 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
   const [urlNotice, setUrlNotice] = useState("");
   const [sort, setSort] = useState("year");
   const [filtersOpen, setFiltersOpen] = useState(true);
+  const [visibleLimit, setVisibleLimit] = useState(DIRECTORY_PAGE_SIZE);
   const now = useReviewClock();
   const chooseYear = value => { trackPublicEventOnce("directory_filter_used"); setYear(value); };
   const chooseField = value => { trackPublicEventOnce("directory_filter_used"); setField(value); };
@@ -275,6 +278,11 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
   const alsoCheck = useMemo(() => year === "all" ? [] : sortPrograms(searchPrograms({ query, year: "all", field, paid, ids: savedOnly ? planner.saved : null })
     .filter(p => !p.firstYear && !p.preferredYears)
     .filter(p => !onlyPublishedDeadlines || ["soon", "future"].includes(deadlineState(p, now).kind)), sort, now), [query, year, field, paid, savedOnly, planner.saved, onlyPublishedDeadlines, sort, now]);
+  useEffect(() => setVisibleLimit(DIRECTORY_PAGE_SIZE), [query, year, field, paid, savedOnly, onlyPublishedDeadlines, sort]);
+  const visibleFiltered = filtered.slice(0, visibleLimit);
+  const visibleAlsoCheck = alsoCheck.slice(0, Math.max(0, visibleLimit - visibleFiltered.length));
+  const visibleCount = visibleFiltered.length + visibleAlsoCheck.length;
+  const totalCount = filtered.length + alsoCheck.length;
   const reset = () => {
     setQuery(""); setYear(String(initialYear)); setField(initialField); setPaid(false); setSavedOnly(false); setOnlyPublishedDeadlines(false); setSort("year");
     window.history.replaceState(null, "", `${window.location.pathname}#internships`);
@@ -284,7 +292,7 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
     window.history.replaceState(null, "", `${window.location.pathname}${filterQuery({ query, year, field, paid, deadline: onlyPublishedDeadlines, sort })}#internships`);
     setUrlNotice("Search URL updated. Copy the address to reuse it; saved-only is not shared.");
   };
-  const groups = sort === "year" ? [1, 2, 3, 4, null].map(value => ({ value, programs: filtered.filter(p => p.firstYear === value) })).filter(g => g.programs.length) : filtered.length ? [{ value: "sorted", programs: filtered }] : [];
+  const groups = sort === "year" ? [1, 2, 3, 4, null].map(value => ({ value, programs: visibleFiltered.filter(p => p.firstYear === value) })).filter(g => g.programs.length) : visibleFiltered.length ? [{ value: "sorted", programs: visibleFiltered }] : [];
   const activeFilters = [query && `Search: “${query}”`, year !== "all" && `College year ${year}`, field !== "all" && FIELDS.find(f => f.id === field)?.name, paid && "Confirmed paid", onlyPublishedDeadlines && "Future published cutoff", savedOnly && "Saved only"].filter(Boolean);
   return <section className="board-section" id="internships" aria-labelledby="board-title">
     <div className="section-heading"><div><p className="eyebrow">02 / The college directory</p><h2 id="board-title">Find your next move.</h2><p>{sort === "year" ? "Sorted by earliest program-level undergraduate entry. Unknown minimums stay visible." : sort === "deadline" ? "Future published cutoffs first. Passed and unconfirmed dates follow." : "Sorted alphabetically by employer. Eligibility still needs a closer look."}</p></div><span className="result-count" aria-live="polite">{filtered.length} {filtered.length === 1 ? "program" : "programs"}</span></div>
@@ -303,11 +311,11 @@ function Board({ planner, initialYear = "all", initialField = "all" }) {
     </div></details></aside><div className="job-feed">{groups.length ? groups.map((group, i) => <section className="year-group" key={String(group.value)}>
       {group.value !== "sorted" && <div className="group-heading"><span className="group-number">{group.value ? `0${group.value}` : "?"}</span><div><p className="eyebrow">{group.value ? `Earliest undergraduate entry: year ${group.value}` : "No universal minimum confirmed"}</p><h3>{group.value ? "Start here. Check the details." : "Opening-specific pathways"}</h3></div></div>}
       <div className="cards">{group.programs.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>{i === 0 && <AdSlot slot="VITE_ADSENSE_SLOT_IN_FEED" placement="in-feed" />}
-    </section>) : alsoCheck.length ? null : <div className="empty-state"><Search size={26} /><h3>No programs match your filters.</h3><p>Try another keyword or reset your preferences. An empty year match is not a claim that no internships exist.</p><button className="button" onClick={reset}>Reset filters</button></div>}{alsoCheck.length > 0 && <section className="year-group also-check" aria-labelledby="also-title">
+    </section>) : alsoCheck.length ? null : <div className="empty-state"><Search size={26} /><h3>No programs match your filters.</h3><p>Try another keyword or reset your preferences. An empty year match is not a claim that no internships exist.</p><button className="button" onClick={reset}>Reset filters</button></div>}{visibleAlsoCheck.length > 0 && <section className="year-group also-check" aria-labelledby="also-title">
       <div className="group-heading"><span className="group-number">?</span><div><p className="eyebrow">{alsoCheck.length} more worth checking</p><h3 id="also-title">No minimum year published</h3></div></div>
       <p className="also-note">These publishers do not state one universal minimum college year, or they describe a preferred year rather than a hard rule. That is not the same as being closed to you — the individual opening decides. Open a guide to check credits, enrollment, authorization and dates before ruling one in or out.</p>
-      <div className="cards">{alsoCheck.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>
-    </section>}<p className="directory-note">These are sourced program pathways, not a live feed of individual job offers. Program sources reviewed <ReviewSpan programs={PROGRAMS} />. Verify today's availability on the official site.</p></div></div>
+      <div className="cards">{visibleAlsoCheck.map(program => <ProgramCard key={program.id} program={program} planner={planner} />)}</div>
+    </section>}{visibleCount < totalCount && <button type="button" className="button secondary directory-more" onClick={() => setVisibleLimit(limit => limit + DIRECTORY_PAGE_SIZE)}>Show {Math.min(DIRECTORY_PAGE_SIZE, totalCount - visibleCount)} more programs</button>}<details className="directory-link-index"><summary>Browse all {PROGRAMS.length} program guides A–Z</summary><nav aria-label="All internship program guides">{[...PROGRAMS].sort((a, b) => a.company.localeCompare(b.company) || a.title.localeCompare(b.title)).map(program => <a key={program.id} href={programPath(program)}>{program.company}: {program.title}</a>)}</nav></details><p className="directory-note">These are sourced program pathways, not a live feed of individual job offers. Program sources reviewed <ReviewSpan programs={PROGRAMS} />. Verify today's availability on the official site.</p></div></div>
   </section>;
 }
 function Home({ planner }) {
@@ -360,7 +368,7 @@ function CollectionNarrow({ page, options, value, setValue, label }) {
 // review clock keeps the first render identical on the server and client.
 function YearAtAGlance({ year, programs }) {
   const now = useReviewClock();
-  const paid = programs.filter(p => p.pay === "Paid").length;
+  const paid = programs.filter(isPaidProgram).length;
   const upcoming = programs.map(p => [p, deadlineState(p, now)]).filter(([, state]) => state.kind === "soon" || state.kind === "future").sort((a, b) => a[1].cutoff - b[1].cutoff || a[0].title.localeCompare(b[0].title));
   const topFields = FIELDS.map(f => [f.name, programs.filter(p => p.fields.includes(f.id)).length]).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([name]) => name);
   return <section className="year-glance" aria-labelledby="year-glance-title"><h2 id="year-glance-title">{year.name} options at a glance</h2>
@@ -377,7 +385,7 @@ function Collection({ page, planner }) {
   const [paidOnly, setPaidOnly] = useState(false);
   const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   const keep = p => (narrow === "all" || (page.year ? p.fields.includes(narrow) : p.years.includes(Number(narrow))))
-    && (!paidOnly || p.pay === "Paid")
+    && (!paidOnly || isPaidProgram(p))
     && words.every(word => `${p.company} ${p.title} ${p.summary} ${p.location} ${p.eligibility.join(" ")}`.toLowerCase().includes(word));
   const matches = allMatches.filter(keep);
   const roleSpecific = allRoleSpecific.filter(keep);

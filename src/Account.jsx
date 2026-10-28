@@ -12,6 +12,7 @@ import {
   friendlyAccountError,
   getAccountClient,
   getMyNewsletterSettings,
+  hasPersistedAccountSession,
   newsletterIntentFromLocation,
   postNewsletterSubscription,
   readPendingNewsletterPreferences,
@@ -181,6 +182,13 @@ export function AccountProvider({ children, active = false, settingsActive = fal
     if (!active) {
       return () => { mountedRef.current = false; };
     }
+    // Most visitors are signed out. Avoid downloading and initializing the
+    // Supabase SDK on every organic landing page; account actions still load it
+    // on demand, while /account and browsers with a stored session hydrate now.
+    if (!settingsActive && !hasPersistedAccountSession()) {
+      patchState({ status: "signed-out", session: null, settings: null, busy: "" });
+      return () => { mountedRef.current = false; };
+    }
     let subscription;
     (async () => {
       try {
@@ -209,7 +217,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
       refreshSequence.current += 1;
       subscription?.unsubscribe();
     };
-  }, [active, loadSession, patchState]);
+  }, [active, loadSession, patchState, settingsActive]);
 
   const requestMagicLink = useCallback(async ({ email, consent, preferences, source = "account", feedbackTarget = "account-panel" }) => {
     const cleanEmail = String(email || "").trim().toLowerCase();

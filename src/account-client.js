@@ -108,6 +108,19 @@ function storageOrNull(storage) {
   }
 }
 
+export function hasPersistedAccountSession(storage, supabaseUrl = import.meta.env?.[SUPABASE_URL_KEY]) {
+  const target = storageOrNull(storage);
+  if (!target || !supabaseUrl) return false;
+  try {
+    const hostname = new URL(String(supabaseUrl)).hostname;
+    const projectRef = hostname.endsWith(".supabase.co") ? hostname.slice(0, -".supabase.co".length) : "";
+    if (!projectRef) return false;
+    return Boolean(target.getItem(`sb-${projectRef}-auth-token`));
+  } catch {
+    return false;
+  }
+}
+
 export function createNewsletterIntentId(cryptoSource = globalThis.crypto) {
   if (!cryptoSource?.getRandomValues) {
     throw new Error("This browser cannot safely continue newsletter signup. You can still create an account without email alerts.");

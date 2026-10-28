@@ -14,6 +14,8 @@ import { GUIDE_EXPANSION_6 } from "./guide-expansion-6.js";
 import { GUIDE_EXPANSION_7 } from "./guide-expansion-7.js";
 import { SECTOR_PROGRAMS, INSURANCE_FIELD } from "./sector-expansion.js";
 import { RESEARCH_PROGRAMS } from "./research-expansion.js";
+import { isPaidProgram, programPayStatus } from "../lib/program-classification.js";
+import { applyProgramRefresh } from "./program-refresh-overrides.js";
 // Employer batches researched in parallel; each lives in its own module so
 // concurrent branches never touch the same file.
 import { EMPLOYERS_TECH_PROGRAMS } from "./employers-tech-expansion.js";
@@ -300,7 +302,7 @@ export const PROGRAMS = [
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,
-].map(program => {
+].map(applyProgramRefresh).map(program => {
   const addMarketing = MARKETING_EXISTING_PROGRAM_IDS.includes(program.id);
   const addInternationalAffairs = INTERNATIONAL_AFFAIRS_EXISTING_PROGRAM_IDS.includes(program.id);
   let fields = program.fields;
@@ -321,7 +323,7 @@ export const PROGRAMS = [
 
 // Year-hub titles and descriptions state how many programs an official source
 // confirms for that year, so the headline always matches the list on the page.
-const yearInventory = id => { const list = PROGRAMS.filter(p => p.years.includes(id)); return { count: list.length, paid: list.filter(p => p.pay === "Paid").length }; };
+const yearInventory = id => { const list = PROGRAMS.filter(p => p.years.includes(id)); return { count: list.length, paid: list.filter(isPaidProgram).length }; };
 const [Y1, Y2, Y3, Y4] = [1, 2, 3, 4].map(yearInventory);
 export const YEARS = [
   { id: 1, slug: "freshman-internships", updated: "2026-10-18", name: "First-year", short: "1st year", color: "#d9f99d", title: `Freshman Internships: ${Y1.count} Programs Open to First-Years`, description: `${Y1.count} internships and early-college programs whose official sources confirm they accept first-year students (${Y1.paid} paid), with eligibility rules, dates and how to apply.`,
@@ -360,7 +362,7 @@ export const FIELDS = [
 
 // The pay guide answers its title question from the directory's own sourced
 // pay values, so the figures follow the catalog instead of going stale.
-const payCount = value => PROGRAMS.filter(p => p.pay === value).length;
+const payCount = value => PROGRAMS.filter(p => programPayStatus(p) === String(value).toLowerCase()).length;
 const listOf = names => names.length < 3 ? names.join(" and ") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
 const unpaidPublishers = listOf([...new Set(PROGRAMS.filter(p => p.pay === "Unpaid").map(p => p.company))]);
 const PAY_ANSWER = `Many do, but not all, and "paid" covers several different arrangements. Of the ${PROGRAMS.length} programs in this directory, ${payCount("Paid")} are paid according to their official sources, whether as an hourly wage, a salary, a stipend or a research award. The publisher's own description makes ${payCount("Unpaid")} unpaid: the programs from ${unpaidPublishers}. For the other ${PROGRAMS.length - payCount("Paid") - payCount("Unpaid")}, the official sources we reviewed state no pay for the program as a whole; it may depend on the opening, the host or the written offer, so we label them to check rather than guess. Whatever the label, the amount that counts is the one in the written offer for your role, set against what the term will cost you.`;
@@ -544,7 +546,7 @@ export function programHeading(program) {
   const title = program.title.toLowerCase().includes(program.company.toLowerCase()) ? program.title : `${program.company} ${program.title}`;
   return `${title}: Eligibility & How to Apply`;
 }
-export function programsForTopic(topic) { return topic.filter === "paid" ? PROGRAMS.filter(p => p.pay === "Paid") : topic.programIds.map(id => PROGRAMS.find(p => p.id === id)).filter(Boolean); }
+export function programsForTopic(topic) { return topic.filter === "paid" ? PROGRAMS.filter(isPaidProgram) : topic.programIds.map(id => PROGRAMS.find(p => p.id === id)).filter(Boolean); }
 export function guidesForProgram(program) {
   const slugs = program.guideSlugs || (program.fields.includes("research") ? ["research-internship-personal-statement", "ask-for-internship-recommendation-letter", "when-to-apply-for-summer-internships"] : ["how-to-apply-for-an-internship", "internship-resume-with-no-experience", "internship-interview-guide"]);
   return slugs.map(slug => GUIDES.find(g => g.slug === slug)).filter(Boolean);
@@ -669,7 +671,7 @@ export function searchPrograms({ query = "", year = "all", field = "all", paid =
   // group with its qualification caveat rather than becoming a hard eligibility rule.
   return PROGRAMS.filter(p => year === "all" || p.years.includes(Number(year)) || p.preferredYears?.includes(Number(year)))
     .filter(p => field === "all" || p.fields.includes(field))
-    .filter(p => !paid || p.pay === "Paid")
+    .filter(p => !paid || isPaidProgram(p))
     .filter(p => !ids || ids.includes(p.id))
     .filter(p => words.every(word => `${p.company} ${p.title} ${p.summary} ${p.location} ${p.fields.map(id => FIELDS.find(f => f.id === id)?.name || id).join(" ")} ${p.eligibility.join(" ")}`.toLowerCase().includes(word)))
     .sort((a, b) => (a.firstYear ?? 99) - (b.firstYear ?? 99) || a.company.localeCompare(b.company));

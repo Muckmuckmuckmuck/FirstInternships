@@ -4,12 +4,14 @@ import { createHmac } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { Readable } from "node:stream";
 import {
+  NEWSLETTER_FIELD_IDS,
   isDigestEligibleProgram,
   matchNewsletterPrograms,
   normalizeNewsletterPreferences,
   scoreNewsletterProgram,
   selectRelevantGuide,
 } from "../lib/newsletter-matcher.js";
+import { FIELDS } from "../src/content.js";
 import {
   createActionToken,
   newsletterRunKey,
@@ -61,6 +63,10 @@ test("newsletter preferences normalize deterministically and accept UI work-mode
   });
 });
 
+test("newsletter matcher accepts every field displayed by the account UI", () => {
+  assert.deepEqual([...NEWSLETTER_FIELD_IDS].sort(), FIELDS.map(field => field.id).sort());
+});
+
 test("subscribe validation requires explicit useful fields and rejects malformed preferences", () => {
   const raw = { collegeYear: 2, fields: ["technology"], locations: [], workModes: ["remote"], paidOnly: false, frequency: "weekly" };
   assert.equal(validPreferenceRequest(raw, normalizeNewsletterPreferences(raw)), true);
@@ -82,6 +88,22 @@ test("matcher rejects closed, past, year-ineligible, and unpaid filler", () => {
   assert.equal(scoreNewsletterProgram({ ...baseProgram, id: "senior", years: [3, 4] }, preferences, now), null);
   assert.equal(scoreNewsletterProgram({ ...baseProgram, id: "unpaid", pay: "Check opening" }, preferences, now), null);
   assert.equal(isDigestEligibleProgram({ ...baseProgram, deadlineDate: "2026-10-05" }, now), false);
+});
+
+test("matcher recognizes sourced pay details, natural on-site wording, and ignores historical timing prose", () => {
+  const now = Date.parse("2026-10-07T12:00:00Z");
+  const preferences = { collegeYear: 2, fields: ["technology"], paidOnly: true, workModes: ["on-site"] };
+  const detailed = {
+    ...baseProgram,
+    pay: "$32/hour estimated base rate",
+    mode: "In person at the employer office",
+    timing: "The last published cycle closed in 2025; check the current opening.",
+  };
+  const match = scoreNewsletterProgram(detailed, preferences, now);
+  assert.ok(match);
+  assert.ok(match.reasons.includes("on-site option"));
+  assert.ok(match.reasons.includes("paid pathway"));
+  assert.equal(isDigestEligibleProgram({ ...detailed, availability: "closed" }, now), false);
 });
 
 test("matcher is stable, explains matches, and maximizes employer diversity", () => {

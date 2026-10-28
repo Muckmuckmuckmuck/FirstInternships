@@ -7,6 +7,8 @@ import { LEGACY_REDIRECTS } from "../src/legacy.js";
 import { FIELD_INTERVIEW_PREP, GUIDE_INTERVIEW_PREP, INTERVIEW_PREP } from "../src/interview-prep.js";
 import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, hasPublishedCutoff, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
 import { sanitizePlanner, csvCell, render } from "../node_modules/.cache/firstinternships-ssr/entry-server.js";
+import { isPaidProgram } from "../lib/program-classification.js";
+import { PROGRAM_REFRESH_IDS } from "../src/program-refresh-overrides.js";
 
 test("content has unique routes and real official-source records", () => {
   assert.ok(PROGRAMS.length >= 543, "the college directory should not regress to a thin inventory");
@@ -49,7 +51,7 @@ test("college-year filtering uses accepted years, not just earliest year", () =>
   assert.equal(PROGRAMS.find(p => p.id === "goldman-sachs-summer-analyst").firstYear, null, "usual junior timing must not become a strict minimum");
   assert.deepEqual(searchPrograms({ query: "MICROSOFT software" }).map(p => p.id), ["microsoft-explore"]);
   assert.equal(searchPrograms({ query: "no-matching-program-xyz" }).length, 0);
-  assert.ok(searchPrograms({ paid: true }).every(p => p.pay === "Paid"));
+  assert.ok(searchPrograms({ paid: true }).every(isPaidProgram));
   assert.deepEqual(searchPrograms({ ids: ["nasa-ostem"] }).map(p => p.id), ["nasa-ostem"]);
 });
 
@@ -285,6 +287,25 @@ test("October 28 Search Console pass improves directory and application-status a
   assert.match(statusHtml, /Internship application statuses at a glance/);
   assert.match(statusHtml, /Under review or in process/);
   assert.match(statusHtml, /When to follow up/);
+});
+
+test("directory stages rich cards while keeping every program guide crawlable", async () => {
+  const html = await readFile("dist/internships.html", "utf8");
+  assert.equal((html.match(/class="job-card/g) || []).length, 60);
+  assert.ok(Buffer.byteLength(html) < 400_000, "directory HTML should not regress to rendering every rich card at once");
+  assert.match(html, /class="directory-link-index"/);
+  for (const program of PROGRAMS) assert.ok(html.includes(`href="${programPath(program)}"`), program.id);
+});
+
+test("removed employer requisitions route to reviewed official destinations", () => {
+  assert.equal(PROGRAM_REFRESH_IDS.length, 22);
+  for (const id of PROGRAM_REFRESH_IDS) {
+    const program = PROGRAMS.find(item => item.id === id);
+    assert.ok(program, id);
+    assert.equal(program.linkVerified, "2026-10-28", id);
+    assert.ok(program.sources.some(source => source.url === program.url), `${id}: current route must be a source`);
+    assert.match(program.url, /^https:\/\//);
+  }
 });
 test("October 21 interview search expansion adds distinct, substantive answer guides", () => {
   const slugs = [
@@ -538,7 +559,9 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   assert.ok(!deployment.crons?.some(job => job.path === "/api/process-queue"), "retired outreach cron must not run");
   assert.deepEqual(deployment.crons, [{ path: "/api/newsletter-run", schedule: "0 16 * * 1" }], "only the isolated weekly newsletter job may be scheduled");
   const globalHeaders = deployment.headers.find(rule => rule.source === "/(.*)")?.headers || [];
-  for (const name of ["X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy"]) assert.ok(globalHeaders.some(header => header.key === name), `global Vercel header: ${name}`);
+  for (const name of ["X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy", "Content-Security-Policy", "X-Frame-Options"]) assert.ok(globalHeaders.some(header => header.key === name), `global Vercel header: ${name}`);
+  assert.match(globalHeaders.find(header => header.key === "Content-Security-Policy")?.value || "", /frame-ancestors 'none'/);
+  assert.equal(globalHeaders.find(header => header.key === "X-Frame-Options")?.value, "DENY");
   const assetCache = deployment.headers.find(rule => rule.source === "/assets/(.*)")?.headers.find(header => header.key === "Cache-Control")?.value;
   assert.equal(assetCache, "public, max-age=31536000, immutable");
   for (const source of ["/sitemap.xml", "/robots.txt", "/llms.txt"]) {
@@ -548,7 +571,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   assert.match(vercelIgnore, /^api\/\*$/m, "API files must remain denylisted by default");
   assert.match(vercelIgnore, /^lib\/\*$/m, "server helpers must remain denylisted by default");
   const expectedApiAllowlist = ["newsletter-confirm.js", "newsletter-digest.js", "newsletter-run.js", "newsletter-subscribe.js", "newsletter-unsubscribe.js", "newsletter-webhook.js"].sort();
-  const expectedLibAllowlist = ["newsletter-matcher.js", "newsletter-server.js"].sort();
+  const expectedLibAllowlist = ["newsletter-matcher.js", "newsletter-server.js", "program-classification.js"].sort();
   const apiAllowlist = [...vercelIgnore.matchAll(/^!api\/([^\r\n]+)$/gm)].map(match => match[1]).sort();
   const libAllowlist = [...vercelIgnore.matchAll(/^!lib\/([^\r\n]+)$/gm)].map(match => match[1]).sort();
   assert.deepEqual(apiAllowlist, expectedApiAllowlist, "only reviewed newsletter API functions may deploy");
@@ -611,6 +634,10 @@ test("account state is site-wide without loading newsletter settings on organic 
   assert.match(appSource, /field=\{page\.type === "field" \? page\.field\?\.id : page\.program\?\.fields\?\.\[0\] \|\| ""\}/, "field and program pages should preserve their visible field context");
   assert.doesNotMatch(appSource, /year=\{program\.firstYear\}/, "program eligibility must never be used as the visitor's college year");
   assert.match(appSource, /source="deadline-page"/, "the deadline hub should carry one contextual email-alert CTA");
+  for (const path of ["dist/index.html", "dist/internships.html", "dist/programs/notion-software-engineer-intern-summer-2027.html"]) {
+    const html = await readFile(path, "utf8");
+    assert.doesNotMatch(html, /modulepreload[^>]+supabase/i, `${path}: signed-out organic pages must not preload the account SDK`);
+  }
 });
 
 test("account disclosures cover Google auth boundaries and separate newsletter consent", async () => {
@@ -1126,7 +1153,7 @@ test("all public content is reachable through ordinary homepage links", async ()
 
 test("focused collections have substantive original content and valid crosslinks", () => {
   assert.equal(TOPICS.length, 6);
-  assert.ok(programsForTopic(TOPICS.find(t => t.filter === "paid")).every(p => p.pay === "Paid"));
+  assert.ok(programsForTopic(TOPICS.find(t => t.filter === "paid")).every(isPaidProgram));
   const community = TOPICS.find(t => t.slug === "community-college-internships");
   assert.deepEqual(programsForTopic(community).map(p => p.id), ["doe-cci", "nsf-reu", "nih-sip", "noaa-hollings", "scripps-research-surf", "getty-marrow", "white-house-internship", "cia-directorate-of-operations-internship", "intuit-internships", "regeneron-summer-internship", "spotify-global-summer", "nytimes-internships-outside-newsroom", "uber-career-prep", "nist-surf", "llnl-computing-internships", "sf-fed-summer-internship", "hartford-claims-apprentice-program"]);
   const paragraphs = new Set();
@@ -1195,7 +1222,7 @@ test("every guide is linked from other guide pages and popular guides from the f
     assert.ok(html.match(/<main id="main">([\s\S]*?)<\/main>/)[1].includes(`href="${topicPath(topic)}"`), `${guide.slug}: should link its collection`);
   }
   const pay = await readFile("dist/guides/do-internships-pay.html", "utf8");
-  assert.ok(pay.includes(`Of the ${PROGRAMS.length} programs in this directory, ${PROGRAMS.filter(p => p.pay === "Paid").length} are paid`), "the pay guide's answer must follow the catalog");
+  assert.ok(pay.includes(`Of the ${PROGRAMS.length} programs in this directory, ${PROGRAMS.filter(isPaidProgram).length} are paid`), "the pay guide's answer must follow the catalog");
   const home = await readFile("dist/index.html", "utf8");
   const footer = home.match(/<footer[\s\S]*?<\/footer>/)[0];
   for (const slug of ["how-to-get-an-internship-with-no-experience", "how-to-find-internships", "when-to-apply-for-summer-internships"]) assert.ok(footer.includes(`href="/guides/${slug}"`), `footer should link ${slug}`);

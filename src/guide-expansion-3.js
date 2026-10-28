@@ -61,6 +61,7 @@ export const GUIDE_EXPANSION_3 = [
     relatedGuideSlugs: ["internship-application-file-format", "do-internships-check-gpa", "ask-for-internship-recommendation-letter"],
     programIds: ["nih-sip", "bridgewater-investment-associate-2027", "doe-suli", "federal-reserve-board"],
     intro: "Sometimes. Research, government and some finance programs may require a transcript with the application; other employers request one later or never ask. The current posting controls. Use an unofficial copy only when it is accepted, order an official copy only when required, and never edit the academic record.",
+    quickAnswerTitle: "Transcript requests at a glance",
     quickAnswers: [
       ["Do most internships require one?", "No universal rule. Some ask during the application, some verify later, and many do not request a transcript."],
       ["Unofficial or official?", "Use the exact wording. An unofficial PDF usually comes from your student portal; an official copy usually comes through the registrar."],

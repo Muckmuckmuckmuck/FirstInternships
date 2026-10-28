@@ -153,6 +153,16 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
 .compare-toggle.selected { color: var(--forest); font-weight: 700; }
 .compare-toggle:has(input:disabled) { color: #8c9283; cursor: default; }
 .directory-note { font-size: 12px; line-height: 1.85; padding-top: 24px; }
+.directory-starting-points { display: grid; grid-template-columns: minmax(220px,.8fr) minmax(0,1.7fr); gap: 32px; align-items: start; margin: 34px 0; padding: 30px; border: 1px solid var(--line); border-radius: 17px; background: #f3f5ec; }
+.directory-starting-points h2 { margin: 7px 0 10px; font-size: 25px; line-height: 1.25; letter-spacing: -.6px; }
+.directory-starting-points>div>p:not(.eyebrow) { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.75; }
+.directory-starting-points nav { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.directory-starting-points nav a { position: relative; min-width: 0; padding: 17px 40px 17px 17px; border: 1px solid #d8ded0; border-radius: 12px; background: #fff; }
+.directory-starting-points nav a:hover { border-color: #a4b293; color: var(--ink); background: #fbfff6; }
+.directory-starting-points nav strong,.directory-starting-points nav span { display: block; }
+.directory-starting-points nav strong { margin-bottom: 5px; font-size: 13px; }
+.directory-starting-points nav span { color: var(--muted); font-size: 10px; line-height: 1.55; }
+.directory-starting-points nav svg { position: absolute; top: 17px; right: 15px; color: #68765f; }
 .guide-section { background: #f0f2e8; border-block: 1px solid var(--line); }
 .guide-grid { gap: 20px; }
 .guide-card { padding: 31px; border-radius: 17px; }
@@ -557,6 +567,10 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
   .guide-library-toolbar>p { grid-column: 1 / -1; padding: 0; }
 }
 @media(max-width: 760px) {
+  .directory-starting-points { grid-template-columns: 1fr; gap: 21px; margin: 27px 0; padding: 22px 18px; }
+  .directory-starting-points h2 { font-size: 23px; }
+  .directory-starting-points nav { grid-template-columns: 1fr; }
+  .directory-starting-points nav a { padding-block: 15px; }
   .timeline-form { padding: 23px; }
   .timeline-form h2 { font-size: 26px; }
   .timeline-form select, .timeline-form input[type=date] { font-size: 12px; }

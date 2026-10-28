@@ -2,6 +2,30 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-10-28 — college directory and application-status CTR pass
+
+### Baseline
+
+- Window: September 28–October 25, 2026, the latest complete 28 days available in Search Console during this release.
+- Site totals: 592 clicks, 63,200 impressions, 0.9% CTR and average position 9.3.
+- `/internships` recorded no clicks from 978 impressions at average position 8.2. Its visible privacy-filtered queries included `freshers internship programs`, `college internships` and `internship opportunities for college students`, while most of the page total remained query-hidden.
+- `/guides/internship-application-status-meanings` recorded 8 clicks from 576 impressions at 1.4% CTR and average position 6.0. The visible sample included `how to check internship application status` and shorter status variants, but the page opened with a long article rather than a compact status answer.
+- Recently refreshed World Bank, NVIDIA, Pfizer, NSA, Capital One, Evercore and Paramount pages remain unchanged. Their snippet tests need the documented impression or time threshold instead of another rewrite after only a few days.
+
+### Changes
+
+- Kept the established `/internships` URL and changed its title from a taxonomy-led phrase to `College Internships for Freshmen–Seniors`, retaining the live sourced-program count. The description now leads with the student audience and states the useful action: filter by field, pay and eligibility, then apply on official employer sites.
+- Added a server-rendered starting-point panel to the directory for Summer 2027, confirmed-paid opportunities, the published-deadline calendar and application help. These links make the broad landing page easier to use and strengthen crawlable paths without creating another broad-directory URL.
+- Kept the established application-status URL, aligned its title with the `application status meanings` task and added six answer-first definitions for submitted, under review, action required, inactive, interview and follow-up timing.
+- Added relevant next-reading links from the status guide to the established follow-up, application-volume and thank-you-email guides. The transcript guide now supplies its own quick-answer heading so the shared answer component remains accurate for both pages.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/internships` and `/guides/internship-application-status-meanings`, interpreted with average position and query mix.
+- Supporting query families: `college internships`, `internship opportunities for college students`, freshman/freshers internship variants, `how to check internship application status`, `internship status` and portal-stage labels.
+- Guardrails: no new broad directory URL, no duplicate status guide, no fabricated live-opening claim, no JobPosting or FAQ rich-result markup and no content gate before the useful answer.
+- Reassess each URL after another 200 impressions or 28 days. Improve the same canonical URL again if the search task remains the same rather than splitting its authority.
+
 ## 2026-10-26 — Capital One exact-query CTR and eligibility refresh
 
 ### Baseline

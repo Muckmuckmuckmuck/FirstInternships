@@ -64,7 +64,7 @@ test("October 12 guide expansion adds complete high-intent student playbooks", (
   ];
   const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
   assert.ok(guides.every(Boolean));
-  assert.ok(guides.every(guide => guide.updated === "2026-10-12"));
+  assert.ok(guides.every(guide => guide.updated === (guide.slug === "internship-application-status-meanings" ? "2026-10-28" : "2026-10-12")));
   assert.equal(guides.reduce((total, guide) => total + guide.sections.length, 0), 53);
   assert.ok(guides.every(guide => guide.sections.length >= 8 && guide.example?.text));
   assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
@@ -247,8 +247,8 @@ test("route resolution supports clean URLs and rejects unknown routes", () => {
 });
 test("October 21 growth release strengthens directory discovery and opens an ethical revenue path", async () => {
   const directory = resolvePage("/internships");
-  assert.equal(directory.title, `${PROGRAMS.length} College Internships by Year, Field & Eligibility`);
-  assert.match(directory.description, new RegExp(`Browse ${PROGRAMS.length} sourced college internship`));
+  assert.equal(directory.title, `College Internships for Freshmen–Seniors (${PROGRAMS.length})`);
+  assert.match(directory.description, new RegExp(`Find ${PROGRAMS.length} sourced college internships`));
   assert.ok(directory.description.includes(String(PROGRAMS.length)));
   assert.ok(directory.description.length >= 120 && directory.description.length <= 180);
 
@@ -265,6 +265,26 @@ test("October 21 growth release strengthens directory discovery and opens an eth
   const built = await readFile("dist/partners.html", "utf8");
   assert.match(built, /<link rel="canonical" href="https:\/\/firstinternships\.com\/partners">/);
   assert.match(built, /<meta name="robots" content="index, follow, max-image-preview:large">/);
+});
+test("October 28 Search Console pass improves directory and application-status answers", async () => {
+  const directory = resolvePage("/internships");
+  assert.ok(directory.title.length <= 52);
+  assert.match(directory.title, /College Internships for Freshmen–Seniors/);
+  const directoryHtml = await readFile("dist/internships.html", "utf8");
+  assert.match(directoryHtml, /Start with the question you need answered/);
+  for (const route of ["/summer-2027-college-internships", "/paid-college-internships", "/internship-deadlines", "/guides"]) assert.match(directoryHtml, new RegExp(`href="${route}"`));
+
+  const statusGuide = GUIDES.find(guide => guide.slug === "internship-application-status-meanings");
+  assert.equal(statusGuide.title, "Internship Application Status Meanings & Next Steps");
+  assert.equal(statusGuide.updated, "2026-10-28");
+  assert.equal(statusGuide.quickAnswerTitle, "Internship application statuses at a glance");
+  assert.equal(statusGuide.quickAnswers.length, 6);
+  assert.ok(statusGuide.relatedGuideSlugs.includes("how-to-follow-up-on-an-internship-email"));
+  assert.ok(statusGuide.description.length >= 120 && statusGuide.description.length <= 180);
+  const statusHtml = await readFile(`dist${guidePath(statusGuide)}.html`, "utf8");
+  assert.match(statusHtml, /Internship application statuses at a glance/);
+  assert.match(statusHtml, /Under review or in process/);
+  assert.match(statusHtml, /When to follow up/);
 });
 test("October 21 interview search expansion adds distinct, substantive answer guides", () => {
   const slugs = [
@@ -504,7 +524,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
   assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-26</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-26</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-28</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));

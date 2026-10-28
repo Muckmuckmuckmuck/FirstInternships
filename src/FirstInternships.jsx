@@ -172,6 +172,17 @@ function GuideLibrary() {
 }
 function FieldLinks({ items = FIELDS }) { return <div className="field-links">{items.map(f => <a key={f.id} href={fieldPath(f)}>{f.name}<ArrowUpRight size={14} /></a>)}</div>; }
 function YearLinks() { return <div className="year-grid">{YEARS.map(y => <a href={yearPath(y)} key={y.id} style={{ "--year-color": y.color }}><span className="year-number">0{y.id}</span><strong>{y.name}</strong><small>Eligibility & application guide</small><ArrowUpRight size={18} /></a>)}</div>; }
+function DirectoryStartingPoints() {
+  return <section className="directory-starting-points" aria-labelledby="directory-starting-points-title">
+    <div><p className="eyebrow">Popular ways to narrow the list</p><h2 id="directory-starting-points-title">Start with the question you need answered.</h2><p>Every program guide explains the reviewed eligibility and links to the official application source. FirstInternships does not accept applications.</p></div>
+    <nav aria-label="Popular college internship views">
+      <a href="/summer-2027-college-internships"><strong>Summer 2027 internships</strong><span>Programs whose reviewed official source names the 2027 cycle</span><ArrowUpRight size={17} /></a>
+      <a href="/paid-college-internships"><strong>Paid internships</strong><span>Pathways where the reviewed source confirms compensation</span><ArrowUpRight size={17} /></a>
+      <a href="/internship-deadlines"><strong>Deadline calendar</strong><span>Published cutoffs, time zones and calendar downloads</span><ArrowUpRight size={17} /></a>
+      <a href="/guides"><strong>Application help</strong><span>Resumes, interviews, email, documents and portal statuses</span><ArrowUpRight size={17} /></a>
+    </nav>
+  </section>;
+}
 
 // The primary way a student narrows the directory. It is deliberately not a form:
 // plain questions, large targets, visible state, and a live count, because the
@@ -439,7 +450,7 @@ function GuidePage({ guide }) {
   return <div className="container"><Breadcrumbs items={[["Guides", "/guides"], [guide.title, null]]} /><PageIntro eyebrow={`${guideCategory(guide)} / ${readingMinutes(guide)} min read`} title={guide.title} description={guide.intro} />
     <div className="review-line">By the FirstInternships editorial team · Updated <time dateTime={guide.updated || VERIFIED}>{reviewLabel(guide.updated || VERIFIED)}</time><a href="/about">About our advice</a></div>
     <MobileContents items={[...guide.sections.map(([label], i) => [label, `#section-${i + 1}`]), ...(guide.example ? [["Practical outline", "#example"]] : []), ...(examples.length ? [["Program-specific guidance", "#programs"]] : [])]} />
-    {guide.quickAnswers?.length > 0 && <section className="guide-quick-answer" aria-labelledby="guide-quick-answer-title"><p className="eyebrow">Quick answer</p><h2 id="guide-quick-answer-title">Transcript requests at a glance</h2><dl>{guide.quickAnswers.map(([question, answer]) => <div key={question}><dt>{question}</dt><dd>{answer}</dd></div>)}</dl></section>}
+    {guide.quickAnswers?.length > 0 && <section className="guide-quick-answer" aria-labelledby="guide-quick-answer-title"><p className="eyebrow">Quick answer</p><h2 id="guide-quick-answer-title">{guide.quickAnswerTitle || "What to know at a glance"}</h2><dl>{guide.quickAnswers.map(([question, answer]) => <div key={question}><dt>{question}</dt><dd>{answer}</dd></div>)}</dl></section>}
     <div className="article-layout"><article><EditorialSections sections={guide.sections} />
       {guideInterviewPrepFor(guide.slug) && <p className="interview-prep-note">Interviewing for a finance role? Practice with Prepalyst&apos;s free <a href={guideInterviewPrepFor(guide.slug).href} target="_blank" rel="noopener">{guideInterviewPrepFor(guide.slug).label}</a>. Prepalyst is a sister site from FirstInternships&apos; founder.</p>}
       {guide.example && <section className="guide-example" id="example"><p className="eyebrow">A practical starting point</p><h2>{guide.example.title}</h2><pre>{guide.example.text}</pre><button className="button secondary small" onClick={copyExample}>Copy this outline</button><p className="small-note" role="status">{copyNotice}</p><p className="small-note">This is editorial guidance, not an employer-required format. Use true details, respect authorship rules, and follow the actual application prompt.</p></section>}
@@ -606,7 +617,7 @@ function SiteContent({ pathname = "/" }) {
     {stale && <p className="storage-warning">This program was last reviewed on {reviewLabel(pageReviewDate)}. Check its official sources for the current cycle.</p>}
     <main id="main">
       {page.type === "home" && <Home planner={planner} />}
-      {page.type === "directory" && <><div className="container"><Breadcrumbs items={[["Internship directory", null]]} /><PageIntro eyebrow="College only. Application-ready." title={page.title} description={page.description} /><YearLinks /><FieldLinks /><AccountConversionCTA compact source="directory-page" /></div><Board planner={planner} /></>}
+      {page.type === "directory" && <><div className="container"><Breadcrumbs items={[["Internship directory", null]]} /><PageIntro eyebrow="College only. Application-ready." title={page.title} description={page.description} /><YearLinks /><FieldLinks /><DirectoryStartingPoints /><AccountConversionCTA compact source="directory-page" /></div><Board planner={planner} /></>}
       {["year", "field"].includes(page.type) && <Collection page={page} planner={planner} />}
       {page.type === "topic" && <TopicPage topic={page.topic} planner={planner} />}
       {page.type === "program" && <ProgramPage program={page.program} planner={planner} />}

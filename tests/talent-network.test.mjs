@@ -98,9 +98,10 @@ test("Talent Network migration is additive, private, owner-scoped, and server-en
 });
 
 test("Talent Network UI and policies preserve a clear consent and control boundary", async () => {
-  const [page, client, privacy, terms, docs] = await Promise.all([
+  const [page, client, styles, privacy, terms, docs] = await Promise.all([
     readFile("src/TalentNetwork.jsx", "utf8"),
     readFile("src/talent-client.js", "utf8"),
+    readFile("src/talent.css", "utf8"),
     readFile("public/privacy.html", "utf8"),
     readFile("public/terms.html", "utf8"),
     readFile("docs/TALENT_NETWORK_SYSTEM.md", "utf8"),
@@ -109,6 +110,12 @@ test("Talent Network UI and policies preserve a clear consent and control bounda
     assert.match(page, new RegExp(phrase, "i"), phrase);
   }
   assert.match(page, /returnPath: "\/talent-network"/);
+  for (const event of ["talent_cta_viewed", "talent_cta_clicked", "talent_resume_selected", "talent_employer_path_opened"]) assert.match(page, new RegExp(`"${event}"`));
+  assert.match(page, /new IntersectionObserver[\s\S]*threshold: 0\.35/);
+  assert.match(page, /Four short sections, then you are done/);
+  assert.match(page, /Choose no more than \$\{maxItems\}/);
+  assert.match(styles, /\.talent-progress[\s\S]*grid-template-columns: repeat\(4/);
+  assert.match(styles, /@media \(max-width: 680px\)[\s\S]*\.talent-progress \{ grid-template-columns: repeat\(2/);
   assert.doesNotMatch(page, /window\.confirm/);
   assert.match(client, /createSignedUrl\([^,]+, 60\)/);
   assert.doesNotMatch(client, /getPublicUrl/);

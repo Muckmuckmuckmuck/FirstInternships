@@ -374,6 +374,22 @@ test("the partnership page qualifies revenue leads with auditable inventory and 
   assert.match(partners, /not guaranteed impressions, clicks or campaign results/i);
   assert.doesNotMatch(partners, /we guarantee|guaranteed campaign results/i);
 });
+test("resume collection is prominent on high-intent pages without gating useful content", () => {
+  const program = PROGRAMS[0];
+  const programHtml = render(programPath(program));
+  const officialAction = programHtml.indexOf("Check official program &amp; apply");
+  const talentAction = programHtml.indexOf("Build my private profile");
+  assert.ok(officialAction >= 0, "program application action should render");
+  assert.ok(talentAction > officialAction, "the optional resume path must follow the useful application content");
+  assert.match(programHtml, /employers cannot browse it/);
+  assert.match(programHtml, /href="\/talent-network#join"/);
+  assert.match(programHtml, /aria-label="Optional private Talent Network" data-nosnippet/);
+
+  const resumeGuide = GUIDES.find(guide => guide.slug === "internship-resume-with-no-experience");
+  assert.match(render(guidePath(resumeGuide)), /Keep one private resume ready for future matches/);
+  const interviewGuide = GUIDES.find(guide => guide.slug === "internship-interview-guide");
+  assert.doesNotMatch(render(guidePath(interviewGuide)), /Keep one private resume ready for future matches/);
+});
 test("account and newsletter conversion events stay aggregate and contain no visitor data", async () => {
   const [accountSource, analyticsSource] = await Promise.all([
     readFile("src/Account.jsx", "utf8"),
@@ -418,6 +434,9 @@ test("traffic, engagement, utility, and owner metrics stay aggregate and private
   assert.doesNotMatch(analyticsSource, /eventData|properties|email:|preferences:|planner:/i);
 
   for (const source of ["visits/count", "events/aggregate", "newsletter_subscriptions", "newsletter_deliveries", "talent_profiles", "auth.admin.listUsers"]) assert.ok(reportSource.includes(source), source);
+  for (const event of ["talent_cta_viewed", "talent_cta_clicked", "talent_resume_selected", "talent_profile_completed", "talent_employer_path_opened"]) assert.match(reportSource, new RegExp(`"${event}"`));
+  assert.match(reportSource, /placement_consent_version/);
+  assert.match(reportSource, /Storage-object presence/);
   assert.match(reportSource, /select\(column, \{ count: "exact", head: true \}\)/);
   assert.doesNotMatch(reportSource, /user\.email|console\.log\([^)]*process\.env/);
   assert.match(scorecard, /Vercel and Cloudflare measure overlapping traffic\. Compare them; never add them\./);

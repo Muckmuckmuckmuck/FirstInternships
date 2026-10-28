@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { createClient } from "@supabase/supabase-js";
+import { TALENT_CONSENT_VERSION } from "../src/talent-client.js";
 
 const DAY = 86_400_000;
 const PERIOD_DAYS = 28;
@@ -122,12 +123,13 @@ async function collectSupabase() {
   try {
     newActiveSubscribers = await exactCount(client, "newsletter_subscriptions", "user_id", query => query.eq("status", "active").gte("confirmed_at", currentSince));
   } catch (error) { warnings.push(error.message); }
-  const talent = { active: null, paused: null, total: null, newProfiles: null };
+  const talent = { active: null, paused: null, total: null, newProfiles: null, currentConsent: null };
   try {
     talent.active = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active"));
     talent.paused = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "paused"));
     talent.total = talent.active + talent.paused;
     talent.newProfiles = await exactCount(client, "talent_profiles", "user_id", query => query.gte("created_at", currentSince));
+    talent.currentConsent = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active").eq("placement_consent_version", TALENT_CONSENT_VERSION).not("resume_uploaded_at", "is", null));
   } catch (error) { warnings.push(error.message); }
 
   return {
@@ -197,12 +199,16 @@ function renderReport(vercel, supabase) {
       ["newsletter_activation_viewed", "Newsletter activation viewers"],
       ["newsletter_opt_in_completed", "Completed newsletter opt-ins"],
       ["newsletter_preferences_saved", "Newsletter preference saves"],
+      ["talent_cta_viewed", "Contextual Talent Network CTA viewers"],
+      ["talent_cta_clicked", "Contextual Talent Network CTA clicks"],
       ["talent_network_viewed", "Talent Network visitors"],
       ["talent_signup_started", "Talent account starts"],
+      ["talent_resume_selected", "Valid resume selections"],
       ["talent_profile_completed", "Completed talent profiles"],
       ["talent_profile_updated", "Talent profile updates"],
       ["talent_profile_paused", "Talent profile pauses"],
       ["talent_profile_deleted", "Talent profile deletions"],
+      ["talent_employer_path_opened", "Employer placement-path opens"],
       ["partner_general_inquiry", "General partnership inquiries"],
       ["partner_newsletter_inquiry", "Newsletter sponsorship inquiries"],
       ["partner_employer_inquiry", "Employer campaign inquiries"],
@@ -221,6 +227,7 @@ function renderReport(vercel, supabase) {
       `- Program-guide to official-site rate: **${percent(applyVisitors, programVisitors)}** (${integer(applyVisitors)} event visitors / ${integer(programVisitors)} program-page visitors).`,
       `- Prompt dismissal rate: **${percent(eventValue(events, "signup_prompt_dismissed", "visitors"), eventValue(events, "signup_prompt_viewed", "visitors"))}**.`,
       `- Newsletter activation completion rate: **${percent(eventValue(events, "newsletter_opt_in_completed", "visitors"), eventValue(events, "newsletter_activation_viewed", "visitors"))}**. This is a directional same-window ratio, not a person-level cohort.`,
+      `- Contextual resume interest rate: **${percent(eventValue(events, "talent_cta_clicked", "visitors"), eventValue(events, "talent_cta_viewed", "visitors"))}**; Talent Network profile completion rate: **${percent(eventValue(events, "talent_profile_completed", "visitors"), eventValue(events, "talent_network_viewed", "visitors"))}**. These are directional same-window ratios, not person-level cohorts.`,
     );
   } else lines.push("- Custom events were unavailable. Vercel custom events require a compatible plan and production analytics configuration.");
 
@@ -241,7 +248,8 @@ function renderReport(vercel, supabase) {
     );
     if (supabase.talent?.total !== null) lines.push(
       `- Private Talent Network: **${integer(supabase.talent.active)} active** and ${integer(supabase.talent.paused)} paused profiles; ${integer(supabase.talent.newProfiles)} created in the last 28 days.`,
-      `- Progress toward the 10,000 active-profile operating milestone: **${percent(supabase.talent.active, 10_000)}**. The milestone is a planning threshold, not permission to launch placements without legal, fairness, security, employer-contract, and candidate-consent readiness.`,
+      `- Database-eligible profiles with active status, current consent and a resume record: **${integer(supabase.talent.currentConsent)}**. Progress toward the 10,000-profile operating milestone: **${percent(supabase.talent.currentConsent, 10_000)}**. Storage-object presence and the future freshness window still require separate audits before any profile is considered placement-ready.`,
+      `- The milestone is a planning threshold, not permission to launch placements without legal, fairness, security, employer-contract, and candidate-consent readiness.`,
     );
   } else lines.push(`- ${supabase.warning || "Supabase metrics were unavailable."}`);
 

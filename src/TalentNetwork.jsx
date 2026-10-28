@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Download, FileText, Loader2, Pause, Play, ShieldCheck, Trash2, Upload, UserRoundSearch } from "lucide-react";
 import { FIELDS, YEARS } from "./content.js";
 import { trackPublicEvent, trackPublicEventOnce } from "./analytics.js";
@@ -125,6 +125,28 @@ function SignedOutTalent({ account }) {
   </section>;
 }
 
+export function TalentConversionCTA({ compact = false, className = "" }) {
+  const ctaRef = useRef(null);
+  useEffect(() => {
+    if (!ctaRef.current || typeof IntersectionObserver !== "function") return undefined;
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      trackPublicEventOnce("talent_cta_viewed");
+      observer.disconnect();
+    }, { threshold: 0.35 });
+    observer.observe(ctaRef.current);
+    return () => observer.disconnect();
+  }, []);
+  return <aside ref={ctaRef} className={`talent-growth-cta ${compact ? "is-compact" : ""} ${className}`.trim()} aria-label="Optional private Talent Network" data-nosnippet>
+    <div>
+      <p className="eyebrow">Optional / private candidate profile</p>
+      <h2>{compact ? "Keep one private resume ready for future matches." : "One resume. Your approval before every introduction."}</h2>
+      <p>{compact ? "Build a free Talent Network profile after you review this opportunity. It never replaces the employer application, employers cannot browse it, and nothing is shared without your approval for a specific role." : "Join the free Talent Network so FirstInternships can identify potential internship matches as it grows. Your profile is private, employers cannot browse it, and placement fees—if that service launches—are paid by employers, never students."}</p>
+    </div>
+    <a className="button" href="/talent-network#join" onClick={() => trackPublicEvent("talent_cta_clicked")}>Build my private profile <span aria-hidden="true">→</span></a>
+  </aside>;
+}
+
 function TalentForm({ account }) {
   const [profile, setProfile] = useState(null);
   const [draft, setDraft] = useState(() => draftFromProfile(null, account.user));
@@ -150,10 +172,31 @@ function TalentForm({ account }) {
   }, [account.user]);
 
   const update = (key, value) => setDraft(current => ({ ...current, [key]: value }));
-  const toggleList = (key, value, checked) => setDraft(current => ({
-    ...current,
-    [key]: checked ? [...new Set([...current[key], value])] : current[key].filter(item => item !== value),
-  }));
+  const toggleList = (key, value, checked, maxItems) => {
+    if (checked && !draft[key].includes(value) && draft[key].length >= maxItems) {
+      setState({ kind: "error", message: `Choose no more than ${maxItems} ${key === "fields" ? "fields" : "work arrangements"}.` });
+      return;
+    }
+    setDraft(current => ({
+      ...current,
+      [key]: checked ? [...new Set([...current[key], value])] : current[key].filter(item => item !== value),
+    }));
+  };
+  const chooseResume = async event => {
+    const input = event.target;
+    const next = input.files?.[0] || null;
+    setFile(next);
+    if (!next) return;
+    const fileError = await validateResumeFile(next);
+    if (fileError) {
+      setFile(null);
+      input.value = "";
+      setState({ kind: "error", message: fileError });
+      return;
+    }
+    setState({ kind: "idle", message: "" });
+    trackPublicEvent("talent_resume_selected");
+  };
   const save = async event => {
     event.preventDefault();
     const clean = profileForSave(draft);
@@ -207,6 +250,13 @@ function TalentForm({ account }) {
     } catch (error) { setState({ kind: "error", message: friendlyTalentError(error) }); }
   };
   const graduationYears = useMemo(() => Array.from({ length: 11 }, (_, index) => 2026 + index), []);
+  const progress = useMemo(() => [
+    { label: "Student basics", complete: Boolean(draft.fullName.trim() && draft.school.trim() && draft.degree.trim() && draft.collegeYear && draft.graduationYear) },
+    { label: "Match preferences", complete: Boolean(draft.fields.length && draft.workModes.length) },
+    { label: "Resume PDF", complete: Boolean(file || profile?.resumeUploadedAt) },
+    { label: "Privacy choices", complete: Boolean(draft.ageConfirmed && draft.placementConsent && draft.specificShareOnly) },
+  ], [draft, file, profile]);
+  const completedSections = progress.filter(item => item.complete).length;
   const busy = ["loading", "saving"].includes(state.kind);
 
   if (state.kind === "loading") return <section className="talent-loading" role="status"><Loader2 className="account-spinner" size={22} /> {state.message}</section>;
@@ -218,7 +268,10 @@ function TalentForm({ account }) {
     </section>}
 
     <form className="talent-form" onSubmit={save}>
-      <div className="talent-form-heading"><div><p className="eyebrow">{isExisting ? "Manage your candidate profile" : "Private candidate profile"}</p><h2>{isExisting ? "Keep your profile current." : "Tell us what kind of work fits you."}</h2></div><span>Required fields are marked *</span></div>
+      <div className="talent-form-heading"><div><p className="eyebrow">{isExisting ? "Manage your candidate profile" : "Private candidate profile"}</p><h2>{isExisting ? "Keep your profile current." : "Four short sections, then you are done."}</h2></div><span>{completedSections} of {progress.length} sections ready</span></div>
+      <ol className="talent-progress" aria-label={`${completedSections} of ${progress.length} profile sections ready`}>
+        {progress.map((item, index) => <li className={item.complete ? "is-complete" : ""} key={item.label}><span aria-hidden="true">{item.complete ? <Check size={14} /> : index + 1}</span>{item.label}</li>)}
+      </ol>
       <div className="talent-grid two">
         <label>Full name *<input required maxLength={120} autoComplete="name" value={draft.fullName} onChange={event => update("fullName", event.target.value)} /></label>
         <label>College or university *<input required maxLength={160} autoComplete="organization" value={draft.school} onChange={event => update("school", event.target.value)} /></label>
@@ -228,8 +281,8 @@ function TalentForm({ account }) {
         <label>Preferred locations<input maxLength={500} placeholder="Phoenix, New York, remote" value={draft.preferredLocationsText} onChange={event => update("preferredLocationsText", event.target.value)} /><small>Separate locations with commas. Broad regions are enough; do not enter a home address.</small></label>
       </div>
 
-      <fieldset><legend>Fields you want to work in *</legend><p className="talent-help">Choose up to 12. This is for matching, not a promise of placement.</p><div className="talent-choice-grid fields">{FIELDS.map(field => <ToggleChoice key={field.id} checked={draft.fields.includes(field.id)} onChange={checked => toggleList("fields", field.id, checked)}>{field.name}</ToggleChoice>)}</div></fieldset>
-      <fieldset><legend>Work arrangements *</legend><div className="talent-choice-grid modes">{TALENT_WORK_MODES.map(mode => <ToggleChoice key={mode} checked={draft.workModes.includes(mode)} onChange={checked => toggleList("workModes", mode, checked)}>{mode === "on-site" ? "On site" : mode[0].toUpperCase() + mode.slice(1)}</ToggleChoice>)}</div></fieldset>
+      <fieldset><legend>Fields you want to work in *</legend><p className="talent-help">Choose up to 12. This is for matching, not a promise of placement.</p><div className="talent-choice-grid fields">{FIELDS.map(field => <ToggleChoice key={field.id} checked={draft.fields.includes(field.id)} onChange={checked => toggleList("fields", field.id, checked, 12)}>{field.name}</ToggleChoice>)}</div></fieldset>
+      <fieldset><legend>Work arrangements *</legend><div className="talent-choice-grid modes">{TALENT_WORK_MODES.map(mode => <ToggleChoice key={mode} checked={draft.workModes.includes(mode)} onChange={checked => toggleList("workModes", mode, checked, TALENT_WORK_MODES.length)}>{mode === "on-site" ? "On site" : mode[0].toUpperCase() + mode.slice(1)}</ToggleChoice>)}</div></fieldset>
 
       <label>Roles you are aiming for<textarea maxLength={500} rows={4} placeholder="Example: software engineering, product analytics, or data engineering internships" value={draft.desiredRoles} onChange={event => update("desiredRoles", event.target.value)} /><small>Do not include protected traits, medical details, government identifiers, or financial information.</small></label>
       <div className="talent-grid two">
@@ -237,7 +290,7 @@ function TalentForm({ account }) {
         <label>Portfolio or personal site<input type="url" maxLength={500} placeholder="https://…" value={draft.portfolioUrl} onChange={event => update("portfolioUrl", event.target.value)} /></label>
       </div>
 
-      <section className="talent-upload" aria-labelledby="resume-upload-title"><div><Upload size={22} /><div><h3 id="resume-upload-title">Resume PDF *</h3><p>{profile?.resumeUploadedAt ? `${profile.resumeFilename || "Resume.pdf"} is stored privately. Choose a file only to replace it.` : "Upload one PDF, up to 5 MB."}</p></div></div><input type="file" accept="application/pdf,.pdf" onChange={event => setFile(event.target.files?.[0] || null)} />{file && <p className="talent-file"><FileText size={15} /> Ready to upload: {file.name}</p>}<p className="talent-warning"><strong>Before uploading:</strong> remove your Social Security number, birth date, home address, banking details, government ID numbers, medical information, and photograph.</p></section>
+      <section className="talent-upload" aria-labelledby="resume-upload-title"><div><Upload size={22} /><div><h3 id="resume-upload-title">Resume PDF *</h3><p>{profile?.resumeUploadedAt ? `${profile.resumeFilename || "Resume.pdf"} is stored privately. Choose a file only to replace it.` : "Upload one PDF, up to 5 MB. It is not sent to an employer application."}</p></div></div><input type="file" accept="application/pdf,.pdf" onChange={chooseResume} />{file && <p className="talent-file"><FileText size={15} /> Ready to upload: {file.name}</p>}<p className="talent-warning"><strong>Before uploading:</strong> remove your Social Security number, birth date, home address, banking details, government ID numbers, medical information, and photograph.</p></section>
 
       <section className="talent-notice" aria-labelledby="talent-notice-title"><ShieldCheck size={23} /><div><h3 id="talent-notice-title">Notice at collection</h3><p>We collect the profile fields and resume above to identify possible internship matches and contact you about them. The file is stored privately with Supabase. We do not sell resume lists or give employers a searchable database. No employer receives your resume or contact information unless you approve a specific opportunity. You can pause, export, replace, or delete this profile. Read the <a href="/privacy#talent-network">full privacy details</a>.</p></div></section>
       <div className="talent-consents">
@@ -264,6 +317,6 @@ export default function TalentNetworkPage() {
     <header className="talent-hero"><div><p className="eyebrow">Private resume pool · free for students</p><h1>Be ready when the right internship needs someone like you.</h1><p>Create one private candidate profile now. FirstInternships can use it to identify potential matches as the network grows, but employers cannot browse it and nothing is shared without your approval for a specific opportunity.</p><div className="talent-hero-actions"><a className="button" href="#join">Build my profile</a><a className="button secondary" href="#how-it-works">How privacy works</a></div></div><aside><UserRoundSearch size={30} /><strong>Student-first placement model</strong><ul><li>No student placement fee</li><li>No public resume profile</li><li>No bulk employer database</li><li>Specific approval before sharing</li></ul></aside></header>
     <section className="talent-steps" id="how-it-works" aria-labelledby="talent-steps-title"><div><p className="eyebrow">How it works</p><h2 id="talent-steps-title">A candidate pool now. Placements only after the safeguards are ready.</h2></div><ol><li><span>01</span><strong>You create a private profile.</strong><p>Add your goals and one PDF resume. Newsletter enrollment remains separate.</p></li><li><span>02</span><strong>We build matching capacity.</strong><p>Until placements launch, your profile stays internal and no employer can search it.</p></li><li><span>03</span><strong>You control every introduction.</strong><p>If a specific opportunity fits, we ask before sharing your resume or contact details.</p></li></ol></section>
     <div id="join">{!accountFeatureEnabled() || account.status === "inactive" ? <section className="talent-signin"><div><p className="eyebrow">Talent Network</p><h2>Account setup is still being prepared.</h2><p>The internship directory remains available while the private profile system is configured.</p></div><a className="button secondary" href="/internships">Browse internships</a></section> : account.status === "loading" ? <section className="talent-loading" role="status"><Loader2 className="account-spinner" size={22} /> Loading your account…</section> : account.status === "signed-out" ? <SignedOutTalent account={account} /> : account.status === "signed-in" ? <TalentForm account={account} /> : <section className="talent-signin" role="alert"><div><p className="eyebrow">Account service</p><h2>Sign-in is temporarily unavailable.</h2><p>You can keep using the free directory and return later.</p></div><a className="button secondary" href="/internships">Browse internships</a></section>}</div>
-    <section className="talent-boundary"><div><ShieldCheck size={24} /><h2>What is deliberately not launching yet</h2></div><p>FirstInternships is not currently submitting candidates, making hiring decisions, running background checks, or giving employers access to resumes. Before a paid placement service launches, it needs employer agreements, anti-discrimination controls, applicable employment-agency and privacy review, candidate-specific sharing records, and an operating process that can support real people—not just a large database.</p></section>
+    <section className="talent-boundary"><div><ShieldCheck size={24} /><h2>What is deliberately not launching yet</h2></div><p>FirstInternships is not currently submitting candidates, making hiring decisions, running background checks, or giving employers access to resumes. Before a paid placement service launches, it needs employer agreements, anti-discrimination controls, applicable employment-agency and privacy review, candidate-specific sharing records, and an operating process that can support real people—not just a large database.</p><a href="/partners" onClick={() => trackPublicEvent("talent_employer_path_opened")}>Employers: read the partnership and placement safeguards <span aria-hidden="true">→</span></a></section>
   </div>;
 }

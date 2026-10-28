@@ -21,6 +21,7 @@ The site sends only broad event names. It does not attach email addresses, newsl
 | Employer handoff | Vercel | `official_apply_click` | Click from a program guide's official action area to the publisher |
 | Account funnel | Vercel | prompt, launcher, Google/email start, auth-complete events | Aggregate account-flow progress |
 | Newsletter funnel | Vercel + Supabase | activation view, opt-in complete, preference save, active subscription state | Explicit-consent conversion and current owned audience |
+| Talent Network funnel | Vercel + Supabase | contextual CTA view/click, network view, Google start, valid PDF selection, completed active profile | Optional resume-pool conversion without exposing filenames, profile fields, or resume data |
 | Email quality | Supabase + Resend | sent, delivered, bounced, complained, unsubscribed, clicked | Delivery and retention quality; provider reports remain authoritative |
 | Commercial intent | Vercel + owner records | partnership inquiry events, qualified inquiries, wins | Directional inquiry starts followed by manually qualified outcomes |
 | Revenue | AdSense + bookkeeping | revenue, page RPM, sponsor revenue, operating cost | Cash performance, not a traffic estimate |
@@ -94,8 +95,8 @@ Save one snapshot on the same day each month. Use complete 28-day windows and ke
 - Activation view → explicit opt-in completion.
 - Seven-, 30-, and 90-day active-subscriber retention when the delivery data is mature enough to calculate it honestly.
 - Match coverage, no-match rate, repeated-program rate, and digest click usefulness.
-- Active and paused private Talent Network profiles, new profiles in the period, profile deletion rate, resume freshness, and progress toward 10,000 active current profiles. Never count deleted, paused, resume-missing, or stale records as placement-ready inventory.
-- Talent Network view → Google start → completed-profile conversion. Keep these as aggregate same-window ratios unless a consented first-party cohort system is deliberately built.
+- Active and paused private Talent Network profiles, new profiles in the period, profile deletion rate, resume freshness, and progress toward 10,000 active current profiles. The automated database count can confirm active status, current consent and a resume record; it cannot by itself prove that every Storage object still exists or satisfies a future freshness rule. Never count deleted, paused, resume-missing or stale records as placement-ready inventory.
+- Contextual Talent Network CTA view → click and Talent Network view → Google start → valid PDF selection → completed-profile conversion. Keep these as aggregate same-window ratios unless a consented first-party cohort system is deliberately built. The fixed events contain no filename, school, desired role, field, location or other candidate value.
 
 ### Revenue quality
 

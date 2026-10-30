@@ -150,7 +150,7 @@ test("consumed account welcome parameters are removed without losing consent sta
     replaceState(...args) { calls.push(args); },
   };
   const location = {
-    href: `https://firstinternships.com/account?welcome=1&source=program-page&newsletter_intent=${intentId}#preferences`,
+    href: `https://firstinternships.com/account?code=single-use-pkce-code&welcome=1&source=program-page&newsletter_intent=${intentId}#preferences`,
   };
 
   assert.equal(clearAccountWelcomeFromUrl(history, location), true);
@@ -160,6 +160,7 @@ test("consumed account welcome parameters are removed without losing consent sta
   assert.equal(cleaned.pathname, "/account");
   assert.equal(cleaned.searchParams.has("welcome"), false);
   assert.equal(cleaned.searchParams.has("source"), false);
+  assert.equal(cleaned.searchParams.has("code"), false, "a consumed OAuth code must not remain in browser history");
   assert.equal(cleaned.searchParams.get("newsletter_intent"), intentId);
   assert.equal(cleaned.hash, "#preferences");
 });

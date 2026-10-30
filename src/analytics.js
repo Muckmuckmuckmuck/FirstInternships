@@ -5,6 +5,20 @@ export const analyticsEnabled = () => import.meta.env.VITE_ANALYTICS_ENABLED ===
 
 const eventNamePattern = /^[a-z][a-z0-9_]{1,63}$/;
 const pageEvents = new Set();
+const ANALYTICS_HOST = "firstinternships.com";
+
+function countFirstPartyEvent(name) {
+  if (window.location.hostname !== ANALYTICS_HOST || typeof window.fetch !== "function") return;
+  // This endpoint accepts only the fixed event name and increments a daily
+  // aggregate. It never receives account, profile, search or page data.
+  window.fetch("/api/funnel-event", {
+    method: "POST",
+    credentials: "same-origin",
+    keepalive: true,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  }).catch(() => {});
+}
 
 export function trackPublicEvent(name) {
   if (typeof window === "undefined" || !analyticsEnabled() || !eventNamePattern.test(name)) return;
@@ -13,6 +27,7 @@ export function trackPublicEvent(name) {
   // path, so names must remain broad and free of personal information.
   window.va ||= function (...args) { (window.vaq ||= []).push(args); };
   window.va("event", { name });
+  countFirstPartyEvent(name);
 }
 
 export function trackPublicEventOnce(name) {

@@ -1097,6 +1097,7 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
   const validYear = Number(year) >= 1 && Number(year) <= 4 ? Number(year) : null;
   const validField = FIELD_IDS.includes(field) ? field : "";
   const validProgram = PROGRAMS.some(program => program.id === programId) ? programId : "";
+  const hasSignupContext = Boolean(validYear || validField || validProgram);
   const [draft, setDraft] = useState(() => ({ collegeYear: validYear, field: validField, consent: false }));
   const [expanded, setExpanded] = useState(false);
   const [started, setStarted] = useState(false);
@@ -1171,14 +1172,15 @@ export function AccountConversionCTA({ source = "site", compact = false, classNa
     : alertsSuppressed ? "Review your email delivery status." : alertsActive ? "Fine-tune what reaches your inbox." : "Manage your account and alerts.";
   const signedInEyebrow = alertsNeedActivation ? "Your account is ready · emails are off" : alertsSuppressed ? "Email delivery needs attention" : "Your internship alerts";
   const signedInAction = alertsNeedActivation ? "Finish alert setup" : alertsSuppressed ? "Review email status" : "Manage alerts";
-  return <aside className={`account-conversion-cta ${compact ? "is-compact" : ""} ${ready && !signedIn && expanded ? "is-signup" : ""} ${alertsNeedActivation ? "needs-activation" : ""} ${className}`.trim()} aria-labelledby={titleId}>
+  const showSignupForm = ready && !signedIn && (expanded || hasSignupContext);
+  return <aside className={`account-conversion-cta ${compact ? "is-compact" : ""} ${showSignupForm ? "is-signup" : ""} ${alertsNeedActivation ? "needs-activation" : ""} ${className}`.trim()} aria-labelledby={titleId}>
     <span className="account-cta-icon" aria-hidden="true">{signedIn ? <BellRing size={22} /> : <Sparkles size={22} />}</span>
     <div>
       <p className="eyebrow">{signedIn ? signedInEyebrow : "Free student account"}</p>
       <h2 id={titleId}>{signedIn ? signedInTitle : contextTitle}</h2>
       {!compact && <p>{signedIn ? alertsNeedActivation ? "Choose your college year and main interest, then explicitly opt in to the free digest." : "Change your year, fields, locations, or email cadence in one place." : "Create your account with Google in one tap. Personalized weekly matches are available as a separate option."}</p>}
     </div>
-    {ready && !signedIn && expanded ? <form className="account-cta-form" id={formId} onSubmit={beginGoogleSignup}>
+    {showSignupForm ? <form className="account-cta-form" id={formId} onSubmit={beginGoogleSignup}>
       <div className="account-cta-fields">
         <label><span>College year</span><select ref={yearRef} value={draft.collegeYear || ""} onChange={event => setDraft(current => ({ ...current, collegeYear: event.target.value ? Number(event.target.value) : null }))} required={draft.consent}>
           <option value="">Choose year</option>{YEARS.map(item => <option value={item.id} key={item.id}>{item.short}</option>)}

@@ -202,6 +202,10 @@ NEWSLETTER_AUDIT_SALT     # server-only hashing salt
 
 Google account login is configured in Supabase Auth Providers, not through the quarantined Gmail OAuth variables in `.env.example`. Its authorized origin is the canonical production site and its OAuth callback is the Supabase project callback URL. Keep the OAuth client secret in Supabase/Google configuration; never copy it into a `VITE_` variable or commit it.
 
+Supabase Auth URL configuration must allow the exact production return families used by the code: `https://firstinternships.com/account**` and `https://firstinternships.com/talent-network**`. The wildcard is needed because PKCE returns include query parameters. Test the complete production Google round trip after any domain, provider, or callback change. Once the authenticated session is established, remove the consumed `code`, `welcome`, provider-error, and source parameters from browser history; preserve a matching `newsletter_intent` until its explicit consent handoff finishes.
+
+The separate `/api/funnel-event` endpoint records only a fixed event name into `funnel_daily_counts`, grouped by UTC day. It is an origin-checked aggregate counter, not a person-level analytics system. Never add email, account ID, session ID, IP, user-agent, URL, preferences, resume details, search text, planner data, or arbitrary event properties. The table and increment RPC are service-only; anonymous and authenticated database roles receive no direct access.
+
 Before any production newsletter:
 
 1. Verify the sending domain in Resend.

@@ -213,9 +213,9 @@ export function clearAccountWelcomeFromUrl(history = typeof window === "undefine
   if (!history || !location) return false;
   try {
     const url = new URL(location.href);
-    if (!url.searchParams.has("welcome") && !url.searchParams.has("source")) return false;
-    url.searchParams.delete("welcome");
-    url.searchParams.delete("source");
+    const consumed = ["welcome", "source", "code", "error", "error_code", "error_description"];
+    if (!consumed.some(parameter => url.searchParams.has(parameter))) return false;
+    for (const parameter of consumed) url.searchParams.delete(parameter);
     history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
     return true;
   } catch {

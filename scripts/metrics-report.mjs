@@ -123,6 +123,17 @@ async function collectSupabase() {
   try {
     newActiveSubscribers = await exactCount(client, "newsletter_subscriptions", "user_id", query => query.eq("status", "active").gte("confirmed_at", currentSince));
   } catch (error) { warnings.push(error.message); }
+  let funnelEvents = null;
+  try {
+    const { data, error } = await client
+      .from("funnel_daily_counts")
+      .select("event_name,event_count")
+      .gte("event_date", currentSince.slice(0, 10));
+    if (error) throw error;
+    const totals = new Map();
+    for (const row of data || []) totals.set(row.event_name, (totals.get(row.event_name) || 0) + Number(row.event_count || 0));
+    funnelEvents = [...totals].map(([eventName, count]) => ({ eventName, count, visitors: 0 }));
+  } catch (error) { warnings.push(`funnel_daily_counts: ${error.message}`); }
   const talent = { active: null, paused: null, total: null, newProfiles: null, currentConsent: null };
   try {
     talent.active = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active"));
@@ -140,6 +151,7 @@ async function collectSupabase() {
     subscriptions,
     deliveries,
     newActiveSubscribers,
+    funnelEvents,
     talent,
     warnings,
   };
@@ -160,7 +172,9 @@ function renderReport(vercel, supabase) {
     `Generated ${new Date().toISOString()}. All figures are aggregate; this report never prints account addresses, preferences, planner records, or program selections.`,
     "",
   ];
-  const events = eventMap(vercel.events);
+  const firstPartyEvents = !vercel.events && supabase.funnelEvents !== null;
+  const events = eventMap(vercel.events || supabase.funnelEvents || []);
+  const eventMetric = firstPartyEvents ? "count" : "visitors";
 
   lines.push("## Traffic", "");
   if (vercel.available && vercel.current) {
@@ -182,7 +196,8 @@ function renderReport(vercel, supabase) {
   }
 
   lines.push("", "## Product and conversion funnel", "");
-  if (vercel.events) {
+  if (vercel.events || supabase.funnelEvents !== null) {
+    if (firstPartyEvents) lines.push("- Source: privacy-minimized daily Supabase totals. These are event counts, not unique people or attributed cohorts.");
     const eventRows = [
       ["engaged_page_view", "Engaged page views"],
       ["directory_filter_used", "Directory filter users"],
@@ -223,11 +238,11 @@ function renderReport(vercel, supabase) {
     const programVisitors = Number(vercel.programTraffic?.visitors || 0);
     const applyVisitors = eventValue(events, "official_apply_click", "visitors");
     lines.push(
-      `- Engaged-visitor rate: **${percent(eventValue(events, "engaged_page_view", "visitors"), Number(vercel.current?.visitors || 0))}** of site visitors.`,
-      `- Program-guide to official-site rate: **${percent(applyVisitors, programVisitors)}** (${integer(applyVisitors)} event visitors / ${integer(programVisitors)} program-page visitors).`,
-      `- Prompt dismissal rate: **${percent(eventValue(events, "signup_prompt_dismissed", "visitors"), eventValue(events, "signup_prompt_viewed", "visitors"))}**.`,
-      `- Newsletter activation completion rate: **${percent(eventValue(events, "newsletter_opt_in_completed", "visitors"), eventValue(events, "newsletter_activation_viewed", "visitors"))}**. This is a directional same-window ratio, not a person-level cohort.`,
-      `- Contextual resume interest rate: **${percent(eventValue(events, "talent_cta_clicked", "visitors"), eventValue(events, "talent_cta_viewed", "visitors"))}**; Talent Network profile completion rate: **${percent(eventValue(events, "talent_profile_completed", "visitors"), eventValue(events, "talent_network_viewed", "visitors"))}**. These are directional same-window ratios, not person-level cohorts.`,
+      firstPartyEvents ? "- Engaged-visitor and program-handoff rates require a unique-visitor event source; the daily totals deliberately do not identify visitors." : `- Engaged-visitor rate: **${percent(eventValue(events, "engaged_page_view", "visitors"), Number(vercel.current?.visitors || 0))}** of site visitors.`,
+      firstPartyEvents ? `- Official-application actions: **${integer(eventValue(events, "official_apply_click"))} events**; do not divide raw actions by visitor estimates as if they were deduplicated people.` : `- Program-guide to official-site rate: **${percent(applyVisitors, programVisitors)}** (${integer(applyVisitors)} event visitors / ${integer(programVisitors)} program-page visitors).`,
+      `- Prompt dismissal rate: **${percent(eventValue(events, "signup_prompt_dismissed", eventMetric), eventValue(events, "signup_prompt_viewed", eventMetric))}**.`,
+      `- Newsletter activation completion rate: **${percent(eventValue(events, "newsletter_opt_in_completed", eventMetric), eventValue(events, "newsletter_activation_viewed", eventMetric))}**. This is a directional same-window ratio, not a person-level cohort.`,
+      `- Contextual resume interest rate: **${percent(eventValue(events, "talent_cta_clicked", eventMetric), eventValue(events, "talent_cta_viewed", eventMetric))}**; Talent Network profile completion rate: **${percent(eventValue(events, "talent_profile_completed", eventMetric), eventValue(events, "talent_network_viewed", eventMetric))}**. These are directional same-window ratios, not person-level cohorts.`,
     );
   } else lines.push("- Custom events were unavailable. Vercel custom events require a compatible plan and production analytics configuration.");
 

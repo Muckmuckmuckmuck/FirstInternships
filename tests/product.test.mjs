@@ -570,7 +570,7 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const vercelIgnore = await readFile(".vercelignore", "utf8");
   assert.match(vercelIgnore, /^api\/\*$/m, "API files must remain denylisted by default");
   assert.match(vercelIgnore, /^lib\/\*$/m, "server helpers must remain denylisted by default");
-  const expectedApiAllowlist = ["newsletter-confirm.js", "newsletter-digest.js", "newsletter-run.js", "newsletter-subscribe.js", "newsletter-unsubscribe.js", "newsletter-webhook.js"].sort();
+  const expectedApiAllowlist = ["funnel-event.js", "newsletter-confirm.js", "newsletter-digest.js", "newsletter-run.js", "newsletter-subscribe.js", "newsletter-unsubscribe.js", "newsletter-webhook.js"].sort();
   const expectedLibAllowlist = ["newsletter-matcher.js", "newsletter-server.js", "program-classification.js"].sort();
   const apiAllowlist = [...vercelIgnore.matchAll(/^!api\/([^\r\n]+)$/gm)].map(match => match[1]).sort();
   const libAllowlist = [...vercelIgnore.matchAll(/^!lib\/([^\r\n]+)$/gm)].map(match => match[1]).sort();
@@ -702,6 +702,8 @@ test("contextual signup keeps account creation separate and preserves an explici
   assert.match(ctaSource, /savePendingNewsletterPreferences\(preferences\)[\s\S]*newsletter_intent=/, "email fallback must carry an explicit choice only through the nonce-bound handoff");
   assert.match(accountSource, /consent: Boolean\(pending\)/, "the account page may restore consent only from a matching local intent nonce");
   assert.match(ctaSource, /aria-controls=\{formId\}/, "the expanding CTA must identify the form it reveals");
+  assert.match(ctaSource, /hasSignupContext = Boolean\(validYear \|\| validField \|\| validProgram\)/, "a contextual landing page should show the personalization value without another click");
+  assert.match(ctaSource, /showSignupForm = ready && !signedIn && \(expanded \|\| hasSignupContext\)/, "context-rich year, field and program pages should reveal the explicit-consent form immediately");
   assert.match(ctaSource, /yearRef\.current\?\.focus\(\)/, "focus must move into the revealed form");
   assert.match(ctaSource, /className="account-cta-quick">[\s\S]*<Feedback feedback=\{account\.feedback\}[\s\S]*target=\{feedbackTarget\}[\s\S]*<GoogleSignInButton/, "Google errors must render beside only the contextual action that caused them");
   assert.match(ctaSource, /alertsNeedActivation = signedIn && Boolean\(account\.settings\) && !alertsActive && !alertsSuppressed/, "signed-in accounts with email still off need a distinct activation state");

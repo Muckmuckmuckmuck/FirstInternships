@@ -4,10 +4,11 @@ This is the owner operating guide for measuring FirstInternships without turning
 
 ## 1. What is tracked automatically
 
-Production uses two privacy-minimized traffic systems:
+Production uses two privacy-minimized traffic systems plus one first-party aggregate fallback:
 
 - Vercel Web Analytics measures page views, anonymous estimated visitors, page paths, known referrers, devices, and fixed-name custom events. The visitor identifier is discarded after 24 hours, so the lifetime visitor figure is not a count of distinct human beings.
 - Cloudflare Web Analytics provides an independent view of visits, page views, page-load performance, and Core Web Vitals. Use it as a traffic/performance cross-check, not as a number to add to Vercel. Adding the two systems would double-count the same audience.
+- `funnel_daily_counts` stores only UTC day, fixed event name, and total count. It exists because the current Vercel plan does not expose custom events. It has no visitor, account, session, IP, user-agent, URL, search, preference, or resume columns and must not grow any of those dimensions.
 
 The site sends only broad event names. It does not attach email addresses, newsletter preferences, search text, selected programs, target dates, planner records, notes, or other visitor-supplied values.
 
@@ -15,12 +16,12 @@ The site sends only broad event names. It does not attach email addresses, newsl
 | --- | --- | --- | --- |
 | Reach | Vercel | visitors, pageviews | Anonymous provider estimates and content consumption |
 | Organic demand | Search Console | clicks, impressions, CTR, position | Google Search performance, delayed and privacy-filtered |
-| Useful attention | Vercel | `engaged_page_view` | One page where the visitor spent 20 visible seconds or reached halfway after 5 visible seconds |
+| Useful attention | Vercel / aggregate fallback | `engaged_page_view` | One page where the visitor spent 20 visible seconds or reached halfway after 5 visible seconds |
 | Discovery utility | Vercel | `directory_filter_used`, `guide_filter_used` | At least one filter interaction on that page; the chosen value is never sent |
 | Planning utility | Vercel | `public_deadline_calendar_downloaded`, `timeline_plan_created`, `timeline_plan_downloaded` | Aggregate adoption of public planning tools; dates and selections stay local |
 | Employer handoff | Vercel | `official_apply_click` | Click from a program guide's official action area to the publisher |
-| Account funnel | Vercel | prompt, launcher, Google/email start, auth-complete events | Aggregate account-flow progress |
-| Newsletter funnel | Vercel + Supabase | activation view, opt-in complete, preference save, active subscription state | Explicit-consent conversion and current owned audience |
+| Account funnel | Vercel / aggregate fallback | prompt, launcher, Google/email start, auth-complete events | Aggregate account-flow progress |
+| Newsletter funnel | aggregate events + Supabase | activation view, opt-in complete, preference save, active subscription state | Explicit-consent conversion and current owned audience |
 | Talent Network funnel | Vercel + Supabase | contextual CTA view/click, network view, Google start, valid PDF selection, completed active profile | Optional resume-pool conversion without exposing filenames, profile fields, or resume data |
 | Email quality | Supabase + Resend | sent, delivered, bounced, complained, unsubscribed, clicked | Delivery and retention quality; provider reports remain authoritative |
 | Commercial intent | Vercel + owner records | partnership inquiry events, qualified inquiries, wins | Directional inquiry starts followed by manually qualified outcomes |
@@ -28,7 +29,7 @@ The site sends only broad event names. It does not attach email addresses, newsl
 
 ## 2. Generate the private owner report
 
-The repository includes an owner-only reporting command. It queries Vercel's aggregated Web Analytics API and Supabase's aggregate account/newsletter counts. It is a local command, not a public endpoint, and it prints no addresses or preferences.
+The repository includes an owner-only reporting command. It queries Vercel's aggregated Web Analytics API, the first-party daily event totals, and Supabase's aggregate account/newsletter counts. It is a local command, not a public endpoint, and it prints no addresses or preferences. When Vercel custom events are unavailable, event-to-event funnel rates use raw daily action totals and are explicitly not deduplicated people.
 
 Create an ignored local file such as `.env.metrics.local` containing only the sources you can access:
 
@@ -124,7 +125,7 @@ Track the metrics; do not manufacture a valuation multiple. Any future valuation
 - Search Console clicks are not unique visitors. Prompt views are not all visitors. Auth accounts are not active subscribers. Email sends are not delivered mail. Keep every numerator and denominator named.
 - Vercel and Cloudflare measure overlapping traffic. Compare them; never add them.
 - Ad blockers, script failures, browser privacy controls, bot filtering, consent systems, and reporting delays create gaps.
-- Custom Vercel events depend on the active plan and production Web Analytics setup. Zero may mean no activity, unavailable custom events, or a configuration problem; check the provider before drawing a conclusion.
+- Custom Vercel events depend on the active plan and production Web Analytics setup. The current plan does not expose them, so use `funnel_daily_counts` for fixed-name action totals and Supabase Auth/subscription records for completed outcomes. A zero still requires checking that `/api/funnel-event` and the migration are healthy.
 - Event ratios in the report are same-window aggregate ratios, not a reconstructed person-level journey.
 - No growth target overrides the free directory, optional account, explicit newsletter consent, local-only planner, accurate source facts, or a visible way to dismiss signup prompts.
 - The 10,000-profile target does not override candidate privacy, opportunity-specific employer-sharing approval, anti-discrimination controls, deletion rights, security review, or applicable employment-agency obligations.

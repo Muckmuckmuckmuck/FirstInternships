@@ -12,6 +12,11 @@
   ],
   "redirects": [
     {
+      "source": "/firstinternships.com/high-school-internships",
+      "destination": "/",
+      "permanent": true
+    },
+    {
       "source": "/internships/computer-science",
       "destination": "/internships/technology",
       "permanent": true

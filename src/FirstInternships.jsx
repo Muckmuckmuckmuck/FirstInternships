@@ -184,6 +184,14 @@ function DirectoryStartingPoints() {
     </nav>
   </section>;
 }
+function DirectoryQuestions() {
+  return <div className="container"><Questions title="College internship directory questions" items={[
+    ["Which internships can college freshmen apply to?", "Choose Freshman above to see programs whose reviewed source confirms first-year eligibility. Programs with no universal minimum stay in a separate section so an unknown rule is never presented as confirmed eligibility."],
+    ["Does this directory include Summer 2027 internships?", "Yes. Use the Summer 2027 collection for programs whose reviewed official source names that cycle. The full directory also includes recurring pathways and programs whose next opening has not been published yet; each guide explains the current status."],
+    ["Are all internships in this directory paid?", "No. Turn on the Confirmed paid filter to show programs whose reviewed source states compensation. If an employer does not publish pay, the guide leaves it unconfirmed instead of guessing."],
+    ["Do I apply through FirstInternships?", "No. FirstInternships is an independent research directory. Every program guide links to the official employer or program source, where you must verify the current opening and submit your application."],
+  ]} /></div>;
+}
 
 // The primary way a student narrows the directory. It is deliberately not a form:
 // plain questions, large targets, visible state, and a live count, because the
@@ -625,7 +633,7 @@ function SiteContent({ pathname = "/" }) {
     {stale && <p className="storage-warning">This program was last reviewed on {reviewLabel(pageReviewDate)}. Check its official sources for the current cycle.</p>}
     <main id="main">
       {page.type === "home" && <Home planner={planner} />}
-      {page.type === "directory" && <><div className="container"><Breadcrumbs items={[["Internship directory", null]]} /><PageIntro eyebrow="College only. Application-ready." title={page.title} description={page.description} /><YearLinks /><FieldLinks /><DirectoryStartingPoints /><AccountConversionCTA compact source="directory-page" /></div><Board planner={planner} /></>}
+      {page.type === "directory" && <><div className="container"><Breadcrumbs items={[["Internship directory", null]]} /><PageIntro eyebrow="College only. Application-ready." title={page.title} description={page.description} /><YearLinks /><FieldLinks /><DirectoryStartingPoints /><AccountConversionCTA compact source="directory-page" /></div><Board planner={planner} /><DirectoryQuestions /></>}
       {["year", "field"].includes(page.type) && <Collection page={page} planner={planner} />}
       {page.type === "topic" && <TopicPage topic={page.topic} planner={planner} />}
       {page.type === "program" && <ProgramPage program={page.program} planner={planner} />}

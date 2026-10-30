@@ -370,8 +370,8 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
   },
   {
     id: "world-bank-wbg-pioneers", company: "World Bank Group", title: "WBG Pioneers Internship Program", initials: "WB", color: "#00538a",
-    seoTitle: "World Bank Internship 2027: Dates, Pay & Eligibility",
-    seoDescription: "World Bank internships use January–February and July–August application cycles. Check final-year eligibility, paid terms, documents and the 3-role limit.",
+    seoTitle: "World Bank Internship: Who Can Apply & When",
+    seoDescription: "WBG Pioneers accepts final-year undergraduates and master's or PhD students. See January–February and July–August cycles, pay, documents and the 3-role limit.",
     fields: ["public-service", "finance", "research", "engineering"],
     firstYear: null, years: [], yearLabel: "Final-year undergraduates", pay: "Paid", location: "Washington, DC and country offices", mode: "Position-specific",
     summary: "The World Bank Group's paid internship program, with separate final-year undergraduate and postgraduate tracks in Washington, DC and country offices.",
@@ -410,7 +410,7 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
       ["Is WBG Explorers an internship for students?", "No. WBG Explorers is a two-year contract in country offices for people who already hold a bachelor's degree and are nationals of a donor or developed country. A current student looking for an internship should use WBG Pioneers."],
     ],
     guideSlugs: [G.cover, G.international, G.files],
-    verified: "2026-10-24", updated: "2026-10-24",
+    verified: "2026-10-24", updated: "2026-10-30",
   },
   {
     id: "nytimes-internships-outside-newsroom", company: "The New York Times", title: "Internships Outside the Newsroom", initials: "NT", color: "#333333",

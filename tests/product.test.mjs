@@ -249,8 +249,8 @@ test("route resolution supports clean URLs and rejects unknown routes", () => {
 });
 test("October 21 growth release strengthens directory discovery and opens an ethical revenue path", async () => {
   const directory = resolvePage("/internships");
-  assert.equal(directory.title, `College Internships for Freshmen–Seniors (${PROGRAMS.length})`);
-  assert.match(directory.description, new RegExp(`Find ${PROGRAMS.length} sourced college internships`));
+  assert.equal(directory.title, `College Internships: ${PROGRAMS.length} Programs by Class Year`);
+  assert.match(directory.description, new RegExp(`Browse ${PROGRAMS.length} sourced college internship programs`));
   assert.ok(directory.description.includes(String(PROGRAMS.length)));
   assert.ok(directory.description.length >= 120 && directory.description.length <= 180);
 
@@ -271,7 +271,7 @@ test("October 21 growth release strengthens directory discovery and opens an eth
 test("October 28 Search Console pass improves directory and application-status answers", async () => {
   const directory = resolvePage("/internships");
   assert.ok(directory.title.length <= 52);
-  assert.match(directory.title, /College Internships for Freshmen–Seniors/);
+  assert.match(directory.title, /College Internships: \d+ Programs by Class Year/);
   const directoryHtml = await readFile("dist/internships.html", "utf8");
   assert.match(directoryHtml, /Start with the question you need answered/);
   for (const route of ["/summer-2027-college-internships", "/paid-college-internships", "/internship-deadlines", "/guides"]) assert.match(directoryHtml, new RegExp(`href="${route}"`));
@@ -544,8 +544,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-26</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-28</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-30</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-30</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1853,7 +1853,7 @@ test("October 19 international-affairs wave builds a sourced development and hum
 });
 test("October 20 Search Console refresh sharpens high-impression snippets and current status", async () => {
   const expectedTitles = new Map([
-    ["world-bank-wbg-pioneers", "World Bank Internship 2027: Dates, Pay & Eligibility"],
+    ["world-bank-wbg-pioneers", "World Bank Internship: Who Can Apply & When"],
     ["nvidia-ignite", "NVIDIA Ignite 2027: Eligibility, Pay & Apply"],
     ["gilead-internship-program", "Gilead Internship 2027: Eligibility & How to Apply"],
   ]);
@@ -1886,6 +1886,26 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
   assert.ok(footerIds.includes("gilead-internship-program"));
   assert.ok(!footerIds.includes("netflix-internships"));
   assert.ok(!footerIds.includes("meta-internships"));
+});
+test("October 30 Search Console refresh improves the high-impression directory result", async () => {
+  const directory = resolvePage("/internships");
+  assert.equal(directory.title, `College Internships: ${PROGRAMS.length} Programs by Class Year`);
+  assert.match(directory.description, /freshman, sophomore, junior or senior eligibility/);
+  assert.ok(directory.title.length <= 60);
+  assert.ok(directory.description.length >= 120 && directory.description.length <= 180);
+
+  const html = await readFile("dist/internships.html", "utf8");
+  assert.match(html, /Which internships can college freshmen apply to\?/);
+  assert.match(html, /Does this directory include Summer 2027 internships\?/);
+  assert.match(html, /Do I apply through FirstInternships\?/);
+
+  const worldBank = PROGRAMS.find(program => program.id === "world-bank-wbg-pioneers");
+  assert.equal(worldBank.seoTitle, "World Bank Internship: Who Can Apply & When");
+  assert.match(worldBank.seoDescription, /final-year undergraduates/);
+  assert.equal(worldBank.updated, "2026-10-30");
+
+  const deployment = JSON.parse(await readFile("vercel.json", "utf8"));
+  assert.ok(deployment.redirects.some(redirect => redirect.source === "/firstinternships.com/high-school-internships" && redirect.destination === "/" && redirect.permanent));
 });
 test("October 26 Capital One refresh answers exact program-name and freshman eligibility intent", async () => {
   const capitalOne = PROGRAMS.find(program => program.id === "capital-one-early-internship");

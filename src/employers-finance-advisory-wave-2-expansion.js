@@ -25,7 +25,7 @@ export const EMPLOYERS_FINANCE_ADVISORY_WAVE_2_PROGRAMS = [
     title: "2028 Strategic Advisory & M&A Summer Analyst",
     initials: "EV",
     color: "#18345b",
-    seoTitle: "Evercore Summer Analyst 2028: Deadline & Eligibility",
+    seoTitle: "Evercore Internship 2028: Deadline & Eligibility",
     seoDescription: "Evercore’s 10-week Summer 2028 M&A analyst internship in New York closes Nov. 15, 2026. Check graduation dates, cover letter and two-application limit.",
     fields: ["finance", "business"],
     firstYear: null,
@@ -86,7 +86,7 @@ export const EMPLOYERS_FINANCE_ADVISORY_WAVE_2_PROGRAMS = [
     ],
     guideSlugs: [G.cover, G.interview, G.when],
     verified: "2026-10-23",
-    updated: "2026-10-23",
+    updated: "2026-10-30",
   },
   {
     id: "jefferies-investment-banking-summer-analyst",

@@ -1854,7 +1854,7 @@ test("October 19 international-affairs wave builds a sourced development and hum
 test("October 20 Search Console refresh sharpens high-impression snippets and current status", async () => {
   const expectedTitles = new Map([
     ["world-bank-wbg-pioneers", "World Bank Internship: Who Can Apply & When"],
-    ["nvidia-ignite", "NVIDIA Ignite 2027: Eligibility, Pay & Apply"],
+    ["nvidia-ignite", "NVIDIA Ignite Internship: Eligibility, Pay & Dates"],
     ["gilead-internship-program", "Gilead Internship 2027: Eligibility & How to Apply"],
   ]);
   for (const [id, title] of expectedTitles) {
@@ -1956,9 +1956,10 @@ test("October 23 Search Console refresh improves NSA and Evercore search intent"
   assert.match(nsa.timing, /August 15/);
   assert.ok(nsa.faqs.some(([question, answer]) => /acceptance rate/i.test(question) && /does not publish/i.test(answer)));
 
-  assert.equal(evercore.seoTitle, "Evercore Summer Analyst 2028: Deadline & Eligibility");
+  assert.equal(evercore.seoTitle, "Evercore Internship 2028: Deadline & Eligibility");
   assert.equal(evercore.deadlineDate, "2026-11-15");
   assert.equal(evercore.verified, "2026-10-23");
+  assert.equal(evercore.updated, "2026-10-30");
   assert.ok(evercore.faqs.some(([question, answer]) => /accepting applications/i.test(question) && /October 23, 2026/i.test(answer)));
   assert.ok(evercore.faqs.some(([question, answer]) => /\$120,000/.test(question) && /not the amount paid/i.test(answer)));
 
@@ -1968,6 +1969,20 @@ test("October 23 Search Console refresh improves NSA and Evercore search intent"
     const html = await readFile(`dist${programPath(program)}.html`, "utf8");
     assert.ok(html.includes(program.seoTitle.replace(/&/g, "&amp;")));
   }
+});
+test("October 30 NVIDIA refresh aligns the snippet with exact Ignite search intent", async () => {
+  const nvidia = PROGRAMS.find(program => program.id === "nvidia-ignite");
+  assert.ok(nvidia);
+  assert.equal(nvidia.updated, "2026-10-30");
+  assert.equal(nvidia.seoTitle, "NVIDIA Ignite Internship: Eligibility, Pay & Dates");
+  assert.ok(nvidia.seoTitle.length <= 52);
+  assert.ok(nvidia.seoDescription.length >= 120 && nvidia.seoDescription.length <= 180);
+  assert.match(nvidia.seoDescription, /window ended Oct\. 18/);
+  assert.ok(nvidia.faqs.some(([question, answer]) => /how hard is it/i.test(question) && /does not publish an Ignite acceptance rate/i.test(answer)));
+
+  const html = await readFile(`dist${programPath(nvidia)}.html`, "utf8");
+  assert.match(html, /<title>NVIDIA Ignite Internship: Eligibility, Pay &amp; Dates<\/title>/);
+  assert.match(html, /How hard is it to get into NVIDIA Ignite\?/);
 });
 test("October 23 Netflix refresh reflects the live Summer 2027 software role", async () => {
   const netflix = PROGRAMS.find(program => program.id === "netflix-internships");

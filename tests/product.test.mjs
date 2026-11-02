@@ -431,6 +431,26 @@ test("resume collection is prominent on high-intent pages without gating useful 
   const interviewGuide = GUIDES.find(guide => guide.slug === "internship-interview-guide");
   assert.doesNotMatch(render(guidePath(interviewGuide)), /Keep one private resume ready for future matches/);
 });
+test("program pages put the official opening ahead of conversion prompts and long-form content", async () => {
+  const program = PROGRAMS[0];
+  const programHtml = render(programPath(program));
+  const facts = programHtml.indexOf("Availability at review");
+  const officialAction = programHtml.indexOf("Check official opening");
+  const accountPrompt = programHtml.indexOf("Free student account");
+  const article = programHtml.indexOf("Who can apply?");
+
+  assert.ok(facts >= 0 && officialAction > facts, "the official action should follow the decision facts");
+  if (accountPrompt >= 0) assert.ok(accountPrompt > officialAction, "an account prompt must not block or precede the official action");
+  assert.ok(article > officialAction, "visitors should not need to read the long article before finding the official opening");
+  assert.match(programHtml, /class="program-primary-actions"/);
+  assert.match(programHtml, /data-official-apply="true"/);
+  assert.match(programHtml, /controls today&#x27;s availability and application/);
+
+  const [source, styles] = await Promise.all([readFile("src/FirstInternships.jsx", "utf8"), readFile("src/styles.css", "utf8")]);
+  assert.ok(source.indexOf("<AccountConversionCTA compact source=\"program-page\"") > source.indexOf("className=\"program-primary-actions\""), "the client-only account prompt must follow the official action in source order");
+  assert.match(source, /dataset\.officialApply === "true"[\s\S]*trackPublicEvent\("official_apply_click"\)/);
+  assert.match(styles, /\.program-primary-actions~\.article-layout \.article-sidebar\{grid-row:auto\}/, "the old sticky action card should follow the article on phones");
+});
 test("account and newsletter conversion events stay aggregate and contain no visitor data", async () => {
   const [accountSource, analyticsSource] = await Promise.all([
     readFile("src/Account.jsx", "utf8"),

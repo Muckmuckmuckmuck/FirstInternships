@@ -60,3 +60,15 @@
   .talent-growth-cta { align-items: flex-start; flex-direction: column; }
   .talent-growth-cta .button { width: 100%; }
 }
+
+/* Keep the authoritative next step ahead of newsletter and editorial content in
+   both the visual layout and the document order. */
+.program-primary-actions{display:flex;align-items:center;justify-content:space-between;gap:28px;margin:-32px 0 30px;padding:23px 25px;border:1px solid #355346;border-radius:17px;background:var(--forest);color:#fff}
+.program-primary-actions>div:first-child{min-width:0}
+.program-primary-actions .eyebrow{margin-bottom:5px;color:var(--lime)}
+.program-primary-actions strong{display:block;font-family:'Manrope',sans-serif;font-size:18px;line-height:1.3}
+.program-primary-actions span{display:block;max-width:680px;margin-top:6px;color:#c3d0c6;font-size:11px;line-height:1.6}
+.program-primary-buttons{display:flex;flex:0 0 auto;gap:10px}
+.program-primary-buttons .button{margin:0;white-space:nowrap}
+.program-primary-buttons .button.secondary{border-color:#b8c6bb;background:#fff;color:var(--forest)}
+@media(max-width:760px){.program-primary-actions{align-items:stretch;flex-direction:column;gap:18px;margin:0 0 24px;padding:21px 19px}.program-primary-actions strong{font-size:17px}.program-primary-buttons{display:grid;grid-template-columns:1fr}.program-primary-buttons .button{width:100%;white-space:normal}.program-primary-actions~.article-layout .article-sidebar{grid-row:auto}.facts-grid{margin-bottom:16px}}

@@ -415,3 +415,27 @@ test("delivery-safety migration preserves users and makes suppression durable an
   assert.doesNotMatch(sql, /update\s+(?:public\.)?profiles\b/i);
   assert.doesNotMatch(sql, /(?:update|delete\s+from)\s+auth\.users\b/i);
 });
+
+test("newsletter auth and consent functions can resolve Supabase pgcrypto", async () => {
+  const sql = await readFile(
+    new URL("../supabase/migrations/202611010001_fix_newsletter_pgcrypto_search_path.sql", import.meta.url),
+    "utf8",
+  );
+  const affectedFunctions = [
+    "newsletter_sync_auth_user",
+    "newsletter_begin_consent",
+    "newsletter_confirm",
+    "newsletter_unsubscribe_user",
+    "newsletter_suppress_delivery",
+  ];
+
+  for (const functionName of affectedFunctions) {
+    assert.match(sql, new RegExp(`alter function public\\.${functionName}\\(`, "i"));
+  }
+  assert.equal(
+    (sql.match(/set search_path = public, extensions/gi) || []).length,
+    affectedFunctions.length,
+    "every function that calls digest() must include Supabase's extensions schema",
+  );
+  assert.doesNotMatch(sql, /(?:insert|update|delete)\s+(?:into\s+|from\s+)?auth\.users\b/i);
+});

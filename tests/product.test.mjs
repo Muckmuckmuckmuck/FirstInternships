@@ -2076,6 +2076,25 @@ test("November 2 Pfizer refresh matches summer intent and current assessment gui
   assert.match(html, /Who can apply to Pfizer Futures 2027\?/);
   assert.match(html, /Assessment format, expected invitation timing, five-day completion window/);
 });
+test("November 2 Spotify refresh answers Summer 2027 opening and eligibility intent", async () => {
+  const spotify = PROGRAMS.find(program => program.id === "spotify-global-summer");
+  assert.ok(spotify);
+  assert.equal(spotify.seoTitle, "Spotify Internships Summer 2027: When to Apply");
+  assert.ok(spotify.seoTitle.length <= 52);
+  assert.ok(spotify.seoDescription.length >= 120 && spotify.seoDescription.length <= 180);
+  assert.equal(spotify.verified, "2026-11-02");
+  assert.equal(spotify.updated, "2026-11-02");
+  assert.match(spotify.status, /0 student jobs at Nov\. 2 review/);
+  assert.match(spotify.timing, /official student-jobs category listed 0 jobs/);
+  assert.ok(spotify.sources.some(source => /job-categories\/students/.test(source.url)));
+  assert.ok(spotify.faqs.some(([question, answer]) => /Summer 2027 internships open now/i.test(question) && /Not at our November 2, 2026 review/.test(answer)));
+  assert.ok(spotify.faqs.some(([question, answer]) => /How long does Spotify take to respond/i.test(question) && /few weeks/.test(answer)));
+
+  const html = await readFile(`dist${programPath(spotify)}.html`, "utf8");
+  assert.match(html, /<title>Spotify Internships Summer 2027: When to Apply<\/title>/);
+  assert.match(html, /Are Spotify Summer 2027 internships open now\?/);
+  assert.match(html, /0 student jobs at Nov\. 2 review/);
+});
 test("October 23 Netflix refresh reflects the live Summer 2027 software role", async () => {
   const netflix = PROGRAMS.find(program => program.id === "netflix-internships");
   assert.ok(netflix);

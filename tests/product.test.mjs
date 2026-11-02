@@ -11,7 +11,7 @@ import { isPaidProgram } from "../lib/program-classification.js";
 import { PROGRAM_REFRESH_IDS } from "../src/program-refresh-overrides.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 543, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 548, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 45, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -2197,7 +2197,7 @@ test("October 23 logistics wave expands sourced pathways and improves the existi
   const field = FIELDS.find(item => item.id === "operations");
   assert.match(field.title, /^\d+ Supply Chain & Logistics Internships$/);
   assert.ok(field.guideSlugs.includes(guide.slug));
-  assert.equal(PROGRAMS.filter(program => program.fields.includes("operations")).length, 152);
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("operations")).length, 153);
   const html = await readFile(`dist${fieldPath(field)}.html`, "utf8");
   for (const text of ["Search within these opportunities", "Only confirmed paid programs", guide.title, "Union Pacific"]) assert.ok(html.includes(text), text);
 });
@@ -2267,6 +2267,47 @@ test("October 24 product-software wave adds current employer-intent pages with s
 
   const html = await readFile(`dist${programPath(programs[0])}.html`, "utf8");
   for (const text of ["Notion Software Engineer Intern — Summer 2027", "Who can apply?", "Check official program &amp; apply", "Official sources &amp; update notes"]) assert.ok(html.includes(text), text);
+});
+test("November 2 AI-software wave adds distinct live 2027 student pathways", async () => {
+  const ids = [
+    "amplify-software-engineering-intern-summer-2027",
+    "steel-software-engineer-intern-summer-2027",
+    "bedrock-robotics-product-intern-2027",
+    "quadrillion-software-engineering-intern-summer-2027",
+    "cohere-software-engineer-intern-winter-2027",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-11-02" && program.updated === "2026-11-02"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 4));
+  assert.ok(programs.every(program => program.sources.some(item => item.url === program.url)));
+  assert.ok(programs.every(program => program.fields.includes("technology")));
+
+  for (const program of programs.slice(0, 3)) {
+    assert.equal(program.firstYear, null, `${program.id}: enrollment wording is not a universal class-year filter`);
+    assert.deepEqual(program.years, []);
+  }
+  const quadrillion = programs[3];
+  const cohere = programs[4];
+  assert.equal(quadrillion.firstYear, 1);
+  assert.deepEqual(quadrillion.years, [1, 2, 3, 4]);
+  assert.match(quadrillion.eligibility[0], /frosh are welcome/);
+  assert.equal(cohere.firstYear, 1);
+  assert.deepEqual(cohere.years, [1, 2, 3, 4]);
+  assert.match(cohere.eligibility[0], /currently enrolled in a post-secondary program/);
+
+  const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
+  for (const id of ids.slice(0, 4)) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
+  assert.ok(!summer2027.includes(ids[4]), "the Winter-only Cohere opening must not appear in the Summer 2027 collection");
+
+  assert.match(programs[0].timing, /June 7 through August 13, 2027/);
+  assert.match(programs[1].pitfall, /no pay figure/);
+  assert.match(programs[2].timing, /conversion opportunities are highly limited/);
+  assert.match(programs[3].timing, /\$4,000–\$6,000 per week/);
+  assert.match(programs[4].timing, /three to six months/);
+
+  const html = await readFile(`dist${programPath(programs[0])}.html`, "utf8");
+  for (const text of ["Amplify Software Engineering Intern — Summer 2027", "Who can apply?", "June 7 through August 13, 2027", "Official sources &amp; update notes"]) assert.ok(html.includes(text), text);
 });
 test("navigation puts the simplest internship path first", async () => {
   const home = render("/");

@@ -65,6 +65,7 @@ import { EMPLOYERS_ENVIRONMENT_CONSERVATION_WAVE_25_PROGRAMS, ENVIRONMENT_CONSER
 import { EMPLOYERS_LOGISTICS_WAVE_26_PROGRAMS, LOGISTICS_GUIDES } from "./employers-logistics-wave-26-expansion.js";
 import { EMPLOYERS_CLOUD_SOFTWARE_WAVE_27_PROGRAMS } from "./employers-cloud-software-wave-27-expansion.js";
 import { EMPLOYERS_PRODUCT_SOFTWARE_WAVE_28_PROGRAMS } from "./employers-product-software-wave-28-expansion.js";
+import { EMPLOYERS_AI_SOFTWARE_WAVE_29_PROGRAMS } from "./employers-ai-software-wave-29-expansion.js";
 // Laboratory, research and public-sector programs, in their own browser chunk.
 import { LAB_PROGRAMS } from "./programs-labs-expansion.js";
 import { RESEARCH_PROGRAMS_2 } from "./programs-research-expansion.js";
@@ -84,6 +85,10 @@ export const TOPICS = [
       "ibotta-software-engineer-intern-summer-2027",
       "niantic-spatial-software-engineering-intern-2027",
       "sentry-software-engineer-intern-vienna-2027",
+      "amplify-software-engineering-intern-summer-2027",
+      "steel-software-engineer-intern-summer-2027",
+      "bedrock-robotics-product-intern-2027",
+      "quadrillion-software-engineering-intern-summer-2027",
     ] }
     : topic),
   ENVIRONMENT_CONSERVATION_TOPIC,
@@ -299,6 +304,7 @@ export const PROGRAMS = [
   ...EMPLOYERS_LOGISTICS_WAVE_26_PROGRAMS,
   ...EMPLOYERS_CLOUD_SOFTWARE_WAVE_27_PROGRAMS,
   ...EMPLOYERS_PRODUCT_SOFTWARE_WAVE_28_PROGRAMS,
+  ...EMPLOYERS_AI_SOFTWARE_WAVE_29_PROGRAMS,
   ...LAB_PROGRAMS,
   ...RESEARCH_PROGRAMS_2,
   ...PUBLIC_PROGRAMS,

@@ -937,7 +937,7 @@ test("October 13 finance expansion preserves official cycle facts and honest unk
   ];
   const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
   assert.ok(batch.every(Boolean));
-  assert.ok(batch.filter(program => program.id !== "evercore-investment-banking-summer-analyst").every(program => program.verified === "2026-10-13"));
+  assert.ok(batch.filter(program => !["bridgewater-investment-associate-2027", "evercore-investment-banking-summer-analyst"].includes(program.id)).every(program => program.verified === "2026-10-13"));
   assert.equal(PROGRAMS.find(program => program.id === "evercore-investment-banking-summer-analyst").verified, "2026-10-23", "Evercore was rechecked while its Summer 2028 posting remained live");
   assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
   assert.ok(batch.every(program => program.sources.some(source => source.url === program.url)));
@@ -1963,6 +1963,22 @@ test("November 2 Treasury refresh answers Summer 2027 timing without inventing a
   const html = await readFile(`dist${programPath(treasury)}.html`, "utf8");
   assert.match(html, /<title>Treasury Internship 2027: Summer Dates &amp; Apply<\/title>/);
   assert.match(html, /Is the Treasury Summer 2027 internship open\?/);
+});
+test("November 2 Bridgewater refresh matches summer intent and current application status", async () => {
+  const bridgewater = PROGRAMS.find(program => program.id === "bridgewater-investment-associate-2027");
+  assert.ok(bridgewater);
+  assert.equal(bridgewater.seoTitle, "Bridgewater Summer Internship 2027: Pay & Apply");
+  assert.match(bridgewater.seoDescription, /\$71,000 total for eight weeks plus housing/);
+  assert.equal(bridgewater.verified, "2026-11-02");
+  assert.equal(bridgewater.updated, "2026-11-02");
+  assert.match(bridgewater.status, /application live at Nov\. 2 review/);
+  assert.match(bridgewater.timing, /official Greenhouse page still displayed the application form/);
+  assert.ok(bridgewater.faqs.some(([question, answer]) => /Summer 2027 internship application open/i.test(question) && /Yes at our November 2, 2026 review/.test(answer)));
+  assert.match(bridgewater.timing, /no deadline/i);
+
+  const html = await readFile(`dist${programPath(bridgewater)}.html`, "utf8");
+  assert.match(html, /<title>Bridgewater Summer Internship 2027: Pay &amp; Apply<\/title>/);
+  assert.match(html, /Is the Bridgewater Summer 2027 internship application open\?/);
 });
 test("October 26 Capital One refresh answers exact program-name and freshman eligibility intent", async () => {
   const capitalOne = PROGRAMS.find(program => program.id === "capital-one-early-internship");

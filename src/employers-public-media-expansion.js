@@ -268,8 +268,8 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
   },
   {
     id: "treasury-headquarters-student-internship", company: "US Department of the Treasury", title: "Headquarters Student Internship Program", initials: "UT", color: "#2e5e4e",
-    seoTitle: "Treasury Internship: Eligibility & How to Apply",
-    seoDescription: "Treasury's headquarters internship is unpaid, in person in Washington, DC, and open to enrolled US-citizen students. Summer applications are announced on USAJOBS in December.",
+    seoTitle: "Treasury Internship 2027: Summer Dates & Apply",
+    seoDescription: "US Treasury internships are unpaid in Washington, DC. Check who qualifies, what to prepare, and when Summer 2027 applications are expected on USAJOBS.",
     fields: ["public-service", "finance", "business", "technology"],
     firstYear: 1, years: [1, 2, 3, 4], yearLabel: "Enrolled students · must stay enrolled", pay: "Unpaid", location: "Washington, DC", mode: "In person; part time (20 hrs) or full time",
     summary: "Unpaid spring, summer and fall internships in Treasury's Departmental Offices, supporting economic, financial, national-security and management work in Washington, DC.",
@@ -278,8 +278,8 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
       "The Spring 2027 announcement open at review added: active enrollment at least part time, good academic standing of 2.0 or higher on a 4.0 scale, passing a background investigation, and working at least 20 hours a week between 8 a.m. and 5 p.m. for at least 10 consecutive weeks, in person only, with relocation and housing paid by the student.",
       "Treasury seeks students from social sciences, management and law, and STEM fields. Applicants choose up to three Departmental Offices, such as Domestic Finance, Tax Policy, Economic Policy, International Affairs, or Terrorism and Financial Intelligence.",
     ],
-    timing: "Treasury says it typically offers spring (January–May), summer (May–August) and fall (September–December) internships, with applications in October, December and June respectively; the program page gives months, not dates. Every opportunity is announced on USAJOBS, where the internship is listed as without compensation. At review on September 29, 2026, a Spring 2027 announcement was accepting applications with a stated close of 11:59 p.m. on September 30, 2026.",
-    status: "Summer cycle: apply in December",
+    timing: "Treasury says it typically offers spring (January–May), summer (May–August) and fall (September–December) internships, with applications in October, December and June respectively; the program page gives months, not exact dates. Every opportunity is announced on USAJOBS and is without compensation. At our November 2, 2026 review, the Spring 2027 announcement was closed and the official program page still directed students to watch for summer applications in December. A Summer 2027 announcement and exact deadline had not yet been published, so December is a monitoring month rather than a guaranteed opening date.",
+    status: "Summer 2027: watch USAJOBS in December",
     url: "https://home.treasury.gov/about/careers-at-treasury/studentinternship-programs/headquarters-student-internship-program",
     sources: [
       { name: "Program description, eligibility, offices and seasonal application months", url: "https://home.treasury.gov/about/careers-at-treasury/studentinternship-programs/headquarters-student-internship-program" },
@@ -295,9 +295,15 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
       "Because the role is unpaid and in person, consider part-time. The Spring 2027 announcement allowed 20 hours a week, so a student already studying in the DC area may find a semester placement more workable than an unpaid full-time summer.",
     ],
     pitfall: "Treasury publishes application months, not deadlines. Each term's openings arrive as a USAJOBS announcement with its own closing date, so gather your transcript and citizenship documents before the month begins rather than after the announcement appears.",
+    faqs: [
+      ["Is the Treasury Summer 2027 internship open?", "Not at our November 2, 2026 review. Treasury's official program page says students typically apply for summer internships in December and that every opportunity is announced on USAJOBS, but it did not yet provide a Summer 2027 posting or exact deadline."],
+      ["Who can apply for the Treasury Headquarters Student Internship Program?", "The official program page includes high school, undergraduate and graduate students. Applicants must be US citizens and remain enrolled or accepted at an accredited institution throughout the internship; each USAJOBS posting can add term-specific conditions."],
+      ["Can college freshmen apply for a Treasury internship?", "Potentially. Treasury's overview does not publish a minimum college year, and its Spring 2027 announcement accepted current students enrolled at least part time. A freshman still needs to satisfy citizenship, enrollment, schedule and every condition in the current posting."],
+      ["Is the US Treasury internship paid?", "No. Treasury describes the headquarters program as unpaid, and the reviewed Spring 2027 USAJOBS announcement listed $0 compensation. Students were also responsible for relocation and housing expenses."],
+    ],
     materials: ["Current transcript or proof of acceptance", "Passport or naturalization certificate if born abroad", "Three Departmental Offices chosen", "Housing and transport plan for an unpaid term"],
     guideSlugs: [G.cover, G.files, G.pay],
-    verified: REVIEWED, updated: REVIEWED,
+    verified: "2026-11-02", updated: "2026-11-02",
   },
   {
     id: "new-york-fed-junior-summer-analyst", company: "Federal Reserve Bank of New York", title: "Junior Summer Analyst Program", initials: "NY", color: "#5a4b2e",

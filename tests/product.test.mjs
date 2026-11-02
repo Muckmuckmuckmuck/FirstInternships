@@ -1947,6 +1947,23 @@ test("November 2 Gilead refresh matches summer search intent and freshman eligib
   assert.match(html, /Current freshmen–seniors/);
   assert.match(html, /Are Gilead Summer 2027 internships open now\?/);
 });
+test("November 2 Treasury refresh answers Summer 2027 timing without inventing a posting", async () => {
+  const treasury = PROGRAMS.find(program => program.id === "treasury-headquarters-student-internship");
+  assert.ok(treasury);
+  assert.equal(treasury.seoTitle, "Treasury Internship 2027: Summer Dates & Apply");
+  assert.match(treasury.seoDescription, /Summer 2027 applications are expected on USAJOBS/);
+  assert.equal(treasury.verified, "2026-11-02");
+  assert.equal(treasury.updated, "2026-11-02");
+  assert.match(treasury.status, /watch USAJOBS in December/);
+  assert.match(treasury.timing, /had not yet been published/);
+  assert.doesNotMatch(`${treasury.status} ${treasury.timing}`, /applications are open|posting is open/i);
+  assert.ok(treasury.faqs.some(([question, answer]) => /Summer 2027 internship open/i.test(question) && /Not at our November 2, 2026 review/.test(answer)));
+  assert.ok(treasury.faqs.some(([question, answer]) => /freshmen apply/i.test(question) && /Potentially/.test(answer)));
+
+  const html = await readFile(`dist${programPath(treasury)}.html`, "utf8");
+  assert.match(html, /<title>Treasury Internship 2027: Summer Dates &amp; Apply<\/title>/);
+  assert.match(html, /Is the Treasury Summer 2027 internship open\?/);
+});
 test("October 26 Capital One refresh answers exact program-name and freshman eligibility intent", async () => {
   const capitalOne = PROGRAMS.find(program => program.id === "capital-one-early-internship");
   assert.ok(capitalOne);

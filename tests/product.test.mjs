@@ -2057,6 +2057,25 @@ test("October 30 NVIDIA refresh aligns the snippet with exact Ignite search inte
   assert.match(html, /<title>NVIDIA Ignite Internship: Eligibility, Pay &amp; Dates<\/title>/);
   assert.match(html, /How hard is it to get into NVIDIA Ignite\?/);
 });
+test("November 2 Pfizer refresh matches summer intent and current assessment guidance", async () => {
+  const pfizer = PROGRAMS.find(program => program.id === "pfizer-futures-internship");
+  assert.ok(pfizer);
+  assert.equal(pfizer.seoTitle, "Pfizer Summer Internship 2027: Deadline & Apply");
+  assert.ok(pfizer.seoTitle.length <= 52);
+  assert.ok(pfizer.seoDescription.length >= 120 && pfizer.seoDescription.length <= 180);
+  assert.equal(pfizer.verified, "2026-11-02");
+  assert.equal(pfizer.updated, "2026-11-02");
+  assert.match(pfizer.status, /available through Nov\. 8/);
+  assert.match(pfizer.timing, /five days \(120 hours\)/);
+  assert.ok(pfizer.sources.some(source => /pfizer-futures-assessment-guidance/.test(source.url)));
+  assert.ok(pfizer.faqs.some(([question, answer]) => /Who can apply/i.test(question) && /freshmen through seniors/i.test(answer)));
+  assert.ok(pfizer.faqs.some(([question, answer]) => /use HireVue/i.test(question) && /30–45 minutes/.test(answer) && /120 hours/.test(answer)));
+
+  const html = await readFile(`dist${programPath(pfizer)}.html`, "utf8");
+  assert.match(html, /<title>Pfizer Summer Internship 2027: Deadline &amp; Apply<\/title>/);
+  assert.match(html, /Who can apply to Pfizer Futures 2027\?/);
+  assert.match(html, /Assessment format, expected invitation timing, five-day completion window/);
+});
 test("October 23 Netflix refresh reflects the live Summer 2027 software role", async () => {
   const netflix = PROGRAMS.find(program => program.id === "netflix-internships");
   assert.ok(netflix);

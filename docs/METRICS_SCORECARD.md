@@ -20,7 +20,7 @@ The site sends only broad event names. It does not attach email addresses, newsl
 | Discovery utility | Vercel | `directory_filter_used`, `guide_filter_used` | At least one filter interaction on that page; the chosen value is never sent |
 | Planning utility | Vercel | `public_deadline_calendar_downloaded`, `timeline_plan_created`, `timeline_plan_downloaded` | Aggregate adoption of public planning tools; dates and selections stay local |
 | Employer handoff | Vercel | `official_apply_click` | Click from a program guide's official action area to the publisher |
-| Account funnel | Vercel / aggregate fallback | prompt, launcher, Google/email start, auth-complete events | Aggregate account-flow progress |
+| Account funnel | Vercel / aggregate fallback | prompt, launcher, Google/email start, auth-complete, canceled, and failed events | Aggregate account-flow progress and technical-failure detection |
 | Newsletter funnel | aggregate events + Supabase | activation view, opt-in complete, preference save, active subscription state | Explicit-consent conversion and current owned audience |
 | Talent Network funnel | Vercel + Supabase | contextual CTA view/click, network view, Google start, valid PDF selection, completed active profile | Optional resume-pool conversion without exposing filenames, profile fields, or resume data |
 | Email quality | Supabase + Resend | sent, delivered, bounced, complained, unsubscribed, clicked | Delivery and retention quality; provider reports remain authoritative |
@@ -93,6 +93,7 @@ Save one snapshot on the same day each month. Use complete 28-day windows and ke
 - Total auth accounts and new accounts in the period.
 - Active confirmed subscribers; never combine them with `needs_consent`, `pending`, unsubscribed, bounced, or complained rows.
 - Prompt view → start → auth-complete events, interpreted as a same-window funnel unless real cohort analysis exists.
+- Account-start activity with zero auth completions and zero new Supabase accounts is an incident signal, not evidence that students simply declined. Any fixed-name `account_auth_failed` event requires checking provider configuration, callback URLs, Auth logs, and `auth.users` triggers before changing conversion copy.
 - Activation view → explicit opt-in completion.
 - Seven-, 30-, and 90-day active-subscriber retention when the delivery data is mature enough to calculate it honestly.
 - Match coverage, no-match rate, repeated-program rate, and digest click usefulness.

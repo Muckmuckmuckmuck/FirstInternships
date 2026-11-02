@@ -206,6 +206,8 @@ Supabase Auth URL configuration must allow the exact production return families 
 
 The separate `/api/funnel-event` endpoint records only a fixed event name into `funnel_daily_counts`, grouped by UTC day. It is an origin-checked aggregate counter, not a person-level analytics system. Never add email, account ID, session ID, IP, user-agent, URL, preferences, resume details, search text, planner data, or arbitrary event properties. The table and increment RPC are service-only; anonymous and authenticated database roles receive no direct access.
 
+Account callback cancellations and technical failures use the fixed names `account_auth_cancelled` and `account_auth_failed`. The browser shows safe retry guidance and removes provider-error parameters from its visible history; it never forwards or stores provider error descriptions. Treat failures, or repeated starts with no completion and no newly persisted auth account, as an operational incident to investigate before changing conversion copy.
+
 Before any production newsletter:
 
 1. Verify the sending domain in Resend.

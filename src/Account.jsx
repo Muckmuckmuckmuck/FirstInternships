@@ -4,6 +4,7 @@ import { FIELDS, PROGRAMS, YEARS } from "./content.js";
 import { trackPublicEvent } from "./analytics.js";
 import {
   ACCOUNT_PATH,
+  accountAuthFailureFromLocation,
   accountAuthRedirect,
   clearAccountWelcomeFromUrl,
   clearPendingNewsletterPreferences,
@@ -182,6 +183,21 @@ export function AccountProvider({ children, active = false, settingsActive = fal
     if (!active) {
       return () => { mountedRef.current = false; };
     }
+    // OAuth providers can return an error to either supported callback page.
+    // Consume it before the signed-out fast path so failures from the Talent
+    // Network do not disappear without guidance or an aggregate health signal.
+    const callbackFailure = accountAuthFailureFromLocation();
+    if (callbackFailure) {
+      trackPublicEvent(callbackFailure.kind === "cancelled" ? "account_auth_cancelled" : "account_auth_failed");
+      clearAccountWelcomeFromUrl();
+      patchState({
+        feedback: {
+          kind: callbackFailure.kind === "cancelled" ? "success" : "error",
+          message: callbackFailure.message,
+          target: typeof window !== "undefined" && window.location.pathname === "/talent-network" ? "talent-google" : "account-panel",
+        },
+      });
+    }
     // Most visitors are signed out. Avoid downloading and initializing the
     // Supabase SDK on every organic landing page; account actions still load it
     // on demand, while /account and browsers with a stored session hydrate now.
@@ -266,6 +282,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
       return true;
     } catch (error) {
       if (consent) clearPendingNewsletterPreferences();
+      trackPublicEvent("account_auth_failed");
       patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error), target: feedbackTarget } });
       return false;
     } finally {
@@ -300,6 +317,7 @@ export function AccountProvider({ children, active = false, settingsActive = fal
       return true;
     } catch (error) {
       if (consent) clearPendingNewsletterPreferences();
+      trackPublicEvent("account_auth_failed");
       patchState({ busy: "", feedback: { kind: "error", message: friendlyAccountError(error), target: feedbackTarget } });
       return false;
     } finally {

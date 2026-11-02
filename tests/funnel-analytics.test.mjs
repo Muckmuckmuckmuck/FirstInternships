@@ -25,8 +25,20 @@ test("aggregate funnel endpoint accepts only the public production origin", () =
 test("aggregate funnel event vocabulary is fixed and privacy-safe", () => {
   assert.ok(PUBLIC_FUNNEL_EVENTS.includes("signup_prompt_viewed"));
   assert.ok(PUBLIC_FUNNEL_EVENTS.includes("account_auth_completed"));
+  assert.ok(PUBLIC_FUNNEL_EVENTS.includes("account_auth_cancelled"));
+  assert.ok(PUBLIC_FUNNEL_EVENTS.includes("account_auth_failed"));
   assert.ok(PUBLIC_FUNNEL_EVENTS.includes("newsletter_opt_in_completed"));
   for (const name of PUBLIC_FUNNEL_EVENTS) assert.match(name, /^[a-z][a-z0-9_]{1,63}$/);
+});
+
+test("auth funnel health migration extends the same aggregate-only vocabulary", async () => {
+  const migration = await readFile("supabase/migrations/202611020001_account_auth_funnel_health.sql", "utf8");
+  const ddl = migration.replace(/^--.*$/gm, "");
+  assert.match(migration, /'account_auth_cancelled'/);
+  assert.match(migration, /'account_auth_failed'/);
+  assert.match(migration, /create or replace function public\.increment_public_funnel_event/);
+  assert.doesNotMatch(ddl, /\b(user_id|account_id|session_id|ip_address|user_agent|page_url|email|resume|search_text)\b/i);
+  assert.doesNotMatch(ddl, /\b(truncate|delete)\b/i);
 });
 
 test("aggregate funnel endpoint rejects invalid methods, origins and event names before database access", async () => {

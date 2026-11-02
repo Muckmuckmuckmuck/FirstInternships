@@ -210,7 +210,9 @@ function renderReport(vercel, supabase) {
       ["signup_prompt_dismissed", "Signup prompt dismissals"],
       ["account_google_start", "Google account starts"],
       ["account_email_link_sent", "Email-link account starts"],
+      ["account_auth_cancelled", "Canceled account authentications"],
       ["account_auth_completed", "Completed account authentications"],
+      ["account_auth_failed", "Failed account authentications"],
       ["newsletter_activation_viewed", "Newsletter activation viewers"],
       ["newsletter_opt_in_completed", "Completed newsletter opt-ins"],
       ["newsletter_preferences_saved", "Newsletter preference saves"],
@@ -237,6 +239,10 @@ function renderReport(vercel, supabase) {
     }
     const programVisitors = Number(vercel.programTraffic?.visitors || 0);
     const applyVisitors = eventValue(events, "official_apply_click", "visitors");
+    const accountStarts = ["account_google_start", "account_email_link_sent", "newsletter_google_start", "newsletter_email_link_sent"]
+      .reduce((total, name) => total + eventValue(events, name, eventMetric), 0);
+    const accountFailures = eventValue(events, "account_auth_failed", eventMetric);
+    const accountCompletions = eventValue(events, "account_auth_completed", eventMetric);
     lines.push(
       firstPartyEvents ? "- Engaged-visitor and program-handoff rates require a unique-visitor event source; the daily totals deliberately do not identify visitors." : `- Engaged-visitor rate: **${percent(eventValue(events, "engaged_page_view", "visitors"), Number(vercel.current?.visitors || 0))}** of site visitors.`,
       firstPartyEvents ? `- Official-application actions: **${integer(eventValue(events, "official_apply_click"))} events**; do not divide raw actions by visitor estimates as if they were deduplicated people.` : `- Program-guide to official-site rate: **${percent(applyVisitors, programVisitors)}** (${integer(applyVisitors)} event visitors / ${integer(programVisitors)} program-page visitors).`,
@@ -244,6 +250,10 @@ function renderReport(vercel, supabase) {
       `- Newsletter activation completion rate: **${percent(eventValue(events, "newsletter_opt_in_completed", eventMetric), eventValue(events, "newsletter_activation_viewed", eventMetric))}**. This is a directional same-window ratio, not a person-level cohort.`,
       `- Contextual resume interest rate: **${percent(eventValue(events, "talent_cta_clicked", eventMetric), eventValue(events, "talent_cta_viewed", eventMetric))}**; Talent Network profile completion rate: **${percent(eventValue(events, "talent_profile_completed", eventMetric), eventValue(events, "talent_network_viewed", eventMetric))}**. These are directional same-window ratios, not person-level cohorts.`,
     );
+    if (accountFailures > 0) lines.push(`- **Account funnel warning:** ${integer(accountFailures)} authentication failures were recorded. Check Supabase Auth logs, Google provider status, callback URLs, and every auth.users trigger before changing signup copy.`);
+    else if (accountStarts >= 5 && accountCompletions === 0 && Number(supabase.newAccounts || 0) === 0) lines.push(`- **Account funnel warning:** ${integer(accountStarts)} account starts produced no measured completion or new Supabase account. Treat this as a technical incident until the production Google and email flows are proven with a genuinely new identity.`);
+    else if (Number(supabase.newAccounts || 0) > 0) lines.push(`- Account creation health: ${integer(supabase.newAccounts)} new Supabase accounts provide a persisted production outcome for this period.`);
+    else lines.push("- Account creation health: no technical failure event is recorded, but there is not yet a new-account outcome in this reporting window.");
   } else lines.push("- Custom events were unavailable. Vercel custom events require a compatible plan and production analytics configuration.");
 
   lines.push("", "## Owned audience and delivery", "");

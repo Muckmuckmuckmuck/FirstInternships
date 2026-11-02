@@ -5,7 +5,8 @@
 create table if not exists public.funnel_daily_counts (
   event_date date not null,
   event_name text not null check (event_name in (
-    'account_auth_completed', 'account_email_link_sent', 'account_google_start',
+    'account_auth_cancelled', 'account_auth_completed', 'account_auth_failed',
+    'account_email_link_sent', 'account_google_start',
     'directory_filter_used', 'engaged_page_view', 'guide_filter_used',
     'newsletter_activation_viewed', 'newsletter_email_link_sent', 'newsletter_google_start',
     'newsletter_opt_in_completed', 'newsletter_personalization_opened', 'newsletter_preferences_saved',
@@ -34,7 +35,8 @@ set search_path = public
 as $$
 begin
   if p_event_name is null or p_event_name not in (
-    'account_auth_completed', 'account_email_link_sent', 'account_google_start',
+    'account_auth_cancelled', 'account_auth_completed', 'account_auth_failed',
+    'account_email_link_sent', 'account_google_start',
     'directory_filter_used', 'engaged_page_view', 'guide_filter_used',
     'newsletter_activation_viewed', 'newsletter_email_link_sent', 'newsletter_google_start',
     'newsletter_opt_in_completed', 'newsletter_personalization_opened', 'newsletter_preferences_saved',

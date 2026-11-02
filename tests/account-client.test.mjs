@@ -5,6 +5,7 @@ import {
   AUTH_RETURN_PATHS,
   CONSENT_VERSION,
   PENDING_NEWSLETTER_KEY,
+  accountAuthFailureFromLocation,
   accountAuthRedirect,
   clearAccountWelcomeFromUrl,
   cleanNewsletterPreferences,
@@ -163,6 +164,25 @@ test("consumed account welcome parameters are removed without losing consent sta
   assert.equal(cleaned.searchParams.has("code"), false, "a consumed OAuth code must not remain in browser history");
   assert.equal(cleaned.searchParams.get("newsletter_intent"), intentId);
   assert.equal(cleaned.hash, "#preferences");
+});
+
+test("OAuth callback failures become safe retry guidance without exposing provider details", () => {
+  const failed = accountAuthFailureFromLocation({
+    href: "https://firstinternships.com/account?error=server_error&error_code=unexpected_failure&error_description=Database+error+saving+new+user",
+  });
+  assert.deepEqual(failed, {
+    kind: "failed",
+    message: "We could not finish creating your account. Please try Google again. If it still does not work, use the secure email-link option on the account page.",
+  });
+  assert.equal(failed.message.includes("Database"), false, "provider internals must not be shown to visitors");
+
+  assert.deepEqual(accountAuthFailureFromLocation({
+    href: "https://firstinternships.com/account?error=access_denied&error_description=The+user+canceled+the+request",
+  }), {
+    kind: "cancelled",
+    message: "Google sign-in was canceled. Nothing changed, and you can try again whenever you are ready.",
+  });
+  assert.equal(accountAuthFailureFromLocation({ href: "https://firstinternships.com/account?welcome=1" }), null);
 });
 
 test("Google sign-in uses the canonical account callback without newsletter consent or elevated scopes", async () => {

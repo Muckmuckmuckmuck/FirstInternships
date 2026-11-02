@@ -196,6 +196,30 @@ export function newsletterIntentFromLocation(location = typeof window === "undef
   }
 }
 
+export function accountAuthFailureFromLocation(location = typeof window === "undefined" ? null : window.location) {
+  if (!location) return null;
+  try {
+    const url = new URL(location.href);
+    const error = cleanText(url.searchParams.get("error"), 80).toLowerCase();
+    const code = cleanText(url.searchParams.get("error_code"), 120).toLowerCase();
+    const description = cleanText(url.searchParams.get("error_description"), 500).toLowerCase();
+    if (!error && !code && !description) return null;
+    const detail = `${error} ${code} ${description}`;
+    if (/access_denied|cancel(?:led|ed)|user.*denied/.test(detail)) {
+      return {
+        kind: "cancelled",
+        message: "Google sign-in was canceled. Nothing changed, and you can try again whenever you are ready.",
+      };
+    }
+    return {
+      kind: "failed",
+      message: "We could not finish creating your account. Please try Google again. If it still does not work, use the secure email-link option on the account page.",
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function clearNewsletterIntentFromUrl(intentId, history = typeof window === "undefined" ? null : window.history, location = typeof window === "undefined" ? null : window.location) {
   if (!history || !location || !INTENT_ID_PATTERN.test(intentId || "")) return false;
   try {

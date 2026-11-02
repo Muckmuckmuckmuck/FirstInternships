@@ -1,7 +1,9 @@
 import { newsletterRpc, parseRequestBody, setPrivateResponse } from "../lib/newsletter-server.js";
 
 export const PUBLIC_FUNNEL_EVENTS = Object.freeze([
+  "account_auth_cancelled",
   "account_auth_completed",
+  "account_auth_failed",
   "account_email_link_sent",
   "account_google_start",
   "directory_filter_used",

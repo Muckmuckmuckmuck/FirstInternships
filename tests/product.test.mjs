@@ -444,6 +444,8 @@ test("account and newsletter conversion events stay aggregate and contain no vis
     "account_google_start",
     "newsletter_google_start",
     "account_email_link_sent",
+    "account_auth_cancelled",
+    "account_auth_failed",
     "newsletter_email_link_sent",
     "account_auth_completed",
     "newsletter_activation_viewed",
@@ -452,7 +454,7 @@ test("account and newsletter conversion events stay aggregate and contain no vis
   ]) {
     assert.match(accountSource, new RegExp(`"${event}"`), event);
   }
-  assert.equal((accountSource.match(/trackPublicEvent\(/g) || []).length, 12);
+  assert.equal((accountSource.match(/trackPublicEvent\(/g) || []).length, 15);
   assert.match(analyticsSource, /window\.va\("event", \{ name \}\)/);
   assert.doesNotMatch(analyticsSource, /properties|email:|preferences:|planner:/i);
 });
@@ -476,6 +478,7 @@ test("traffic, engagement, utility, and owner metrics stay aggregate and private
 
   for (const source of ["visits/count", "events/aggregate", "newsletter_subscriptions", "newsletter_deliveries", "talent_profiles", "auth.admin.listUsers"]) assert.ok(reportSource.includes(source), source);
   for (const event of ["talent_cta_viewed", "talent_cta_clicked", "talent_resume_selected", "talent_profile_completed", "talent_employer_path_opened"]) assert.match(reportSource, new RegExp(`"${event}"`));
+  assert.match(reportSource, /Account funnel warning:[\s\S]*Supabase Auth logs[\s\S]*auth\.users trigger/i);
   assert.match(reportSource, /placement_consent_version/);
   assert.match(reportSource, /Storage-object presence/);
   assert.match(reportSource, /select\(column, \{ count: "exact", head: true \}\)/);

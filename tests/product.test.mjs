@@ -567,8 +567,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-10-30</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-10-30</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-02</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-02</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1880,7 +1880,7 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
   const expectedTitles = new Map([
     ["world-bank-wbg-pioneers", "World Bank Internship: Who Can Apply & When"],
     ["nvidia-ignite", "NVIDIA Ignite Internship: Eligibility, Pay & Dates"],
-    ["gilead-internship-program", "Gilead Internship 2027: Eligibility & How to Apply"],
+    ["gilead-internship-program", "Gilead Summer Internship 2027: GPA & Apply"],
   ]);
   for (const [id, title] of expectedTitles) {
     const program = PROGRAMS.find(item => item.id === id);
@@ -1931,6 +1931,21 @@ test("October 30 Search Console refresh improves the high-impression directory r
 
   const deployment = JSON.parse(await readFile("vercel.json", "utf8"));
   assert.ok(deployment.redirects.some(redirect => redirect.source === "/firstinternships.com/high-school-internships" && redirect.destination === "/" && redirect.permanent));
+});
+test("November 2 Gilead refresh matches summer search intent and freshman eligibility", async () => {
+  const gilead = PROGRAMS.find(program => program.id === "gilead-internship-program");
+  assert.ok(gilead);
+  assert.equal(gilead.seoTitle, "Gilead Summer Internship 2027: GPA & Apply");
+  assert.match(gilead.seoDescription, /paid Summer 2027 internship/);
+  assert.equal(gilead.firstYear, 1);
+  assert.deepEqual(gilead.years, [1, 2, 3, 4]);
+  assert.match(gilead.status, /check live 2027/i);
+  assert.equal(gilead.verified, "2026-11-02");
+
+  const html = await readFile(`dist${programPath(gilead)}.html`, "utf8");
+  assert.match(html, /Gilead Sciences Summer Internship Program/);
+  assert.match(html, /Current freshmen–seniors/);
+  assert.match(html, /Are Gilead Summer 2027 internships open now\?/);
 });
 test("October 26 Capital One refresh answers exact program-name and freshman eligibility intent", async () => {
   const capitalOne = PROGRAMS.find(program => program.id === "capital-one-early-internship");

@@ -11,7 +11,7 @@ import { isPaidProgram } from "../lib/program-classification.js";
 import { PROGRAM_REFRESH_IDS } from "../src/program-refresh-overrides.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 553, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 558, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 45, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -1647,7 +1647,7 @@ test("October 18 aerospace wave expands airlines, aircraft, airports and federal
   }
 
   const field = FIELDS.find(item => item.id === "aerospace");
-  assert.equal(PROGRAMS.filter(program => program.fields.includes("aerospace")).length, 41);
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("aerospace")).length, 42);
   assert.ok(field.guideSlugs.includes("how-to-get-an-aerospace-or-aviation-internship"));
   const guide = GUIDES.find(item => item.slug === "how-to-get-an-aerospace-or-aviation-internship");
   assert.ok(guide);
@@ -2197,7 +2197,7 @@ test("October 23 logistics wave expands sourced pathways and improves the existi
   const field = FIELDS.find(item => item.id === "operations");
   assert.match(field.title, /^\d+ Supply Chain & Logistics Internships$/);
   assert.ok(field.guideSlugs.includes(guide.slug));
-  assert.equal(PROGRAMS.filter(program => program.fields.includes("operations")).length, 154);
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("operations")).length, 156);
   const html = await readFile(`dist${fieldPath(field)}.html`, "utf8");
   for (const text of ["Search within these opportunities", "Only confirmed paid programs", guide.title, "Union Pacific"]) assert.ok(html.includes(text), text);
 });
@@ -2350,6 +2350,51 @@ test("November 3 multidisciplinary wave adds live, varied Summer 2027 pathways",
   for (const text of ["Stratolaunch Engineering Intern — Summer 2027", "Nov. 7", "Required project document", "Official sources &amp; update notes"]) assert.ok(html.includes(text), text);
   const amplifyHtml = await readFile(`dist${programPath(amplify)}.html`, "utf8");
   for (const text of ["More Amplify internship guides", "Product Design Intern — Summer 2027", "Software Engineering Intern — Summer 2027"]) assert.ok(amplifyHtml.includes(text), text);
+});
+test("November 3 public, consulting and operations wave adds five distinct current pathways", async () => {
+  const ids = [
+    "amplify-supply-chain-intern-summer-2027",
+    "precision-aq-market-access-consulting-intern-summer-2027",
+    "secretariat-forensic-accounting-intern-summer-2027",
+    "aclu-national-security-undergraduate-intern-summer-2027",
+    "hextronics-intern-summer-2027",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-11-03" && program.updated === "2026-11-03"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 4));
+  assert.ok(programs.every(program => program.sources.some(item => item.url === program.url)));
+
+  const [amplify, precision, secretariat, aclu, hextronics] = programs;
+  for (const program of [amplify, precision, secretariat, hextronics]) {
+    assert.equal(program.firstYear, null, `${program.id}: enrollment or graduation wording is not a universal class-year set`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.equal(aclu.firstYear, 3);
+  assert.deepEqual(aclu.years, [3, 4]);
+  assert.match(aclu.yearLabel, /at least 3 years/);
+  assert.equal(aclu.deadlineDate, undefined, "a priority date without a published year is not a deadlineDate");
+
+  const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
+  for (const id of ids) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
+
+  assert.match(amplify.timing, /\$30–\$35 per hour/);
+  assert.match(precision.timing, /\$32 per hour/);
+  assert.match(precision.pitfall, /cover letter/);
+  assert.match(secretariat.timing, /\$20–\$30/);
+  assert.match(aclu.timing, /rolling basis/);
+  assert.match(hextronics.timing, /rolling basis/);
+  assert.match(hextronics.pitfall, /does not publish an amount/);
+
+  const overview = PROGRAMS.find(program => program.id === "aclu-national-internships");
+  assert.equal(overview.verified, "2026-11-03");
+  assert.match(overview.status, /Current 2027 National Office openings/);
+  assert.ok(overview.sources.some(item => item.url === "https://job-boards.greenhouse.io/acluinternships"));
+
+  const acluHtml = await readFile(`dist${programPath(aclu)}.html`, "utf8");
+  for (const text of ["National Security Project Undergraduate Intern — Summer 2027", "Required writing sample", "rolling basis", "Official sources &amp; update notes"]) assert.ok(acluHtml.includes(text), text);
+  const amplifyHtml = await readFile(`dist${programPath(amplify)}.html`, "utf8");
+  for (const text of ["More Amplify internship guides", "Supply Chain Intern — Summer 2027", "Product Design Intern — Summer 2027", "Software Engineering Intern — Summer 2027"]) assert.ok(amplifyHtml.includes(text), text);
 });
 test("navigation puts the simplest internship path first", async () => {
   const home = render("/");

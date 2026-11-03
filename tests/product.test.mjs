@@ -11,7 +11,7 @@ import { isPaidProgram } from "../lib/program-classification.js";
 import { PROGRAM_REFRESH_IDS } from "../src/program-refresh-overrides.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 548, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 553, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 45, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -567,8 +567,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-02</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-02</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-03</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-03</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1647,7 +1647,7 @@ test("October 18 aerospace wave expands airlines, aircraft, airports and federal
   }
 
   const field = FIELDS.find(item => item.id === "aerospace");
-  assert.equal(PROGRAMS.filter(program => program.fields.includes("aerospace")).length, 40);
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("aerospace")).length, 41);
   assert.ok(field.guideSlugs.includes("how-to-get-an-aerospace-or-aviation-internship"));
   const guide = GUIDES.find(item => item.slug === "how-to-get-an-aerospace-or-aviation-internship");
   assert.ok(guide);
@@ -1814,7 +1814,7 @@ test("October 18 marketing wave adds current brand, communications, media and ag
   assert.ok(existing.every(program => program.guideSlugs.includes("how-to-get-a-marketing-or-advertising-internship")));
 
   const field = FIELDS.find(item => item.id === "marketing");
-  assert.equal(PROGRAMS.filter(program => program.fields.includes("marketing")).length, 21);
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("marketing")).length, 22);
   assert.ok(field.guideSlugs.includes("how-to-get-a-marketing-or-advertising-internship"));
   const guide = GUIDES.find(item => item.slug === "how-to-get-a-marketing-or-advertising-internship");
   assert.ok(guide);
@@ -2197,7 +2197,7 @@ test("October 23 logistics wave expands sourced pathways and improves the existi
   const field = FIELDS.find(item => item.id === "operations");
   assert.match(field.title, /^\d+ Supply Chain & Logistics Internships$/);
   assert.ok(field.guideSlugs.includes(guide.slug));
-  assert.equal(PROGRAMS.filter(program => program.fields.includes("operations")).length, 153);
+  assert.equal(PROGRAMS.filter(program => program.fields.includes("operations")).length, 154);
   const html = await readFile(`dist${fieldPath(field)}.html`, "utf8");
   for (const text of ["Search within these opportunities", "Only confirmed paid programs", guide.title, "Union Pacific"]) assert.ok(html.includes(text), text);
 });
@@ -2308,6 +2308,48 @@ test("November 2 AI-software wave adds distinct live 2027 student pathways", asy
 
   const html = await readFile(`dist${programPath(programs[0])}.html`, "utf8");
   for (const text of ["Amplify Software Engineering Intern — Summer 2027", "Who can apply?", "June 7 through August 13, 2027", "Official sources &amp; update notes"]) assert.ok(html.includes(text), text);
+});
+test("November 3 multidisciplinary wave adds live, varied Summer 2027 pathways", async () => {
+  const ids = [
+    "amplify-product-design-intern-summer-2027",
+    "antares-business-operations-finance-intern-summer-2027",
+    "hp-iq-electrical-engineering-hardware-intern-summer-2027",
+    "stratolaunch-engineering-intern-summer-2027",
+    "together-ai-growth-marketing-intern-summer-2027",
+  ];
+  const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
+  assert.ok(programs.every(Boolean));
+  assert.ok(programs.every(program => program.verified === "2026-11-03" && program.updated === "2026-11-03"));
+  assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 4));
+  assert.ok(programs.every(program => program.sources.some(item => item.url === program.url)));
+
+  const [amplify, antares, hpIq, stratolaunch, together] = programs;
+  for (const program of [amplify, hpIq, together]) {
+    assert.equal(program.firstYear, null, `${program.id}: enrollment or return wording is not a universal class-year set`);
+    assert.deepEqual(program.years, []);
+  }
+  assert.equal(antares.firstYear, 3);
+  assert.deepEqual(antares.years, [3, 4]);
+  assert.equal(stratolaunch.firstYear, 2);
+  assert.deepEqual(stratolaunch.years, [2, 3, 4]);
+  assert.match(stratolaunch.yearLabel, /seniors continuing to graduate school/);
+
+  const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
+  for (const id of ids) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
+
+  assert.match(amplify.timing, /June 7 through August 13, 2027/);
+  assert.match(antares.timing, /\$34 per hour/);
+  assert.match(hpIq.timing, /\$40–\$50 per hour/);
+  assert.equal(stratolaunch.deadlineDate, "2026-11-07");
+  assert.equal(stratolaunch.deadlineDateLabel, "Summer 2027 · Nov. 7, 2026");
+  assert.match(stratolaunch.pitfall, /project presentation, paper or summary/);
+  assert.match(together.mode, /4 days per week/);
+  assert.match(together.timing, /\$41 per hour/);
+
+  const html = await readFile(`dist${programPath(stratolaunch)}.html`, "utf8");
+  for (const text of ["Stratolaunch Engineering Intern — Summer 2027", "Nov. 7", "Required project document", "Official sources &amp; update notes"]) assert.ok(html.includes(text), text);
+  const amplifyHtml = await readFile(`dist${programPath(amplify)}.html`, "utf8");
+  for (const text of ["More Amplify internship guides", "Product Design Intern — Summer 2027", "Software Engineering Intern — Summer 2027"]) assert.ok(amplifyHtml.includes(text), text);
 });
 test("navigation puts the simplest internship path first", async () => {
   const home = render("/");

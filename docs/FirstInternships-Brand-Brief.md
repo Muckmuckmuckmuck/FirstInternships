@@ -1,6 +1,8 @@
 # FirstInternships — Complete Brand & Creative Brief
 
-*A single source of truth for making ads. Hand this to Manus (or any creative tool) and it has everything: what we do, who it's for, how we sound, and exact colors/fonts.*
+*Current website identity guidance plus an archived brief for the retired outreach-SaaS concept.*
+
+> **Current-product warning — November 3, 2026:** FirstInternships is now the free, independent college-internship directory documented in `CLAUDE_CODE_PLAYBOOK.md`. The outreach-SaaS product, pricing, Gmail sending and contact-database claims in sections 1–13 and 15–17 below are historical and must not be used on the current website or in current marketing. The legacy blue product/cinematic subsections at the start of section 14 are historical too; the current website-mark subsection and the live CSS are authoritative. These older sections remain only as an archive of the earlier concept. The current product's public promise is: sourced internship guides organized for college students, free browsing and planning tools, optional personalized alerts, and a private Talent Network. Applications happen on official employer sites.
 
 ---
 
@@ -173,7 +175,9 @@ Safe, true proof points: thousands of curated contacts across dozens of industri
 
 ## 14. Visual identity
 
-We run **two coordinated looks**. Use the one that fits the placement.
+The live directory uses a warm editorial system: forest and ink typography on paper surfaces, lime for positive emphasis, and coral for a small number of action accents. `DM Sans` is the body face and `Manrope` is the display/wordmark face. The current palette and mark rules are recorded in “Current website mark and wordmark” below and implemented in `src/styles.css` and `src/polish.css`.
+
+The following two coordinated blue looks belong to the archived outreach-SaaS concept and are not instructions for the current directory.
 
 ### A) Product / "clean" look (light) — Apollo.io / Linear / Vercel cousin
 White backgrounds, near-black text, a single blue accent, hairline borders, generous whitespace. Sharp, editorial, premium-minimal. Use for product screenshots, app-UI ads, carousels, anything showing the tool.
@@ -221,9 +225,13 @@ Near-black backgrounds, glowing blue accent, white type, data-viz motifs (node f
 - **Cinematic / video: Poppins** (Bold / Medium / Light) for large on-screen statements. *Note: Poppins lacks some glyphs (→ ✓ ✦ ✨) — substitute `»` and `•` in rendered type to avoid broken boxes.*
 - **Hierarchy feel:** one bold statement, lots of breathing room, minimal secondary text.
 
-### Logo / wordmark
-- The identity is the **wordmark "FirstInternships"** (in-app it appears lowercase as `firstinternships`). No ornate logo mark — keep it typographic.
-- Recommended treatment: bold Inter (or Poppins for cinematic) wordmark, near-black on white or white on near-black, with the blue accent used sparingly (e.g., on a period, underline, or single letter). Keep it clean and confident.
+### Current website mark and wordmark
+- The current product identity is the lowercase wordmark `firstinternships` plus a compact **first-step / upward-path** mark. The stair and arrow represent progression from a student's current college year to a concrete next move; the coral origin dot represents the first step.
+- The authoritative in-product component is `BrandIdentity` in `src/FirstInternships.jsx`. The vector source is `public/favicon.svg`; `favicon.ico`, `favicon-48.png`, `favicon-96.png` and `apple-touch-icon.png` are derived browser/app assets. `public/og-image.svg` and `public/og-image.png` carry the same symbol for social sharing.
+- Keep the mark text-free so it remains legible at 16px. Do not reintroduce the retired `f` tile or the temporary `fi↗` text tile. Do not substitute employer logos or a generic graduation-cap icon.
+- On the live directory, use the established forest/paper system: forest `#102d20`, lime `#daf8a3`, coral `#ed623f`, paper `#faf9f5`, ink `#14251b`, and muted green `#59675f`. The word `internships` may use muted green on light surfaces and lime on the forest footer.
+- Keep the full wordmark next to the mark in navigation and the footer. The symbol alone is appropriate for favicons, app icons and compact avatars.
+- Any future mark change must update the inline component, SVG source, all raster/ICO derivatives and the Open Graph image together, then be checked at wide desktop, 390px mobile and 16–48px icon sizes.
 
 ### Aesthetic / mood
 - **Editorial, sharp, minimal, premium.** Think Linear / Vercel / Apollo.io (light) and Palantir (dark).

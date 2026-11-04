@@ -6,8 +6,8 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
 .container, .board-section, .hero-inner { width: min(1240px, calc(100% - 72px)); }
 .site-header { height: 84px; background: #faf9f5f5; gap: 32px; }
 .brand { font-size: 20px; letter-spacing: -.9px; }
-.brand-mark { width: 38px; height: 38px; border-radius: 12px; font-size: 18px; transform: rotate(-5deg); }
-.brand-mark span { font-size: 13px; }
+.brand-mark { width: 40px; height: 40px; border-radius: 12px; }
+.brand-mark-path { stroke-width: 3.2; }
 .main-nav { font-size: 13px; gap: 28px; }
 .main-nav a { min-height: 40px; display: inline-flex; align-items: center; padding: 0 3px; border-radius: 9px; }
 .main-nav a:hover { color: var(--forest); }

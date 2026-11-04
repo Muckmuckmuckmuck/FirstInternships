@@ -100,6 +100,18 @@ function AdSlot({ slot, placement = "in-feed" }) {
   if (!configured) return null;
   return <aside className={`ad-slot ad-slot--${placement}`} aria-label="Advertisement" data-nosnippet><span>Advertisement</span><div className="ad-slot-frame"><ins className="adsbygoogle" style={{ display: "block", width: "100%" }} data-ad-client={import.meta.env.VITE_ADSENSE_CLIENT} data-ad-slot={slotId} data-ad-format="auto" data-full-width-responsive="true" /></div></aside>;
 }
+function BrandIdentity() {
+  return <>
+    <span className="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 48 48" focusable="false">
+        <circle className="brand-mark-start" cx="13" cy="35" r="2.75" />
+        <path className="brand-mark-path" d="M13 35V29H21V23H27" />
+        <path className="brand-mark-path" d="M24 24 35 13M26 13H35V22" />
+      </svg>
+    </span>
+    <span className="brand-name"><span>first</span><span className="brand-name-accent">internships</span></span>
+  </>;
+}
 function Header({ planner, pageType }) {
   const [open, setOpen] = useState(false);
   const account = useAccount();
@@ -112,7 +124,7 @@ function Header({ planner, pageType }) {
     ["Plan an application", "/application-timeline", ["timeline"]],
   ];
   return <header className="site-header">
-    <a className="brand" href="/" aria-label="FirstInternships home"><span className="brand-mark">fi<span>↗</span></span>firstinternships</a>
+    <a className="brand" href="/" aria-label="FirstInternships home"><BrandIdentity /></a>
     <nav className="main-nav" aria-label="Main navigation">{links.map(([label, href, types], index) => <a className={index === 0 ? "nav-primary" : undefined} aria-current={types.includes(pageType) ? "page" : undefined} key={href} href={href}>{label}</a>)}</nav>
     {accountFeatureEnabled() && <a className="account-nav" href="/account"><BellRing size={16} /> {accountLabel}</a>}
     <a className="saved-nav" href="/saved"><Bookmark size={16} /> Saved <span>{planner.saved.length}</span></a>
@@ -121,7 +133,7 @@ function Header({ planner, pageType }) {
   </header>;
 }
 function Footer() {
-  return <footer className="site-footer"><div className="footer-inner"><div><a className="brand" href="/"><span className="brand-mark">fi<span>↗</span></span>firstinternships</a><p>Know where you stand.<br />Make your next move.</p><small>An independent directory. Not affiliated with listed employers.</small></div><nav aria-label="College year links"><strong>Start with your year</strong>{YEARS.map(y => <a key={y.id} href={yearPath(y)}>{y.name} internships</a>)}</nav><nav aria-label="Footer links"><strong>The useful stuff</strong>{accountFeatureEnabled() && <a href="/account">Account & personalized alerts</a>}<a href="/talent-network">Private Talent Network</a><a href="/guides">Application guides</a>{TOPICS.map(topic => <a key={topic.slug} href={topicPath(topic)}>{topic.name}</a>)}<a href="/internship-deadlines">Deadline calendar</a><a href="/application-timeline">Timeline builder</a><a href="/compare">Compare programs</a><a href="/about">Editorial process</a><a href="/partners">Advertise or partner</a><a href="/contact">Contact & corrections</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav><nav aria-label="Popular application guides"><strong>Popular guides</strong>{footerGuides().map(([guide, label]) => <a key={guide.slug} href={guidePath(guide)}>{label}</a>)}</nav><nav aria-label="Popular internship programs"><strong>Popular programs</strong>{footerPrograms().map(([program, label]) => <a key={program.id} href={programPath(program)}>{label}</a>)}</nav></div><div className="footer-bottom"><span>© 2026 FirstInternships</span><span>Free forever for college students. Applications happen on official employer sites.</span></div></footer>;
+  return <footer className="site-footer"><div className="footer-inner"><div><a className="brand" href="/" aria-label="FirstInternships home"><BrandIdentity /></a><p>Know where you stand.<br />Make your next move.</p><small>An independent directory. Not affiliated with listed employers.</small></div><nav aria-label="College year links"><strong>Start with your year</strong>{YEARS.map(y => <a key={y.id} href={yearPath(y)}>{y.name} internships</a>)}</nav><nav aria-label="Footer links"><strong>The useful stuff</strong>{accountFeatureEnabled() && <a href="/account">Account & personalized alerts</a>}<a href="/talent-network">Private Talent Network</a><a href="/guides">Application guides</a>{TOPICS.map(topic => <a key={topic.slug} href={topicPath(topic)}>{topic.name}</a>)}<a href="/internship-deadlines">Deadline calendar</a><a href="/application-timeline">Timeline builder</a><a href="/compare">Compare programs</a><a href="/about">Editorial process</a><a href="/partners">Advertise or partner</a><a href="/contact">Contact & corrections</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav><nav aria-label="Popular application guides"><strong>Popular guides</strong>{footerGuides().map(([guide, label]) => <a key={guide.slug} href={guidePath(guide)}>{label}</a>)}</nav><nav aria-label="Popular internship programs"><strong>Popular programs</strong>{footerPrograms().map(([program, label]) => <a key={program.id} href={programPath(program)}>{label}</a>)}</nav></div><div className="footer-bottom"><span>© 2026 FirstInternships</span><span>Free forever for college students. Applications happen on official employer sites.</span></div></footer>;
 }
 function Breadcrumbs({ items }) {
   return <nav className="breadcrumbs" aria-label="Breadcrumb"><a href="/">Home</a>{items.map(([label, href], i) => <span key={i}><span aria-hidden="true">/</span>{href ? <a href={href}>{label}</a> : <span aria-current="page">{label}</span>}</span>)}</nav>;

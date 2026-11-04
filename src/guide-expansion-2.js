@@ -38,15 +38,16 @@ export const GUIDE_EXPANSION_2 = [
   },
   {
     slug: "internship-application-status-meanings",
-    updated: "2026-10-28",
-    title: "Internship Application Status Meanings & Next Steps",
-    description: "Learn what submitted, under review, assessment, interview, inactive, withdrawn and offer statuses mean—and when to follow up on an internship application.",
+    updated: "2026-11-03",
+    title: "How to Check Internship Application Status",
+    description: "Learn how to check an internship application status, what submitted, under review, assessment, inactive and interview mean, and when to follow up.",
     category: "Interviews & follow-ups",
     relatedGuideSlugs: ["how-to-follow-up-on-an-internship-email", "how-many-internships-should-i-apply-to", "internship-thank-you-email-after-interview"],
     programIds: ["goldman-sachs-summer-analyst", "deloitte-internships", "pinterest-software-engineering-intern", "federal-reserve-board"],
-    intro: "Application portals use labels such as submitted, under review, assessment, interview, inactive, and closed, but employers do not use them consistently. A label is a workflow signal, not a promise about the decision or the time it will take. Use the portal, your email, and the employer's stated timeline together, and treat the employer's own instructions as authoritative.",
+    intro: "To check an internship application status, open the employer's applicant portal and the email account used to apply, then compare both with any stated recruiting timeline. Portal labels such as submitted, under review, assessment, interview, inactive and closed are workflow signals, not promises about the decision or timing. Employers do not use them consistently, so their own messages and instructions remain authoritative.",
     quickAnswerTitle: "Internship application statuses at a glance",
     quickAnswers: [
+      ["How to check your status", "Use the employer's applicant portal and the email account on the application. Record the role, requisition number, last update and any promised decision window."],
       ["Submitted or received", "The system accepted the application. It does not prove a recruiter has reviewed it or confirmed your eligibility."],
       ["Under review or in process", "The application remains in a workflow, but the label does not promise an interview or reveal when a person will read it."],
       ["Assessment or action required", "Open the employer's message now, record the deadline and time zone, and complete the named task through the verified route."],
@@ -55,6 +56,7 @@ export const GUIDE_EXPANSION_2 = [
       ["When to follow up", "Wait for the employer's stated timeline to pass. If no timeline exists, send one concise message through the named recruiter or support route."],
     ],
     sections: [
+      ["How to check your internship application status", "Start with the employer's official applicant portal, using the same account or email address you used to apply. Match the role title and requisition number to your saved confirmation because similar openings can have different statuses. Then check the application email account, spam folder and any assessment vendor messages; an explicit invitation, rejection or request in email is more useful than a portal label that has not refreshed. Compare the latest official message with the employer's published recruiting timeline and record the date you checked. If the portal is unavailable, use the applicant-support route named by the employer rather than contacting unrelated employees or creating a duplicate application."],
       ["Submitted or received", "This normally means the system accepted the form, not that a recruiter has read it or confirmed you are eligible. Look for a confirmation email and reopen the application to check the correct resume, answers, and attachments are stored. Complete any separate action named in the confirmation, such as verifying an email address or asking a recommender to submit a letter. Save the role title, requisition number, date, and a copy of the posting. If the portal lets you edit a genuine mistake, do it there. Do not submit a duplicate merely to generate another confirmation unless the employer tells you to."],
       ["Under review, in review, or in process", "These labels usually mean the application remains in an active workflow. They do not prove a person is currently reading it, that you passed screening, or that an interview will follow. Some systems apply the status to everyone in a batch and leave it unchanged for weeks; others update it automatically as recruiters move candidates. Check whether the employer published a decision window. Until that window passes, the useful action is to watch the inbox connected to the application, keep spam filters in mind, and continue applying elsewhere. Repeatedly refreshing the portal does not make the label more informative."],
       ["Assessment, screening, or action required", "Treat this as a real deadline. Open the message and identify the task, vendor, time zone, expected duration, allowed attempts, technical requirements, and accommodation route. The action may be a coding exercise, reasoning test, recorded response, questionnaire, recruiter screen, or document request. Use only preparation material and assistance the employer permits. Complete the stage early enough to recover from a technical problem, then save the completion confirmation. If the link fails or an accommodation was not available, use the support contact named in the invitation and describe the specific problem promptly."],

@@ -2,6 +2,30 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-03 — World Bank and application-status CTR follow-up
+
+### Baseline
+
+- Window: October 5–November 1, 2026, the latest complete 28 days available in Search Console during this release.
+- Site totals: 802 clicks, 79,700 impressions, 1.0% CTR and average position 9.1.
+- `/programs/world-bank-wbg-pioneers` recorded 1 click from 3,820 impressions at average position 8.8. The exact visible query `world bank internship` accounted for 3,744 impressions, no clicks and average position 8.7. This exceeds the 200-impression reassessment threshold recorded on October 24.
+- `/guides/internship-application-status-meanings` recorded 13 clicks from 1,063 impressions at 1.2% CTR and average position 6.1. Its visible query sample again included `how to check internship application status` and `internship status`, and the URL has accumulated more than 200 additional impressions since the October 28 pass.
+- The recently refreshed Evercore, directory and application-file-format snippets remain unchanged. Evercore already matches the visible Summer 2028 query family, the directory changed on October 30, and Search Console still exposes no useful English query sample for the file-format guide.
+
+### Changes
+
+- Kept the established World Bank URL and changed its title to `World Bank Internship 2027: Eligibility & Dates`, matching the employer query while making the next cycle useful in the snippet.
+- Reverified the official WBG Pioneers program, Fall/Winter 2026 information session and World Bank Japan program page. The guide now states that the next application window is planned for January 2027, preserves final-year undergraduate eligibility, the two annual cycle ranges, the three-application limit and the paid/no-fee caveat, and links the official source for the January plan.
+- Kept the established application-status URL and changed its title to the visible task `How to Check Internship Application Status`. The answer now starts with the official portal, application email, requisition number and employer timeline before explaining individual labels.
+- Added the same check-first answer to the server-rendered at-a-glance panel and article body. No duplicate guide, gated answer or FAQ rich-result markup was added.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for the two changed URLs, interpreted with average position and query mix.
+- Supporting query families: `world bank internship`, `how to check internship application status`, `internship status`, WBG Pioneers eligibility, January 2027 timing and individual portal-stage labels.
+- Guardrails: no false open-now claim, no guessed class-year conversion, no new URL for an existing intent, no JobPosting markup and no content gate before the answer.
+- Reassess each URL after another 500 impressions or 28 days. Preserve the URL and source-backed facts; do not rewrite the snippets again from only a few days of delayed data.
+
 ## 2026-10-28 — college directory and application-status CTR pass
 
 ### Baseline

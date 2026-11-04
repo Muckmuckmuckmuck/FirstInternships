@@ -66,8 +66,8 @@ test("October 12 guide expansion adds complete high-intent student playbooks", (
   ];
   const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
   assert.ok(guides.every(Boolean));
-  assert.ok(guides.every(guide => guide.updated === (guide.slug === "internship-application-status-meanings" ? "2026-10-28" : "2026-10-12")));
-  assert.equal(guides.reduce((total, guide) => total + guide.sections.length, 0), 53);
+  assert.ok(guides.every(guide => guide.updated === (guide.slug === "internship-application-status-meanings" ? "2026-11-03" : "2026-10-12")));
+  assert.equal(guides.reduce((total, guide) => total + guide.sections.length, 0), 54);
   assert.ok(guides.every(guide => guide.sections.length >= 8 && guide.example?.text));
   assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
   assert.ok(guides.every(guide => !guide.topicSlug || TOPICS.some(topic => topic.slug === guide.topicSlug)));
@@ -277,14 +277,15 @@ test("October 28 Search Console pass improves directory and application-status a
   for (const route of ["/summer-2027-college-internships", "/paid-college-internships", "/internship-deadlines", "/guides"]) assert.match(directoryHtml, new RegExp(`href="${route}"`));
 
   const statusGuide = GUIDES.find(guide => guide.slug === "internship-application-status-meanings");
-  assert.equal(statusGuide.title, "Internship Application Status Meanings & Next Steps");
-  assert.equal(statusGuide.updated, "2026-10-28");
+  assert.equal(statusGuide.title, "How to Check Internship Application Status");
+  assert.equal(statusGuide.updated, "2026-11-03");
   assert.equal(statusGuide.quickAnswerTitle, "Internship application statuses at a glance");
-  assert.equal(statusGuide.quickAnswers.length, 6);
+  assert.equal(statusGuide.quickAnswers.length, 7);
   assert.ok(statusGuide.relatedGuideSlugs.includes("how-to-follow-up-on-an-internship-email"));
   assert.ok(statusGuide.description.length >= 120 && statusGuide.description.length <= 180);
   const statusHtml = await readFile(`dist${guidePath(statusGuide)}.html`, "utf8");
   assert.match(statusHtml, /Internship application statuses at a glance/);
+  assert.match(statusHtml, /How to check your internship application status/);
   assert.match(statusHtml, /Under review or in process/);
   assert.match(statusHtml, /When to follow up/);
 });
@@ -530,6 +531,22 @@ test("all routes render server-side without browser globals", () => {
     assert.ok(html.includes('id="main"'), route);
     assert.ok(!html.includes("classNameName"), route);
   }
+});
+test("the brand mark is accessible, text-free and shared with browser icons", async () => {
+  const home = render("/");
+  assert.match(home, /aria-label="FirstInternships home"/);
+  assert.match(home, /class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48"/);
+  assert.match(home, /class="brand-name-accent">internships/);
+  assert.doesNotMatch(home, />fi<span>↗/);
+
+  const favicon = await readFile("public/favicon.svg", "utf8");
+  assert.match(favicon, /brand-background/);
+  assert.match(favicon, /stroke="#daf8a3"/);
+  assert.doesNotMatch(favicon, /<text\b/);
+
+  const shell = await readFile("index.html", "utf8");
+  assert.match(shell, /rel="icon" type="image\/png" sizes="96x96" href="\/favicon-96\.png"/);
+  assert.match(shell, /rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png"/);
 });
 test("every built page contains crawlable content and unique SEO metadata", async () => {
   const titles = new Set();
@@ -1878,7 +1895,7 @@ test("October 19 international-affairs wave builds a sourced development and hum
 });
 test("October 20 Search Console refresh sharpens high-impression snippets and current status", async () => {
   const expectedTitles = new Map([
-    ["world-bank-wbg-pioneers", "World Bank Internship: Who Can Apply & When"],
+    ["world-bank-wbg-pioneers", "World Bank Internship 2027: Eligibility & Dates"],
     ["nvidia-ignite", "NVIDIA Ignite Internship: Eligibility, Pay & Dates"],
     ["gilead-internship-program", "Gilead Summer Internship 2027: GPA & Apply"],
   ]);
@@ -1893,9 +1910,10 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
 
   const worldBank = PROGRAMS.find(program => program.id === "world-bank-wbg-pioneers");
   const nvidia = PROGRAMS.find(program => program.id === "nvidia-ignite");
-  assert.equal(worldBank.verified, "2026-10-24");
-  assert.match(worldBank.status, /next general window Jan–Feb/);
+  assert.equal(worldBank.verified, "2026-11-03");
+  assert.match(worldBank.status, /January 2027/);
   assert.ok(worldBank.sources.some(source => /fall-winter-cycle-2026/.test(source.url)));
+  assert.ok(worldBank.sources.some(source => /\/ja\/about\/careers\/WBG-Pioneers/.test(source.url)));
   assert.match(nvidia.status, /ended Oct\. 18/);
   assert.match(nvidia.steps[0], /window ended/i);
   assert.doesNotMatch(PROGRAMS.find(program => program.id === "paramount-internships").seoDescription, /Summer 2027 status/);
@@ -1925,9 +1943,9 @@ test("October 30 Search Console refresh improves the high-impression directory r
   assert.match(html, /Do I apply through FirstInternships\?/);
 
   const worldBank = PROGRAMS.find(program => program.id === "world-bank-wbg-pioneers");
-  assert.equal(worldBank.seoTitle, "World Bank Internship: Who Can Apply & When");
-  assert.match(worldBank.seoDescription, /final-year undergraduates/);
-  assert.equal(worldBank.updated, "2026-10-30");
+  assert.equal(worldBank.seoTitle, "World Bank Internship 2027: Eligibility & Dates");
+  assert.match(worldBank.seoDescription, /January 2027/);
+  assert.equal(worldBank.updated, "2026-11-03");
 
   const deployment = JSON.parse(await readFile("vercel.json", "utf8"));
   assert.ok(deployment.redirects.some(redirect => redirect.source === "/firstinternships.com/high-school-internships" && redirect.destination === "/" && redirect.permanent));

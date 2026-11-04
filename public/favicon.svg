@@ -1,13 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="brand-background" x1="9" y1="6" x2="55" y2="60" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1b4632"/>
-      <stop offset="1" stop-color="#0b2418"/>
-    </linearGradient>
-  </defs>
-  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#brand-background)"/>
-  <rect x="2.5" y="2.5" width="59" height="59" rx="15.5" fill="none" stroke="#ffffff" stroke-opacity=".12"/>
-  <circle cx="18.67" cy="48" r="3.73" fill="#ed623f"/>
-  <path d="M18.67 48V17.33h20M18.67 30.67h16" fill="none" stroke="#daf8a3" stroke-width="5.47" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="m33.33 32 16-16M38.67 16h10.66v10.67" fill="none" stroke="#f5ffd8" stroke-width="5.47" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect id="brand-background" x="2" y="2" width="60" height="60" rx="17" fill="#102d20"/>
+  <path d="M23 52V23c0-8.5 5.2-13 13.5-13 2.6 0 4.6.4 6 .9M15 32h33v20" fill="none" stroke="#daf8a3" stroke-width="6.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="48" cy="19" r="4.5" fill="#ed623f"/>
 </svg>

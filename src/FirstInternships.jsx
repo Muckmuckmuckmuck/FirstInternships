@@ -104,9 +104,9 @@ function BrandIdentity() {
   return <>
     <span className="brand-mark" aria-hidden="true">
       <svg viewBox="0 0 48 48" focusable="false">
-        <circle className="brand-mark-start" cx="13" cy="35" r="2.75" />
-        <path className="brand-mark-path" d="M13 35V29H21V23H27" />
-        <path className="brand-mark-path" d="M24 24 35 13M26 13H35V22" />
+        <circle className="brand-mark-start" cx="14" cy="36" r="2.8" />
+        <path className="brand-mark-letter" d="M14 36V13H29M14 23H26" />
+        <path className="brand-mark-launch" d="m25 24 12-12M29 12H37V20" />
       </svg>
     </span>
     <span className="brand-name"><span>first</span><span className="brand-name-accent">internships</span></span>

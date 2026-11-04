@@ -7,7 +7,7 @@ summary:focus-visible { outline: 3px solid #467cbd; outline-offset: 4px; border-
 .site-header { height: 84px; background: #faf9f5f5; gap: 32px; }
 .brand { font-size: 20px; letter-spacing: -.9px; }
 .brand-mark { width: 40px; height: 40px; border-radius: 12px; }
-.brand-mark-path { stroke-width: 3.2; }
+.brand-mark-letter, .brand-mark-launch { stroke-width: 3.9; }
 .main-nav { font-size: 13px; gap: 28px; }
 .main-nav a { min-height: 40px; display: inline-flex; align-items: center; padding: 0 3px; border-radius: 9px; }
 .main-nav a:hover { color: var(--forest); }

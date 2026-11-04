@@ -536,6 +536,8 @@ test("the brand mark is accessible, text-free and shared with browser icons", as
   const home = render("/");
   assert.match(home, /aria-label="FirstInternships home"/);
   assert.match(home, /class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48"/);
+  assert.match(home, /class="brand-mark-letter"/);
+  assert.match(home, /class="brand-mark-launch"/);
   assert.match(home, /class="brand-name-accent">internships/);
   assert.doesNotMatch(home, />fi<span>↗/);
 

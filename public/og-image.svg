@@ -14,9 +14,9 @@
   <g font-family="Arial, Helvetica, sans-serif">
     <g transform="translate(64 56)">
       <rect width="44" height="44" rx="13" fill="#d9f99d"/>
-      <circle cx="12" cy="33" r="2.6" fill="#ed623f"/>
-      <path d="M12 33v-6h8v-6h6" fill="none" stroke="#102d20" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="m24 22 10-10M26 12h8v8" fill="none" stroke="#102d20" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="12.8" cy="33.5" r="2.6" fill="#ed623f"/>
+      <path d="M12.8 33.5V12.2h13.9M12.8 21.5h11.1" fill="none" stroke="#102d20" stroke-width="3.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="m23 22.4 11.1-11.1M26.7 11.3h7.4v7.4" fill="none" stroke="#31573e" stroke-width="3.7" stroke-linecap="round" stroke-linejoin="round"/>
     </g>
     <text x="120" y="85" font-size="26" font-weight="800"><tspan fill="#ffffff">first</tspan><tspan fill="#d9f99d">internships</tspan></text>
 

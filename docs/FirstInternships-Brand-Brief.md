@@ -226,9 +226,9 @@ Near-black backgrounds, glowing blue accent, white type, data-viz motifs (node f
 - **Hierarchy feel:** one bold statement, lots of breathing room, minimal secondary text.
 
 ### Current website mark and wordmark
-- The current product identity is the lowercase wordmark `firstinternships` plus a compact **first-step / upward-path** mark. The stair and arrow represent progression from a student's current college year to a concrete next move; the coral origin dot represents the first step.
+- The current product identity is the lowercase wordmark `firstinternships` plus a custom **F-launch monogram**. The F is the brand anchor; its middle stroke becomes the student's first move, the diagonal exit represents momentum, and the coral origin dot marks the starting point.
 - The authoritative in-product component is `BrandIdentity` in `src/FirstInternships.jsx`. The vector source is `public/favicon.svg`; `favicon.ico`, `favicon-48.png`, `favicon-96.png` and `apple-touch-icon.png` are derived browser/app assets. `public/og-image.svg` and `public/og-image.png` carry the same symbol for social sharing.
-- Keep the mark text-free so it remains legible at 16px. Do not reintroduce the retired `f` tile or the temporary `fi↗` text tile. Do not substitute employer logos or a generic graduation-cap icon.
+- Keep the mark text-free so it remains legible at 16px. Do not reintroduce the retired `f` tile, the temporary `fi↗` text tile or the generic stair-arrow mark. Do not substitute employer logos or a generic graduation-cap icon.
 - On the live directory, use the established forest/paper system: forest `#102d20`, lime `#daf8a3`, coral `#ed623f`, paper `#faf9f5`, ink `#14251b`, and muted green `#59675f`. The word `internships` may use muted green on light surfaces and lime on the forest footer.
 - Keep the full wordmark next to the mark in navigation and the footer. The symbol alone is appropriate for favicons, app icons and compact avatars.
 - Any future mark change must update the inline component, SVG source, all raster/ICO derivatives and the Open Graph image together, then be checked at wide desktop, 390px mobile and 16–48px icon sizes.

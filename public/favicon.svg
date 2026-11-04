@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 64 64">
   <defs>
     <linearGradient id="brand-background" x1="9" y1="6" x2="55" y2="60" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#183e2c"/>
-      <stop offset="1" stop-color="#0d271b"/>
+      <stop stop-color="#1b4632"/>
+      <stop offset="1" stop-color="#0b2418"/>
     </linearGradient>
   </defs>
   <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#brand-background)"/>
   <rect x="2.5" y="2.5" width="59" height="59" rx="15.5" fill="none" stroke="#ffffff" stroke-opacity=".12"/>
-  <circle cx="17.33" cy="46.67" r="3.67" fill="#ed623f"/>
-  <path d="M17.33 46.67v-8h10.67v-8h8" fill="none" stroke="#daf8a3" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="m32 32 14.67-14.67M34.67 17.33h12v12" fill="none" stroke="#daf8a3" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="18.67" cy="48" r="3.73" fill="#ed623f"/>
+  <path d="M18.67 48V17.33h20M18.67 30.67h16" fill="none" stroke="#daf8a3" stroke-width="5.47" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m33.33 32 16-16M38.67 16h10.66v10.67" fill="none" stroke="#f5ffd8" stroke-width="5.47" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

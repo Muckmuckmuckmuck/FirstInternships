@@ -403,7 +403,7 @@ Personal timeline builder:
 
 Keep the existing editorial visual language unless the task explicitly calls for a redesign. New components should reuse established typography, colors, cards, buttons, spacing, radii, and responsive breakpoints before introducing new primitives.
 
-The current FirstInternships identity is the lowercase wordmark plus the text-free first-step/upward-path mark rendered by `BrandIdentity` in `src/FirstInternships.jsx`. `public/favicon.svg` is the vector source; the ICO/PNG browser icons, Apple touch icon and both Open Graph assets must stay visually synchronized. Do not restore the retired `f` favicon or `fi↗` tile. If the mark changes, verify the header and footer on wide desktop and at 390px, inspect a 16–48px raster, rebuild every derived asset, and keep the home link's accessible name.
+The current FirstInternships identity is the lowercase wordmark plus the text-free custom F-launch monogram rendered by `BrandIdentity` in `src/FirstInternships.jsx`. The F is the brand anchor; its middle stroke becomes a first move and the diagonal exit supplies momentum. `public/favicon.svg` is the vector source; the ICO/PNG browser icons, Apple touch icon and both Open Graph assets must stay visually synchronized. Do not restore the retired `f` favicon, `fi↗` tile or generic stair-arrow mark. If the mark changes, verify the header and footer on wide desktop and at 390px, inspect a 16–48px raster, rebuild every derived asset, and keep the home link's accessible name.
 
 Required behavior:
 

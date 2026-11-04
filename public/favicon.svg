@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 64 64">
   <rect id="brand-background" x="2" y="2" width="60" height="60" rx="17" fill="#102d20"/>
-  <path d="M23 52V23c0-8.5 5.2-13 13.5-13 2.6 0 4.6.4 6 .9M15 32h33v20" fill="none" stroke="#daf8a3" stroke-width="6.6" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="48" cy="19" r="4.5" fill="#ed623f"/>
+  <text x="25" y="42" fill="#daf8a3" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="-3">fi</text>
+  <path d="M41 19h9v9M50 19 39 30" fill="none" stroke="#daf8a3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

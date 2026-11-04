@@ -103,12 +103,9 @@ function AdSlot({ slot, placement = "in-feed" }) {
 function BrandIdentity() {
   return <>
     <span className="brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 48 48" focusable="false">
-        <path className="brand-mark-ligature" d="M17 40V17c0-6.5 4-10 10.5-10 2.1 0 3.6.3 4.6.8M11 24h25v16" />
-        <circle className="brand-mark-dot" cx="36" cy="13" r="3.4" />
-      </svg>
+      <span className="brand-mark-letters">fi</span><span className="brand-mark-arrow">↗</span>
     </span>
-    <span className="brand-name"><span>first</span><span className="brand-name-accent">internships</span></span>
+    <span className="brand-name">firstinternships</span>
   </>;
 }
 function Header({ planner, pageType }) {

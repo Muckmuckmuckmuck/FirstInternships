@@ -532,20 +532,18 @@ test("all routes render server-side without browser globals", () => {
     assert.ok(!html.includes("classNameName"), route);
   }
 });
-test("the brand mark is accessible, text-free and shared with browser icons", async () => {
+test("the restored brand mark is accessible and shared with browser icons", async () => {
   const home = render("/");
   assert.match(home, /aria-label="FirstInternships home"/);
-  assert.match(home, /class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48"/);
-  assert.match(home, /class="brand-mark-ligature"/);
-  assert.match(home, /class="brand-mark-dot"/);
-  assert.match(home, /class="brand-name-accent">internships/);
-  assert.doesNotMatch(home, />fi<span>↗/);
+  assert.match(home, /class="brand-mark" aria-hidden="true"><span class="brand-mark-letters">fi/);
+  assert.match(home, /class="brand-mark-arrow">↗/);
+  assert.match(home, /class="brand-name">firstinternships/);
 
   const favicon = await readFile("public/favicon.svg", "utf8");
   assert.match(favicon, /brand-background/);
+  assert.match(favicon, /fill="#daf8a3"/);
   assert.match(favicon, /stroke="#daf8a3"/);
-  assert.match(favicon, /fill="#ed623f"/);
-  assert.doesNotMatch(favicon, /<text\b/);
+  assert.match(favicon, />fi<\/text>/);
 
   const shell = await readFile("index.html", "utf8");
   assert.match(shell, /rel="icon" type="image\/png" sizes="96x96" href="\/favicon-96\.png"/);

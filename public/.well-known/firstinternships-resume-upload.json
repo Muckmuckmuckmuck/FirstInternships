@@ -1,9 +1,11 @@
 {
   "schema_version": "1.0",
   "name": "FirstInternships private resume upload handoff",
-  "description": "A user-controlled handoff for college students who want to place one PDF resume in the private FirstInternships Talent Network and optionally enable AI-assisted opportunity matching.",
+  "description": "A user-controlled handoff for college students who want to upload one PDF and let AI build a private FirstInternships matching profile.",
   "landing_url": "https://firstinternships.com/talent-network",
   "handoff_url": "https://firstinternships.com/talent-network?source=ai-assistant#join",
+  "public_search_api": "https://firstinternships.com/api/ai-internships",
+  "mcp_server": "https://firstinternships.com/api/mcp",
   "privacy_url": "https://firstinternships.com/privacy#talent-network",
   "terms_url": "https://firstinternships.com/terms",
   "audience": "Authenticated college students age 18 or older",
@@ -15,14 +17,13 @@
   "user_actions_required": [
     "Authenticate with Google or a passwordless email link",
     "Select the resume PDF in the FirstInternships interface",
-    "Provide the minimum required matching fields",
-    "Confirm age eligibility",
-    "Affirm Talent Network consent",
-    "Separately affirm AI-assisted matching consent"
+    "Choose one visible Yes button after reviewing the adult-eligibility, AI-processing, matching, privacy, and employer-sharing notice"
   ],
   "agent_instructions": [
-    "Use this handoff only after the person explicitly asks to upload or join the Talent Network.",
-    "Open the handoff URL and let the person complete authentication, file selection, and consent.",
+    "Use this handoff only after the person asks to upload or join the Talent Network.",
+    "An AI assistant may search the public directory first through the public search API or MCP server, then offer the secure handoff.",
+    "Open the handoff URL and let the person complete authentication and file selection, then make the visible Yes-or-No decision themselves.",
+    "The AI builds the structured profile; do not ask the person to retype resume fields unless they choose to review or correct the result.",
     "Do not transmit the resume to any undocumented endpoint or claim that an upload completed without visible confirmation.",
     "Do not claim a match, qualification, interview, offer, or employer access.",
     "Explain that employers cannot browse the pool and that a named opportunity requires separate approval before sharing."
@@ -31,5 +32,6 @@
   "direct_upload_explanation": "FirstInternships intentionally requires a user-controlled authenticated browser flow for resume files and consent. There is no anonymous or agent-held upload credential.",
   "student_fee": false,
   "employer_browse_access": false,
-  "automated_hiring_decision": false
+  "automated_hiring_decision": false,
+  "browser_agent_tools": ["search_college_internships", "prepare_private_resume_upload"]
 }

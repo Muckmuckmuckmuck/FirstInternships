@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "name": "FirstInternships",
+  "description": "Search sourced college internship guides and prepare a user-controlled private resume handoff.",
+  "transport": "streamable-http",
+  "endpoint": "https://firstinternships.com/api/mcp",
+  "authentication": "none_for_public_tools",
+  "tools": [
+    {
+      "name": "search_college_internships",
+      "purpose": "Search public internship program guides by college year, field, keyword, location, and pay."
+    },
+    {
+      "name": "prepare_private_resume_handoff",
+      "purpose": "Return the secure upload page after the student asks to join. It does not upload, accept terms, apply, or promise placement."
+    }
+  ],
+  "privacy_url": "https://firstinternships.com/privacy#talent-network",
+  "terms_url": "https://firstinternships.com/terms"
+}

@@ -1,0 +1,31 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FirstInternships public internship search",
+    "version": "1.0.0",
+    "description": "Public, read-only college internship program-guide search for AI assistants. FirstInternships is an independent directory; users apply on official employer sites."
+  },
+  "servers": [{ "url": "https://firstinternships.com" }],
+  "paths": {
+    "/api/ai-internships": {
+      "get": {
+        "operationId": "searchCollegeInternships",
+        "summary": "Search college internship program guides",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string", "maxLength": 160 } },
+          { "name": "year", "in": "query", "schema": { "type": "integer", "enum": [1, 2, 3, 4] } },
+          { "name": "field", "in": "query", "schema": { "type": "string" } },
+          { "name": "location", "in": "query", "schema": { "type": "string", "maxLength": 80 } },
+          { "name": "paid", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 10, "default": 6 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Independent directory results with FirstInternships guides and official employer links.",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          }
+        }
+      }
+    }
+  }
+}

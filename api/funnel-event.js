@@ -28,6 +28,7 @@ export const PUBLIC_FUNNEL_EVENTS = Object.freeze([
   "talent_cta_clicked",
   "talent_cta_viewed",
   "talent_employer_path_opened",
+  "talent_fast_intake_accepted",
   "talent_network_viewed",
   "talent_profile_completed",
   "talent_profile_deleted",

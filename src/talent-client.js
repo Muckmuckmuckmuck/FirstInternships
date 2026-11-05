@@ -3,6 +3,7 @@ import { getAccountClient } from "./account-client.js";
 export const TALENT_NETWORK_PATH = "/talent-network";
 export const TALENT_CONSENT_VERSION = "2026-10-27";
 export const TALENT_AI_MATCHING_CONSENT_VERSION = "2026-11-04";
+export const TALENT_FAST_INTAKE_CONSENT_VERSION = "2026-11-05";
 export const TALENT_RESUME_BUCKET = "candidate-resumes";
 export const TALENT_RESUME_MAX_BYTES = 5 * 1024 * 1024;
 export const TALENT_WORK_MODES = Object.freeze(["on-site", "hybrid", "remote"]);
@@ -125,6 +126,72 @@ export async function getMyTalentProfile(client = null) {
   const { data, error } = await accountClient.rpc("get_my_talent_profile");
   if (error) throw error;
   return normalizeTalentProfile(data);
+}
+
+export function normalizeTalentIntake(value) {
+  const root = Array.isArray(value) ? value[0] || null : value || null;
+  if (!root) return null;
+  return {
+    resumeFilename: cleanText(root.resumeFilename ?? root.resume_filename, 160),
+    resumeUploadedAt: root.resumeUploadedAt ?? root.resume_uploaded_at ?? null,
+    consentVersion: cleanText(root.consentVersion ?? root.consent_version, 40),
+    consentedAt: root.consentedAt ?? root.consented_at ?? null,
+    processingStatus: cleanText(root.processingStatus ?? root.processing_status, 20) || "queued",
+    attempts: Number(root.attempts) || 0,
+    completedAt: root.completedAt ?? root.completed_at ?? null,
+  };
+}
+
+export async function getMyTalentIntake(client = null) {
+  const accountClient = client || await getAccountClient();
+  const { data, error } = await accountClient.rpc("get_my_talent_resume_intake");
+  if (error) throw error;
+  return normalizeTalentIntake(data);
+}
+
+export async function saveMyTalentResumeIntake({ file, consentAccepted }, client = null) {
+  const accountClient = client || await getAccountClient();
+  const user = await sessionUser(accountClient);
+  const fileError = await validateResumeFile(file);
+  if (fileError) throw new Error(fileError);
+  if (consentAccepted !== true) throw new Error("Choose yes before uploading your resume.");
+
+  const path = `${user.id}/resume.pdf`;
+  const filename = cleanText(file.name || "resume.pdf", 160) || "resume.pdf";
+  const { error: uploadError } = await accountClient.storage.from(TALENT_RESUME_BUCKET).upload(path, file, {
+    upsert: true,
+    contentType: "application/pdf",
+    cacheControl: "0",
+  });
+  if (uploadError) throw uploadError;
+
+  const { data, error } = await accountClient.rpc("save_my_talent_resume_intake", {
+    p_resume_path: path,
+    p_resume_filename: filename,
+    p_consent_version: TALENT_FAST_INTAKE_CONSENT_VERSION,
+    p_adult_and_ai_consent: true,
+  });
+  if (error) throw error;
+  return normalizeTalentIntake(data);
+}
+
+export async function processMyTalentResumeIntake(client = null) {
+  const accountClient = client || await getAccountClient();
+  const { data, error } = await accountClient.auth.getSession();
+  if (error) throw error;
+  const token = data.session?.access_token;
+  if (!token) throw new Error("Your session expired. Sign in again to finish your profile.");
+  const response = await fetch("/api/talent-resume-profile", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok && response.status !== 202) {
+    throw new Error(payload.error === "ai_service_error"
+      ? "Your resume is saved, but AI profile building is temporarily unavailable. Retry in a moment."
+      : "Your resume is saved. We could not finish the AI profile yet, so retry in a moment.");
+  }
+  return payload;
 }
 
 export async function saveMyTalentProfile({ profile, file = null, existingProfile = null, validFieldIds = null }, client = null) {

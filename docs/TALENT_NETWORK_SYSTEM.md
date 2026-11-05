@@ -16,7 +16,9 @@ The Talent Network is optional and free for students. It is separate from:
 
 Joining one system never implies consent to another. A Google account does not enroll a user in the newsletter or Talent Network. A newsletter subscription does not create a candidate profile. A candidate profile does not authorize blanket employer access.
 
-Phase 1 lets an authenticated adult create one structured profile and store one private PDF resume. With separate AI-matching consent, the structured profile enters a service-only finder immediately and a trusted worker may later derive a limited job-related resume index. FirstInternships may use that information internally to identify possible opportunities and contact the candidate. Employers cannot browse, search, export or buy the pool. FirstInternships is not currently submitting candidates or making placements.
+Phase 1 lets an authenticated adult upload one private PDF and make one clear Yes-or-No decision. Yes authorizes adult-only participation, private AI profile building, and AI-assisted matching under the notice displayed immediately above the action. The trusted server sends the PDF to the configured Gemini service, stores a bounded structured profile and service-only job-related index, and lets the student review or correct the result afterward. FirstInternships may use that information internally to identify possible opportunities and contact the candidate. Employers cannot browse, search, export or buy the pool. FirstInternships is not currently submitting candidates or making placements.
+
+The public AI-discovery layer is intentionally separate from the private candidate system. `GET /api/ai-internships` and the stateless MCP endpoint at `POST /api/mcp` may search only public directory content. They may return the secure Talent Network handoff URL after a student asks to join, but they cannot receive a resume, authenticate a user, accept the on-page notice, read a profile, invoke the service-role worker, submit an application or promise placement. The page may expose equivalent WebMCP search and handoff tools. The student still completes Google/passwordless authentication, selects the PDF in the FirstInternships interface and clicks the one visible Yes action.
 
 ## 2. Student promise
 
@@ -50,13 +52,13 @@ The resume may contain contact information the candidate chose to include. Treat
 
 ## 4. Consent model
 
-The candidate must affirm all three placement items before a profile can be saved:
+The fast intake presents these three facts together immediately above one unambiguous Yes action:
 
 1. They are at least 18.
 2. They want FirstInternships to use the profile and resume internally to identify relevant opportunities and contact them.
 3. They understand employer sharing is limited to a separately approved, specific opportunity.
 
-The placement consent version is `2026-10-27`. The separate AI-matching consent version is `2026-11-04`. New AI-enabled saves must affirm both; existing profiles default to AI matching off and are never silently opted in. The database, not the browser clock, records consent time. Changes to material purpose, employer disclosure, automated decision-making or student fees require a new consent version and a re-consent design before deployment.
+The original manual placement consent version is `2026-10-27`, the AI-matching consent version is `2026-11-04`, and the combined fast-intake notice is `2026-11-05`. The combined button is permitted only because every material item is visible before the click and the alternative No action remains available. Existing profiles are not silently migrated into the fast intake. The database, not the browser clock, records consent time. Changes to material purpose, AI provider, employer disclosure, automated decision-making or student fees require a new consent version and a re-consent design before deployment.
 
 AI consent permits job-related extraction and internal matching suggestions for human review. It does not permit an automated qualification decision, rejection, employer search, or employer disclosure. The candidate can turn AI matching off without deleting the underlying profile or PDF; that action deletes the derived index and pending indexing job.
 
@@ -65,15 +67,17 @@ The later placement phase must not reinterpret Phase 1 consent as permission to 
 ## 5. Storage and access
 
 - Structured records live in `public.talent_profiles` in Supabase.
+- Pending one-click uploads live in the private, service-only `public.talent_resume_intakes` table until the trusted AI worker materializes the structured profile.
 - Resume files live in the private `candidate-resumes` Storage bucket.
 - Each account can access only the exact object `<auth-user-id>/resume.pdf` through row-level Storage policies.
 - The public/anonymous role receives no table access and no Storage policy.
-- Profile writes use authenticated RPC functions that enforce consent version, required fields, file path, list limits and per-opportunity sharing mode on the server.
+- Fast-intake writes use an authenticated RPC that enforces the combined consent version, adult confirmation, fixed owner file path and existing private PDF. The browser then calls an authenticated serverless processor, which verifies the Supabase session before any AI request. Manual profile updates retain their existing field and consent validation.
 - Consent history is append-only and excludes resume content, email, school, desired role and protected-trait data.
 - The reserved employer-permission table has no public client function and no employer-facing read path.
 - `talent_resume_index_jobs`, `talent_resume_index`, `talent_match_suggestions`, `talent_ai_candidate_pool`, and the finder/worker functions are service-role only. Anonymous and authenticated browser roles receive no direct access.
-- A consented profile is privately findable from bounded structured fields immediately. Resume enrichment is asynchronous. The derived index stores only bounded skills, role keywords, experience keywords, and a job-related summary—not raw extracted text, identity, contact details, school, links, filenames, paths, or protected-trait fields.
-- A worker may receive the deterministic private object path only after claiming an eligible queue item through the service-role function. Never expose that function or credential to a browser, AI assistant, employer, or public MCP server.
+- Gemini receives the private PDF only after the user's visible Yes action. Its output is validated against fixed lengths, allowed career-field IDs and allowed work modes before the service-only completion RPC accepts it. The derived index stores only bounded skills, role keywords, experience keywords, and a job-related summary—not raw extracted text, identity, contact details, school, links, filenames, paths, or protected-trait fields.
+- A worker may receive the deterministic private object path only after claiming an eligible intake through the service-role function. Never expose that function or credential to a browser, AI assistant, employer, or public MCP server. The public WebMCP tool only prepares the visible handoff; it cannot upload, accept terms or call the service-role worker.
+- Public AI search results must retain the FirstInternships guide URL, the official publisher URL, the review date and the independent-directory disclaimer. They are discovery results, not personalized qualification decisions, applications, referrals or offers.
 - Owner metrics use the service role on the server/owner machine and report counts only. They must never print names, emails, schools, URLs, resume paths, resume content or individual preferences.
 
 Never make the resume bucket public, use a permanent public URL, put a resume URL in analytics, or send candidate fields through Vercel/Cloudflare events.
@@ -155,12 +159,14 @@ For every Talent Network change:
 3. Confirm the private bucket remains `public = false`, PDF-only and 5 MB maximum.
 4. Confirm anonymous users cannot read/write profile tables or Storage objects.
 5. Confirm one authenticated user cannot address another user's resume path.
-6. Confirm profile save requires current consent, 18+ confirmation and the per-opportunity sharing acknowledgement.
+6. Confirm manual profile save requires its current consent set, and fast intake accepts only one visible Yes action covering 18+ confirmation, private AI profile building, matching and per-opportunity sharing limits.
 7. Confirm no talent event contains user-entered values.
 8. Update privacy/terms copy before changing data categories or purposes.
 9. Apply the additive Supabase migration before enabling a dependent production UI.
 10. Confirm AI-off profiles are absent from the finder and disabling AI deletes the queue/index without deleting the profile or PDF.
 11. Confirm finder and worker functions are executable only by `service_role`, return no forbidden identity/contact/path fields, and require the current resume snapshot.
 12. Verify create, update, pause, resume, AI disable, export, resume download and deletion in production with a non-owner test account.
+13. Verify the authenticated AI processor rejects missing/invalid bearer tokens, the intake/index tables remain service-only, the PDF is never sent before Yes, and Gemini output is bounded before database writes.
+14. Verify the public JSON/MCP search returns only public program facts, caps result counts, has no private Supabase credential, and the handoff tool reports both `directUploadPerformed: false` and `termsAcceptedByTool: false`.
 
 Never delete or rewrite existing auth users or newsletter records while deploying Talent Network schema.

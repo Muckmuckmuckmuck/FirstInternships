@@ -4,12 +4,16 @@ import { readFile } from "node:fs/promises";
 import {
   TALENT_AI_MATCHING_CONSENT_VERSION,
   TALENT_CONSENT_VERSION,
+  TALENT_FAST_INTAKE_CONSENT_VERSION,
   TALENT_RESUME_MAX_BYTES,
   cleanTalentProfile,
   normalizeTalentProfile,
   validateResumeFile,
   validateTalentProfile,
 } from "../src/talent-client.js";
+import { parseGeminiJson, sanitizeTalentAiProfile, TALENT_FIELD_IDS, talentAiPrompt } from "../lib/talent-ai.js";
+import { normalizeAgentSearchInput, searchInternshipsForAgent } from "../lib/agent-internship-search.js";
+import mcpHandler, { FIRSTINTERNSHIPS_MCP_TOOLS } from "../api/mcp.js";
 
 const FIELD_IDS = ["technology", "finance", "engineering"];
 
@@ -121,11 +125,87 @@ test("AI-assistant resume handoff is discoverable but cannot bypass user authent
   assert.equal(manifest.file.maximum_bytes, TALENT_RESUME_MAX_BYTES);
   assert.equal(manifest.employer_browse_access, false);
   assert.equal(manifest.automated_hiring_decision, false);
-  assert.match(manifest.user_actions_required.join(" "), /Authenticate[\s\S]*Select the resume PDF[\s\S]*consent/i);
-  assert.match(instructions, /student must complete the secure handoff themselves/i);
+  assert.deepEqual(manifest.browser_agent_tools, ["search_college_internships", "prepare_private_resume_upload"]);
+  assert.equal(manifest.mcp_server, "https://firstinternships.com/api/mcp");
+  assert.equal(manifest.public_search_api, "https://firstinternships.com/api/ai-internships");
+  assert.match(manifest.user_actions_required.join(" "), /Authenticate[\s\S]*Select the resume PDF[\s\S]*Yes/i);
+  assert.match(instructions, /student completes the secure handoff themselves/i);
   assert.match(instructions, /Do not transmit the resume/i);
+  assert.match(instructions, /WebMCP tools named `search_college_internships` and `prepare_private_resume_upload`/i);
   assert.match(build, /Private resume handoff for AI assistants/);
-  assert.match(build, /do not send resume data to another endpoint/i);
+  assert.match(build, /send resume data to another endpoint/i);
+});
+
+test("AI-native search is bounded, sourced, and keeps placement claims honest", () => {
+  assert.deepEqual(normalizeAgentSearchInput({ collegeYear: 9, field: "fake", limit: 99 }), {
+    query: "",
+    collegeYear: null,
+    field: null,
+    location: "",
+    paidOnly: false,
+    limit: 10,
+  });
+  const search = searchInternshipsForAgent({ query: "Microsoft Explore", collegeYear: 1, paidOnly: true, limit: 3 });
+  assert.ok(search.results.length >= 1);
+  assert.equal(search.results[0].company, "Microsoft");
+  assert.match(search.results[0].guideUrl, /^https:\/\/firstinternships\.com\/programs\//);
+  assert.match(search.results[0].officialUrl, /^https:\/\//);
+  assert.equal(search.talentNetwork.placementPromise, false);
+  assert.match(search.notice, /not an offer or placement/i);
+});
+
+test("public MCP exposes search and a consent-safe handoff, never a direct resume upload", async () => {
+  assert.deepEqual(FIRSTINTERNSHIPS_MCP_TOOLS.map(tool => tool.name), ["search_college_internships", "prepare_private_resume_handoff"]);
+  const invoke = body => new Promise(resolve => {
+    const response = {
+      headers: {},
+      setHeader(name, value) { this.headers[name] = value; },
+      status(code) { this.statusCode = code; return this; },
+      json(payload) { resolve({ status: this.statusCode, payload, headers: this.headers }); },
+      end() { resolve({ status: this.statusCode, payload: null, headers: this.headers }); },
+    };
+    mcpHandler({ method: "POST", body, headers: {} }, response);
+  });
+  const listed = await invoke({ jsonrpc: "2.0", id: 1, method: "tools/list", params: {} });
+  assert.equal(listed.status, 200);
+  assert.equal(listed.payload.result.tools.length, 2);
+  const refused = await invoke({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "prepare_private_resume_handoff", arguments: { studentRequestedTalentNetwork: false } } });
+  assert.equal(refused.payload.result.isError, true);
+  assert.equal(refused.payload.result.structuredContent.ready, false);
+  const ready = await invoke({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "prepare_private_resume_handoff", arguments: { studentRequestedTalentNetwork: true } } });
+  assert.equal(ready.payload.result.structuredContent.directUploadPerformed, false);
+  assert.equal(ready.payload.result.structuredContent.termsAcceptedByTool, false);
+  assert.equal(ready.payload.result.structuredContent.placementGuaranteed, false);
+});
+
+test("fast intake migration keeps one-click consent authenticated, private, additive, and service-processed", async () => {
+  const sql = await readFile("supabase/migrations/202611050001_talent_fast_intake.sql", "utf8");
+  assert.match(sql, /create table if not exists public\.talent_resume_intakes/i);
+  assert.match(sql, new RegExp(`consent_version = '${TALENT_FAST_INTAKE_CONSENT_VERSION}'`, "i"));
+  assert.match(sql, /talent_fast_intake_consent_required/i);
+  assert.match(sql, /p_adult_and_ai_consent/i);
+  assert.match(sql, /service_complete_talent_resume_intake/i);
+  assert.match(sql, /grant execute on function public\.service_complete_talent_resume_intake[\s\S]+to service_role/i);
+  assert.match(sql, /revoke all on table public\.talent_resume_intakes from public, anon, authenticated/i);
+  assert.doesNotMatch(sql, /grant\s+(?:select|insert|update|delete|all).*talent_resume_intakes.*authenticated/i);
+  assert.doesNotMatch(sql, /(?:update|delete from)\s+auth\.users/i);
+  assert.doesNotMatch(sql, /(?:update|delete from)\s+public\.newsletter_/i);
+});
+
+test("AI resume extraction is bounded to job-related fields and safe fallbacks", () => {
+  const prompt = talentAiPrompt(2026);
+  assert.match(prompt, /Do not infer protected traits/i);
+  assert.match(prompt, /never a street address/i);
+  for (const id of TALENT_FIELD_IDS) assert.match(prompt, new RegExp(id));
+  const parsed = parseGeminiJson("```json\n{\"fullName\":\" Ada Lovelace \",\"graduationYear\":2028,\"fields\":[\"technology\",\"not-real\"],\"workModes\":[\"remote\",\"anywhere\"],\"skills\":[\"Python\",\"Python\"]}\n```");
+  const clean = sanitizeTalentAiProfile(parsed, { currentYear: 2026 });
+  assert.equal(clean.fullName, "Ada Lovelace");
+  assert.equal(clean.graduationYear, 2028);
+  assert.equal(clean.collegeYear, 2);
+  assert.deepEqual(clean.fields, ["technology"]);
+  assert.deepEqual(clean.workModes, ["remote"]);
+  assert.deepEqual(clean.skills, ["Python"]);
+  assert.equal(clean.school, "Needs student review");
 });
 
 test("Talent Network migration is additive, private, owner-scoped, and server-enforced", async () => {
@@ -158,13 +238,17 @@ test("Talent Network UI and policies preserve a clear consent and control bounda
     readFile("public/terms.html", "utf8"),
     readFile("docs/TALENT_NETWORK_SYSTEM.md", "utf8"),
   ]);
-  for (const phrase of ["Newsletter consent is separate", "employers cannot browse", "specific opportunity", "Delete profile and resume", "at least 18 years old", "I want private AI-assisted opportunity matching", "Turn off AI matching", "No automated hiring decision"]) {
+  for (const phrase of ["Newsletter consent is separate", "employers cannot browse", "specific opportunity", "Delete profile and resume", "at least 18 years old", "I want private AI-assisted opportunity matching", "Turn off AI matching", "No automated hiring decision", "Your resume does the typing", "Yes — upload & build my profile"]) {
     assert.match(page, new RegExp(phrase, "i"), phrase);
   }
   assert.match(page, /returnPath: "\/talent-network"/);
   for (const event of ["talent_cta_viewed", "talent_cta_clicked", "talent_resume_selected", "talent_employer_path_opened"]) assert.match(page, new RegExp(`"${event}"`));
   assert.match(page, /new IntersectionObserver[\s\S]*threshold: 0\.35/);
   assert.match(page, /Upload\. Add the basics\. Done\./);
+  assert.match(page, /name: "prepare_private_resume_upload"/);
+  assert.match(page, /name: "search_college_internships"/);
+  assert.match(page, /studentRequestedTalentNetwork/);
+  assert.match(page, /directUploadPerformed: false/);
   assert.match(page, /Choose no more than \$\{maxItems\}/);
   assert.match(styles, /\.talent-progress[\s\S]*grid-template-columns: repeat\(3/);
   assert.match(styles, /@media \(max-width: 680px\)[\s\S]*\.talent-progress \{ grid-template-columns: 1fr/);

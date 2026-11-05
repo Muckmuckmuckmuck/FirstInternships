@@ -226,6 +226,7 @@ function renderReport(vercel, supabase) {
       ["talent_network_viewed", "Talent Network visitors"],
       ["talent_signup_started", "Talent account starts"],
       ["talent_resume_selected", "Valid resume selections"],
+      ["talent_fast_intake_accepted", "One-click AI intake acceptances"],
       ["talent_profile_completed", "Completed talent profiles"],
       ["talent_profile_updated", "Talent profile updates"],
       ["talent_profile_paused", "Talent profile pauses"],

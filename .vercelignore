@@ -1,11 +1,11 @@
 # Vercel auto-detects any file under api/ as a serverless function, even with no
-# "functions" entry in vercel.json. The directory does not call these endpoints
-# (src/ contains no /api/ reference), and api/grade.js is unauthenticated by
-# design from the outreach era — it would keep an open Gemini-cost path live.
+# "functions" entry in vercel.json. Most files are quarantined outreach-era
+# endpoints; api/grade.js is unauthenticated by design and would keep an open
+# Gemini-cost path live.
 # Keep the quarantined backend in the repository, but out of the deployment.
 # Only the explicitly reviewed account/newsletter endpoints, the fixed-name
-# aggregate funnel counter, and their isolated helpers are deployable. New
-# files remain excluded until reviewed.
+# aggregate funnel counter, authenticated Talent intake processor, and their
+# isolated helpers are deployable. New files remain excluded until reviewed.
 api/*
 !api/newsletter-confirm.js
 !api/newsletter-digest.js
@@ -14,10 +14,15 @@ api/*
 !api/newsletter-unsubscribe.js
 !api/newsletter-webhook.js
 !api/funnel-event.js
+!api/ai-internships.js
+!api/mcp.js
+!api/talent-resume-profile.js
 lib/*
+!lib/agent-internship-search.js
 !lib/newsletter-matcher.js
 !lib/newsletter-server.js
 !lib/program-classification.js
+!lib/talent-ai.js
 
 # Research and seed material the site build never reads.
 docs/

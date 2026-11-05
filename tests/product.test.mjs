@@ -428,9 +428,9 @@ test("resume collection is prominent on high-intent pages without gating useful 
   assert.match(programHtml, /aria-label="Optional private Talent Network" data-nosnippet/);
 
   const resumeGuide = GUIDES.find(guide => guide.slug === "internship-resume-with-no-experience");
-  assert.match(render(guidePath(resumeGuide)), /Upload one private resume for future matches/);
+  assert.match(render(guidePath(resumeGuide)), /Upload once\. Let AI build the profile/);
   const interviewGuide = GUIDES.find(guide => guide.slug === "internship-interview-guide");
-  assert.doesNotMatch(render(guidePath(interviewGuide)), /Upload one private resume for future matches/);
+  assert.doesNotMatch(render(guidePath(interviewGuide)), /Upload once\. Let AI build the profile/);
 });
 test("program pages put the official opening ahead of conversion prompts and long-form content", async () => {
   const program = PROGRAMS[0];
@@ -611,12 +611,12 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   const vercelIgnore = await readFile(".vercelignore", "utf8");
   assert.match(vercelIgnore, /^api\/\*$/m, "API files must remain denylisted by default");
   assert.match(vercelIgnore, /^lib\/\*$/m, "server helpers must remain denylisted by default");
-  const expectedApiAllowlist = ["funnel-event.js", "newsletter-confirm.js", "newsletter-digest.js", "newsletter-run.js", "newsletter-subscribe.js", "newsletter-unsubscribe.js", "newsletter-webhook.js"].sort();
-  const expectedLibAllowlist = ["newsletter-matcher.js", "newsletter-server.js", "program-classification.js"].sort();
+  const expectedApiAllowlist = ["ai-internships.js", "funnel-event.js", "mcp.js", "newsletter-confirm.js", "newsletter-digest.js", "newsletter-run.js", "newsletter-subscribe.js", "newsletter-unsubscribe.js", "newsletter-webhook.js", "talent-resume-profile.js"].sort();
+  const expectedLibAllowlist = ["agent-internship-search.js", "newsletter-matcher.js", "newsletter-server.js", "program-classification.js", "talent-ai.js"].sort();
   const apiAllowlist = [...vercelIgnore.matchAll(/^!api\/([^\r\n]+)$/gm)].map(match => match[1]).sort();
   const libAllowlist = [...vercelIgnore.matchAll(/^!lib\/([^\r\n]+)$/gm)].map(match => match[1]).sort();
-  assert.deepEqual(apiAllowlist, expectedApiAllowlist, "only reviewed newsletter API functions may deploy");
-  assert.deepEqual(libAllowlist, expectedLibAllowlist, "only reviewed newsletter server helpers may deploy");
+  assert.deepEqual(apiAllowlist, expectedApiAllowlist, "only reviewed production API functions may deploy");
+  assert.deepEqual(libAllowlist, expectedLibAllowlist, "only reviewed production server helpers may deploy");
   for (const legacy of ["grade", "process-queue", "send-email", "stripe", "auth-google"]) {
     assert.doesNotMatch(vercelIgnore, new RegExp(`^!api/${legacy}\\.js$`, "m"), `${legacy} must stay quarantined`);
   }
@@ -687,7 +687,7 @@ test("account disclosures cover Google auth boundaries and separate newsletter c
     readFile("public/terms.html", "utf8"),
   ]);
   for (const [name, document] of [["privacy", privacy], ["terms", terms]]) {
-    assert.match(document, /Updated November 4, 2026/, `${name} disclosure date`);
+    assert.match(document, /Updated November 5, 2026/, `${name} disclosure date`);
     assert.match(document, /Supabase/, `${name} must identify the auth processor`);
     assert.match(document, /Gmail messages/, `${name} must explain that Gmail access is not requested`);
     assert.match(document, /Google Drive files/, `${name} must explain that Drive access is not requested`);

@@ -249,7 +249,7 @@ test("route resolution supports clean URLs and rejects unknown routes", () => {
 });
 test("October 21 growth release strengthens directory discovery and opens an ethical revenue path", async () => {
   const directory = resolvePage("/internships");
-  assert.equal(directory.title, `College Internships: ${PROGRAMS.length} Programs by Class Year`);
+  assert.equal(directory.title, `College Internships for Freshmen–Seniors: ${PROGRAMS.length}`);
   assert.match(directory.description, new RegExp(`Browse ${PROGRAMS.length} sourced college internship programs`));
   assert.ok(directory.description.includes(String(PROGRAMS.length)));
   assert.ok(directory.description.length >= 120 && directory.description.length <= 180);
@@ -271,7 +271,7 @@ test("October 21 growth release strengthens directory discovery and opens an eth
 test("October 28 Search Console pass improves directory and application-status answers", async () => {
   const directory = resolvePage("/internships");
   assert.ok(directory.title.length <= 52);
-  assert.match(directory.title, /College Internships: \d+ Programs by Class Year/);
+  assert.match(directory.title, /College Internships for Freshmen–Seniors: \d+/);
   const directoryHtml = await readFile("dist/internships.html", "utf8");
   assert.match(directoryHtml, /Start with the question you need answered/);
   for (const route of ["/summer-2027-college-internships", "/paid-college-internships", "/internship-deadlines", "/guides"]) assert.match(directoryHtml, new RegExp(`href="${route}"`));
@@ -1933,7 +1933,7 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
 });
 test("October 30 Search Console refresh improves the high-impression directory result", async () => {
   const directory = resolvePage("/internships");
-  assert.equal(directory.title, `College Internships: ${PROGRAMS.length} Programs by Class Year`);
+  assert.equal(directory.title, `College Internships for Freshmen–Seniors: ${PROGRAMS.length}`);
   assert.match(directory.description, /freshman, sophomore, junior or senior eligibility/);
   assert.ok(directory.title.length <= 60);
   assert.ok(directory.description.length >= 120 && directory.description.length <= 180);
@@ -1950,6 +1950,35 @@ test("October 30 Search Console refresh improves the high-impression directory r
 
   const deployment = JSON.parse(await readFile("vercel.json", "utf8"));
   assert.ok(deployment.redirects.some(redirect => redirect.source === "/firstinternships.com/high-school-internships" && redirect.destination === "/" && redirect.permanent));
+});
+test("November 3 CTR pass restores the directory snippet and refreshes Wells Fargo openings", async () => {
+  const directory = resolvePage("/internships");
+  assert.equal(directory.title, `College Internships for Freshmen–Seniors: ${PROGRAMS.length}`);
+  assert.ok(directory.title.length <= 52);
+  assert.match(directory.description, /freshman, sophomore, junior or senior eligibility/);
+
+  const wellsFargo = PROGRAMS.find(program => program.id === "wells-fargo-summer-internships");
+  assert.ok(wellsFargo);
+  assert.equal(wellsFargo.seoTitle, "Wells Fargo Internships 2027–28: Dates & Openings");
+  assert.ok(wellsFargo.seoTitle.length <= 52);
+  assert.ok(wellsFargo.seoDescription.length >= 120 && wellsFargo.seoDescription.length <= 180);
+  assert.equal(wellsFargo.status, "2027 Technology and 2028 CIB roles open at Nov. 3 review");
+  assert.equal(wellsFargo.verified, "2026-11-03");
+  assert.equal(wellsFargo.updated, "2026-11-03");
+  assert.match(wellsFargo.timing, /November 9, 2026/);
+  assert.match(wellsFargo.timing, /December 14, 2026/);
+  assert.ok(wellsFargo.sources.some(source => /r-583417/.test(source.url)));
+  assert.ok(wellsFargo.sources.some(source => /r-583066/.test(source.url)));
+  assert.ok(wellsFargo.sources.some(source => /r-584479/.test(source.url)));
+  assert.ok(wellsFargo.faqs.some(([question, answer]) => /summer 2027 internships still open/i.test(question) && /Yes, selected roles were open/.test(answer)));
+  assert.ok(wellsFargo.faqs.some(([question, answer]) => /Summer 2028 internship open/i.test(question) && /Houston Investment Banking/.test(answer)));
+
+  const directoryHtml = await readFile("dist/internships.html", "utf8");
+  assert.match(directoryHtml, new RegExp(`<title>College Internships for Freshmen–Seniors: ${PROGRAMS.length}</title>`));
+  const wellsHtml = await readFile(`dist${programPath(wellsFargo)}.html`, "utf8");
+  assert.match(wellsHtml, /<title>Wells Fargo Internships 2027–28: Dates &amp; Openings<\/title>/);
+  assert.match(wellsHtml, /Are Wells Fargo summer 2027 internships still open\?/);
+  assert.match(wellsHtml, /Is a Wells Fargo Summer 2028 internship open\?/);
 });
 test("November 2 Gilead refresh matches summer search intent and freshman eligibility", async () => {
   const gilead = PROGRAMS.find(program => program.id === "gilead-internship-program");

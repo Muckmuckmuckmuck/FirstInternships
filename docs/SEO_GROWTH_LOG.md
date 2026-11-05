@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-03 — directory regression fix and Wells Fargo live-opening refresh
+
+### Baseline
+
+- Window: October 5–November 1, 2026, the latest complete 28 days available in Search Console during this release, compared with September 7–October 4.
+- Site totals rose from 121 to 802 clicks and from 11,700 to 79,700 impressions. Average position improved from 10.5 to 9.1, while CTR stayed at 1.0%. The traffic constraint is now the search result, not a lack of indexed pages.
+- The exact `/internships` row recorded 1 click from 1,217 impressions at 0.1% CTR and average position 7.3, compared with 1 click from 77 impressions at 1.3% CTR and average position 27.1. It passed the 200-new-impression reassessment threshold, and the code had drifted back to the taxonomy-led title despite the October release log documenting the student-led title.
+- `/programs/wells-fargo-summer-internships` recorded 3 clicks from 859 impressions at 0.3% CTR and average position 8.6. Its visible query sample included `wells fargo summer 2028 internship`, `when do wells fargo internships open`, `wells fargo 2028 internship`, `wells fargo summer 2027 internship` and undergraduate-internship variants, mostly around positions 6–10 with no clicks.
+
+### Changes
+
+- Preserved `/internships` and restored the concise student-led title `College Internships for Freshmen–Seniors: 558`. The description, useful directory, year/field navigation and official-application boundary remain unchanged.
+- Preserved the established Wells Fargo URL and aligned its title with both the 2027 and 2028 query families. The description now names current selected openings and their published November 9 and December 14 posting end dates instead of repeating the outdated October 18 no-openings review.
+- Reverified Wells Fargo's official Early Careers board, two current Summer 2027 Technology postings and the current Houston Summer 2028 Investment Banking posting. The guide now explains the live-role exception to the employer-wide January 2027 CIB timeline, the separate graduation windows, 10-week format, role-specific pay, assessment and sponsorship rules.
+- Added current official sources and direct answers about whether selected 2027 and 2028 internships are open. No new Wells Fargo URL, broad open-now claim or inferred deadline was created.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/internships` and `/programs/wells-fargo-summer-internships`, interpreted alongside average position and query mix.
+- Supporting query families: `college internships`, freshman/freshers-to-senior variants, `wells fargo summer 2028 internship`, `when do wells fargo internships open`, `wells fargo 2028 internship` and Summer 2027 variants.
+- Guardrails: no URL change, no duplicated broad directory, no statement that every Wells Fargo internship is open, no conversion of desired qualifications into universal requirements and no content gate before the useful answer.
+- Reassess after another 500 impressions per changed URL or 28 days. Preserve the URLs and source-backed facts; only refresh the snippets sooner if the official role status changes.
+
 ## 2026-11-03 — World Bank and application-status CTR follow-up
 
 ### Baseline

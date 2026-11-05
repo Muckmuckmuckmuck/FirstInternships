@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 import {
+  TALENT_AI_MATCHING_CONSENT_VERSION,
   TALENT_CONSENT_VERSION,
   TALENT_RESUME_MAX_BYTES,
   cleanTalentProfile,
@@ -28,6 +29,7 @@ function validProfile(overrides = {}) {
     ageConfirmed: true,
     placementConsent: true,
     specificShareOnly: true,
+    aiMatchingConsent: true,
     ...overrides,
   };
 }
@@ -46,6 +48,7 @@ test("Talent Network profile input is bounded, canonical, and separately consent
   assert.equal(validateTalentProfile(clean, { hasResume: true, validFieldIds: FIELD_IDS }), "");
   assert.match(validateTalentProfile({ ...clean, placementConsent: false }, { hasResume: true, validFieldIds: FIELD_IDS }), /want FirstInternships/i);
   assert.match(validateTalentProfile({ ...clean, specificShareOnly: false }, { hasResume: true, validFieldIds: FIELD_IDS }), /specific opportunity/i);
+  assert.match(validateTalentProfile({ ...clean, aiMatchingConsent: false }, { hasResume: true, validFieldIds: FIELD_IDS }), /AI-assisted/i);
   assert.match(validateTalentProfile(clean, { hasResume: false, validFieldIds: FIELD_IDS }), /Upload your resume/i);
 });
 
@@ -70,10 +73,59 @@ test("Talent Network response normalization never exposes a resume storage path"
     resume_filename: "ada-resume.pdf",
     resume_path: "someone-secret/resume.pdf",
     consent_version: TALENT_CONSENT_VERSION,
+    ai_matching_enabled: true,
+    ai_matching_consent_version: TALENT_AI_MATCHING_CONSENT_VERSION,
+    resume_index_status: "ready",
   });
   assert.equal(normalized.resumeFilename, "ada-resume.pdf");
+  assert.equal(normalized.aiMatchingEnabled, true);
+  assert.equal(normalized.aiConsentVersion, TALENT_AI_MATCHING_CONSENT_VERSION);
+  assert.equal(normalized.resumeIndexStatus, "ready");
   assert.equal("resumePath" in normalized, false);
   assert.equal(JSON.stringify(normalized).includes("someone-secret"), false);
+});
+
+test("AI resume matching migration is additive, separately consented, service-only, and human-reviewed", async () => {
+  const sql = await readFile("supabase/migrations/202611040001_talent_ai_matching.sql", "utf8");
+  assert.match(sql, /add column if not exists ai_matching_enabled boolean not null default false/i);
+  assert.match(sql, new RegExp(`ai_matching_consent_version = '${TALENT_AI_MATCHING_CONSENT_VERSION}'`, "i"));
+  assert.match(sql, /talent_ai_matching_consent_required/i);
+  assert.match(sql, /create table if not exists public\.talent_resume_index_jobs/i);
+  assert.match(sql, /create table if not exists public\.talent_resume_index/i);
+  assert.match(sql, /create table if not exists public\.talent_match_suggestions/i);
+  assert.match(sql, /create or replace view public\.talent_ai_candidate_pool/i);
+  assert.match(sql, /service_find_talent_candidates/i);
+  assert.match(sql, /human review required/i);
+  assert.match(sql, /grant (?:select|execute).* to service_role/i);
+  assert.match(sql, /revoke all on table public\.talent_resume_index from public, anon, authenticated/i);
+  assert.doesNotMatch(sql, /grant\s+(?:select|insert|update|delete|all).*talent_(?:resume_index|match_suggestions).*authenticated/i);
+  assert.doesNotMatch(sql, /(?:update|delete from)\s+auth\.users/i);
+  assert.doesNotMatch(sql, /(?:update|delete from)\s+public\.newsletter_/i);
+  assert.doesNotMatch(sql, /delete from\s+public\.talent_profiles/i);
+  assert.match(sql, /does not retain raw extracted resume text/i);
+  const viewSql = sql.match(/create or replace view public\.talent_ai_candidate_pool[\s\S]+?create or replace function public\.service_find_talent_candidates/i)?.[0] || "";
+  for (const forbidden of ["full_name", "school", "linkedin_url", "portfolio_url", "resume_filename", "resume_path"]) {
+    assert.doesNotMatch(viewSql, new RegExp(`profile\\.${forbidden}`, "i"), forbidden);
+  }
+});
+
+test("AI-assistant resume handoff is discoverable but cannot bypass user authentication or consent", async () => {
+  const [manifestText, instructions, build] = await Promise.all([
+    readFile("public/.well-known/firstinternships-resume-upload.json", "utf8"),
+    readFile("public/ai-resume-upload.md", "utf8"),
+    readFile("scripts/build.mjs", "utf8"),
+  ]);
+  const manifest = JSON.parse(manifestText);
+  assert.equal(manifest.handoff_url, "https://firstinternships.com/talent-network?source=ai-assistant#join");
+  assert.equal(manifest.direct_upload_api, null);
+  assert.equal(manifest.file.maximum_bytes, TALENT_RESUME_MAX_BYTES);
+  assert.equal(manifest.employer_browse_access, false);
+  assert.equal(manifest.automated_hiring_decision, false);
+  assert.match(manifest.user_actions_required.join(" "), /Authenticate[\s\S]*Select the resume PDF[\s\S]*consent/i);
+  assert.match(instructions, /student must complete the secure handoff themselves/i);
+  assert.match(instructions, /Do not transmit the resume/i);
+  assert.match(build, /Private resume handoff for AI assistants/);
+  assert.match(build, /do not send resume data to another endpoint/i);
 });
 
 test("Talent Network migration is additive, private, owner-scoped, and server-enforced", async () => {
@@ -106,22 +158,25 @@ test("Talent Network UI and policies preserve a clear consent and control bounda
     readFile("public/terms.html", "utf8"),
     readFile("docs/TALENT_NETWORK_SYSTEM.md", "utf8"),
   ]);
-  for (const phrase of ["Newsletter consent is separate", "employers cannot browse", "specific opportunity", "Delete profile and resume", "at least 18 years old"]) {
+  for (const phrase of ["Newsletter consent is separate", "employers cannot browse", "specific opportunity", "Delete profile and resume", "at least 18 years old", "I want private AI-assisted opportunity matching", "Turn off AI matching", "No automated hiring decision"]) {
     assert.match(page, new RegExp(phrase, "i"), phrase);
   }
   assert.match(page, /returnPath: "\/talent-network"/);
   for (const event of ["talent_cta_viewed", "talent_cta_clicked", "talent_resume_selected", "talent_employer_path_opened"]) assert.match(page, new RegExp(`"${event}"`));
   assert.match(page, /new IntersectionObserver[\s\S]*threshold: 0\.35/);
-  assert.match(page, /Four short sections, then you are done/);
+  assert.match(page, /Upload\. Add the basics\. Done\./);
   assert.match(page, /Choose no more than \$\{maxItems\}/);
-  assert.match(styles, /\.talent-progress[\s\S]*grid-template-columns: repeat\(4/);
-  assert.match(styles, /@media \(max-width: 680px\)[\s\S]*\.talent-progress \{ grid-template-columns: repeat\(2/);
+  assert.match(styles, /\.talent-progress[\s\S]*grid-template-columns: repeat\(3/);
+  assert.match(styles, /@media \(max-width: 680px\)[\s\S]*\.talent-progress \{ grid-template-columns: 1fr/);
   assert.doesNotMatch(page, /window\.confirm/);
   assert.match(client, /createSignedUrl\([^,]+, 60\)/);
   assert.doesNotMatch(client, /getPublicUrl/);
   assert.match(privacy, /At or before collection/i);
   assert.match(privacy, /private Talent Network/i);
+  assert.match(privacy, /AI-assisted matching/i);
+  assert.match(privacy, /does not make hiring decisions/i);
   assert.match(terms, /an employer may pay FirstInternships/i);
+  assert.match(terms, /human review/i);
   assert.match(docs, /10,000 \*\*active, current, consented profiles/i);
   assert.match(docs, /no employer preference based on protected traits/i);
 });

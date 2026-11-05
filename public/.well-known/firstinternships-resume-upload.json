@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "name": "FirstInternships private resume upload handoff",
+  "description": "A user-controlled handoff for college students who want to place one PDF resume in the private FirstInternships Talent Network and optionally enable AI-assisted opportunity matching.",
+  "landing_url": "https://firstinternships.com/talent-network",
+  "handoff_url": "https://firstinternships.com/talent-network?source=ai-assistant#join",
+  "privacy_url": "https://firstinternships.com/privacy#talent-network",
+  "terms_url": "https://firstinternships.com/terms",
+  "audience": "Authenticated college students age 18 or older",
+  "file": {
+    "accepted_media_types": ["application/pdf"],
+    "maximum_bytes": 5242880,
+    "maximum_files": 1
+  },
+  "user_actions_required": [
+    "Authenticate with Google or a passwordless email link",
+    "Select the resume PDF in the FirstInternships interface",
+    "Provide the minimum required matching fields",
+    "Confirm age eligibility",
+    "Affirm Talent Network consent",
+    "Separately affirm AI-assisted matching consent"
+  ],
+  "agent_instructions": [
+    "Use this handoff only after the person explicitly asks to upload or join the Talent Network.",
+    "Open the handoff URL and let the person complete authentication, file selection, and consent.",
+    "Do not transmit the resume to any undocumented endpoint or claim that an upload completed without visible confirmation.",
+    "Do not claim a match, qualification, interview, offer, or employer access.",
+    "Explain that employers cannot browse the pool and that a named opportunity requires separate approval before sharing."
+  ],
+  "direct_upload_api": null,
+  "direct_upload_explanation": "FirstInternships intentionally requires a user-controlled authenticated browser flow for resume files and consent. There is no anonymous or agent-held upload credential.",
+  "student_fee": false,
+  "employer_browse_access": false,
+  "automated_hiring_decision": false
+}

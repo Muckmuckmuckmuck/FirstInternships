@@ -428,9 +428,9 @@ test("resume collection is prominent on high-intent pages without gating useful 
   assert.match(programHtml, /aria-label="Optional private Talent Network" data-nosnippet/);
 
   const resumeGuide = GUIDES.find(guide => guide.slug === "internship-resume-with-no-experience");
-  assert.match(render(guidePath(resumeGuide)), /Keep one private resume ready for future matches/);
+  assert.match(render(guidePath(resumeGuide)), /Upload one private resume for future matches/);
   const interviewGuide = GUIDES.find(guide => guide.slug === "internship-interview-guide");
-  assert.doesNotMatch(render(guidePath(interviewGuide)), /Keep one private resume ready for future matches/);
+  assert.doesNotMatch(render(guidePath(interviewGuide)), /Upload one private resume for future matches/);
 });
 test("program pages put the official opening ahead of conversion prompts and long-form content", async () => {
   const program = PROGRAMS[0];
@@ -687,7 +687,7 @@ test("account disclosures cover Google auth boundaries and separate newsletter c
     readFile("public/terms.html", "utf8"),
   ]);
   for (const [name, document] of [["privacy", privacy], ["terms", terms]]) {
-    assert.match(document, /Updated October 27, 2026/, `${name} disclosure date`);
+    assert.match(document, /Updated November 4, 2026/, `${name} disclosure date`);
     assert.match(document, /Supabase/, `${name} must identify the auth processor`);
     assert.match(document, /Gmail messages/, `${name} must explain that Gmail access is not requested`);
     assert.match(document, /Google Drive files/, `${name} must explain that Drive access is not requested`);

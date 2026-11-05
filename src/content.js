@@ -680,7 +680,7 @@ export function resolvePage(pathname) {
     "/contact": ["contact", "Contact FirstInternships", "Report a program correction, suggest an undergraduate opportunity, or contact the FirstInternships directory team."],
     "/saved": ["saved", "Your Saved Internships & Application Tracker", "Plan your internship applications, record next actions, and export your saved list. Stored in your browser, with no account required."],
     "/account": ["account", "Your Personalized Internship Alerts", "Create or manage a free FirstInternships account and choose the college year, fields, location, work arrangements, and email cadence that fit you."],
-    "/talent-network": ["talent", "College Internship Talent Network | FirstInternships", "Create a private college internship candidate profile and upload one resume. Free for students; employers cannot browse profiles, and sharing requires opportunity-specific approval."],
+    "/talent-network": ["talent", "Upload Your Resume for Internship Matches | FirstInternships", "Upload one private college resume for AI-assisted internship matching with human review. Free for students; employers cannot browse, and sharing needs your approval."],
   }[path];
   return basic ? { type: basic[0], path, title: basic[1], description: basic[2] } : { type: "404", path, title: "Page Not Found", description: "Find college internship pathways and application guides on FirstInternships." };
 }

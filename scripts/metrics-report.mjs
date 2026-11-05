@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { createClient } from "@supabase/supabase-js";
-import { TALENT_CONSENT_VERSION } from "../src/talent-client.js";
+import { TALENT_AI_MATCHING_CONSENT_VERSION, TALENT_CONSENT_VERSION } from "../src/talent-client.js";
 
 const DAY = 86_400_000;
 const PERIOD_DAYS = 28;
@@ -134,13 +134,18 @@ async function collectSupabase() {
     for (const row of data || []) totals.set(row.event_name, (totals.get(row.event_name) || 0) + Number(row.event_count || 0));
     funnelEvents = [...totals].map(([eventName, count]) => ({ eventName, count, visitors: 0 }));
   } catch (error) { warnings.push(`funnel_daily_counts: ${error.message}`); }
-  const talent = { active: null, paused: null, total: null, newProfiles: null, currentConsent: null };
+  const talent = { active: null, paused: null, total: null, newProfiles: null, currentConsent: null, aiEnabled: null, indexQueued: null, indexReady: null, freshMatchable: null };
   try {
     talent.active = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active"));
     talent.paused = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "paused"));
     talent.total = talent.active + talent.paused;
     talent.newProfiles = await exactCount(client, "talent_profiles", "user_id", query => query.gte("created_at", currentSince));
     talent.currentConsent = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active").eq("placement_consent_version", TALENT_CONSENT_VERSION).not("resume_uploaded_at", "is", null));
+    talent.aiEnabled = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active").eq("ai_matching_enabled", true).eq("ai_matching_consent_version", TALENT_AI_MATCHING_CONSENT_VERSION));
+    talent.indexQueued = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active").eq("resume_index_status", "queued"));
+    talent.indexReady = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active").eq("resume_index_status", "ready"));
+    const freshnessCutoff = new Date(Date.now() - 180 * DAY).toISOString();
+    talent.freshMatchable = await exactCount(client, "talent_profiles", "user_id", query => query.eq("status", "active").eq("placement_consent_version", TALENT_CONSENT_VERSION).eq("ai_matching_enabled", true).eq("ai_matching_consent_version", TALENT_AI_MATCHING_CONSENT_VERSION).gte("last_confirmed_at", freshnessCutoff).not("resume_uploaded_at", "is", null));
   } catch (error) { warnings.push(error.message); }
 
   return {
@@ -273,7 +278,8 @@ function renderReport(vercel, supabase) {
     );
     if (supabase.talent?.total !== null) lines.push(
       `- Private Talent Network: **${integer(supabase.talent.active)} active** and ${integer(supabase.talent.paused)} paused profiles; ${integer(supabase.talent.newProfiles)} created in the last 28 days.`,
-      `- Database-eligible profiles with active status, current consent and a resume record: **${integer(supabase.talent.currentConsent)}**. Progress toward the 10,000-profile operating milestone: **${percent(supabase.talent.currentConsent, 10_000)}**. Storage-object presence and the future freshness window still require separate audits before any profile is considered placement-ready.`,
+      `- Database-eligible profiles with active status, current placement consent and a resume record: **${integer(supabase.talent.currentConsent)}**. Progress toward the 10,000-profile operating milestone: **${percent(supabase.talent.currentConsent, 10_000)}**. Storage-object presence still requires a separate audit before any profile is considered placement-ready.`,
+      `- Private AI matching: **${integer(supabase.talent.aiEnabled)} enabled**; ${integer(supabase.talent.indexQueued)} queued for resume indexing; ${integer(supabase.talent.indexReady)} indexed; **${integer(supabase.talent.freshMatchable)} fresh matchable profiles** under the current 180-day, consent, active-status, and resume-record rules. These are aggregate operational counts, not hiring scores.`,
       `- The milestone is a planning threshold, not permission to launch placements without legal, fairness, security, employer-contract, and candidate-consent readiness.`,
     );
   } else lines.push(`- ${supabase.warning || "Supabase metrics were unavailable."}`);

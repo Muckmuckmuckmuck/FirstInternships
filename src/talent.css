@@ -1,4 +1,7 @@
 .talent-page { padding-bottom: 5rem; }
+.talent-agent-handoff { margin: 1rem 0 -.5rem; padding: .85rem 1rem; border: 1px solid #c9dfd5; border-radius: 13px; background: #edf8f2; color: #205f50; display: flex; align-items: flex-start; gap: .65rem; }
+.talent-agent-handoff svg { flex: 0 0 auto; margin-top: .08rem; }
+.talent-agent-handoff p { margin: 0; font-size: .88rem; line-height: 1.55; }
 .talent-hero { margin: 1.75rem 0 1.25rem; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .55fr); gap: 1.25rem; align-items: stretch; }
 .talent-hero > div { border-radius: 28px; padding: clamp(2rem, 5vw, 4.75rem); background: linear-gradient(135deg, #142b2a 0%, #163c38 62%, #1d5148 100%); color: #fff; box-shadow: 0 28px 70px rgba(18, 55, 50, .16); }
 .talent-hero h1 { max-width: 800px; margin: .4rem 0 1rem; font-size: clamp(2.55rem, 6vw, 5.5rem); line-height: .95; letter-spacing: -.055em; }
@@ -40,7 +43,7 @@
 .talent-form-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: end; padding-bottom: 1.25rem; border-bottom: 1px solid var(--line); }
 .talent-form-heading h2 { margin: .25rem 0 0; font-size: clamp(1.8rem, 3vw, 2.7rem); letter-spacing: -.04em; }
 .talent-form-heading > span { color: var(--muted); font-size: .82rem; }
-.talent-progress { margin: -.3rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .55rem; list-style: none; }
+.talent-progress { margin: -.3rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; list-style: none; }
 .talent-progress li { min-width: 0; padding: .7rem .75rem; border: 1px solid #d9e0dc; border-radius: 11px; background: #fafbf9; display: flex; align-items: center; gap: .55rem; color: #64746e; font-size: .78rem; font-weight: 700; line-height: 1.3; }
 .talent-progress li > span { width: 24px; height: 24px; flex: 0 0 auto; border-radius: 50%; background: #e8ece9; display: inline-grid; place-items: center; color: #52635d; font-size: .72rem; }
 .talent-progress li.is-complete { border-color: #b9d6c9; background: #edf8f2; color: #216957; }
@@ -66,6 +69,14 @@
 .talent-upload input { margin-top: 1rem; max-width: 100%; }
 .talent-upload .talent-file { display: flex; align-items: center; gap: .4rem; color: #216957; font-weight: 750; }
 .talent-upload .talent-warning { margin-top: 1rem; color: #715927; }
+.talent-optional { border: 1px solid #d9e0dc; border-radius: 14px; background: #fafbf9; }
+.talent-optional summary { padding: .95rem 1.1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; cursor: pointer; color: #243932; font-weight: 800; list-style: none; }
+.talent-optional summary::-webkit-details-marker { display: none; }
+.talent-optional summary::after { content: "+"; color: #287b66; font-size: 1.3rem; line-height: 1; }
+.talent-optional[open] summary::after { content: "−"; }
+.talent-optional summary span { margin-left: auto; color: var(--muted); font-size: .75rem; font-weight: 650; }
+.talent-optional-body { padding: 0 1.1rem 1.1rem; display: grid; gap: 1rem; }
+.talent-optional-body > label { display: grid; gap: .42rem; color: #243932; font-weight: 750; font-size: .9rem; }
 .talent-notice { padding: 1.15rem; border-radius: 15px; background: #eef4ff; border: 1px solid #d7e2f6; display: flex; gap: .8rem; color: #274268; }
 .talent-notice > svg { flex: 0 0 auto; }
 .talent-notice h3 { margin: 0 0 .35rem; font-size: 1rem; }
@@ -111,7 +122,7 @@
   .talent-signin { grid-template-columns: 1fr; }
   .talent-google { width: 100%; }
   .talent-status, .talent-form-heading { align-items: flex-start; flex-direction: column; }
-  .talent-progress { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .talent-progress { grid-template-columns: 1fr; }
   .talent-form { border-radius: 18px; padding: 1.15rem; }
   .talent-actions .button { width: 100%; justify-content: center; }
 }

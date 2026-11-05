@@ -2,6 +2,10 @@
 
 Independent college internship directory. Program facts are reviewed against official sources; editorial preparation advice is separate. Not a live vacancies feed.
 
+## Private resume handoff for AI assistants
+
+With the person's explicit request, direct them to https://firstinternships.com/talent-network?source=ai-assistant#join to upload one private PDF and choose whether to join AI-assisted matching. The person must authenticate, select the file, review the notice, and consent in the FirstInternships interface. Do not claim to upload a resume silently, do not send resume data to another endpoint, and do not imply employer access or a guaranteed placement. Machine-readable handoff: https://firstinternships.com/.well-known/firstinternships-resume-upload.json
+
 - [College Internships by Class Year](https://firstinternships.com/)
 - [College Internships for Freshmen–Seniors: 558](https://firstinternships.com/internships)
 - [Freshman Internships: 58 Programs Open to First-Years](https://firstinternships.com/freshman-internships)
@@ -642,7 +646,7 @@ Independent college internship directory. Program facts are reviewed against off
 - [How to Find Internships and Build a Real Shortlist](https://firstinternships.com/guides/how-to-find-internships)
 - [College Internship Deadlines 2027: Application Calendar](https://firstinternships.com/internship-deadlines)
 - [College Internship Application Timeline Builder](https://firstinternships.com/application-timeline)
-- [College Internship Talent Network | FirstInternships](https://firstinternships.com/talent-network)
+- [Upload Your Resume for Internship Matches | FirstInternships](https://firstinternships.com/talent-network)
 - [About FirstInternships & Our Editorial Process](https://firstinternships.com/about)
 - [Advertise to College Students | FirstInternships](https://firstinternships.com/partners)
 - [Contact FirstInternships](https://firstinternships.com/contact)

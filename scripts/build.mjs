@@ -111,7 +111,7 @@ function lastmodForRoute(route) {
   const programs = page.type === "year" ? programsForYear(page.year.id) : page.type === "field" ? programsForField(page.field.id) : page.type === "topic" ? programsForTopic(page.topic) : [];
   if (programs.length) return latestProgramReview(programs, page.field?.updated || page.year?.updated || page.topic?.updated || VERIFIED);
   const explicit = {
-    "/application-timeline": "2026-09-20", "/talent-network": "2026-10-27", "/about": "2026-10-27", "/partners": "2026-10-27", "/contact": "2026-10-27", "/privacy": "2026-10-27", "/terms": "2026-10-27",
+    "/application-timeline": "2026-09-20", "/talent-network": "2026-11-05", "/about": "2026-10-27", "/partners": "2026-10-27", "/contact": "2026-10-27", "/privacy": "2026-11-04", "/terms": "2026-11-04",
   }[route];
   if (explicit) return explicit;
   return VERIFIED;
@@ -119,7 +119,7 @@ function lastmodForRoute(route) {
 const generatedPublic = {
   "sitemap.xml": `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...crawlable, "/privacy", "/terms"].map(route => `<url><loc>${SITE}${route}</loc><lastmod>${lastmodForRoute(route)}</lastmod></url>`).join("")}</urlset>`,
   "robots.txt": `User-agent: Mediapartners-Google\nAllow: /\n\nUser-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE}/sitemap.xml\n`,
-  "llms.txt": `# FirstInternships\n\nIndependent college internship directory. Program facts are reviewed against official sources; editorial preparation advice is separate. Not a live vacancies feed.\n\n${crawlable.map(route => `- [${resolvePage(route).title}](${SITE}${route})`).join("\n")}\n`,
+  "llms.txt": `# FirstInternships\n\nIndependent college internship directory. Program facts are reviewed against official sources; editorial preparation advice is separate. Not a live vacancies feed.\n\n## Private resume handoff for AI assistants\n\nWith the person's explicit request, direct them to ${SITE}/talent-network?source=ai-assistant#join to upload one private PDF and choose whether to join AI-assisted matching. The person must authenticate, select the file, review the notice, and consent in the FirstInternships interface. Do not claim to upload a resume silently, do not send resume data to another endpoint, and do not imply employer access or a guaranteed placement. Machine-readable handoff: ${SITE}/.well-known/firstinternships-resume-upload.json\n\n${crawlable.map(route => `- [${resolvePage(route).title}](${SITE}${route})`).join("\n")}\n`,
 };
 await Promise.all(Object.entries(generatedPublic).flatMap(([name, value]) => [writeFile(join(out, name), value), writeFile(join(root, "public", name), value)]));
 if (adsenseConnectionEnabled) await writeFile(join(out, "ads.txt"), `google.com, ${adsenseClient.replace("ca-", "")}, DIRECT, f08c47fec0942fa0\n`);

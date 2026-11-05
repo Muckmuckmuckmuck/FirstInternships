@@ -1,6 +1,6 @@
 # FirstInternships Talent Network system
 
-Status: Phase 1 candidate collection, implemented October 27, 2026. Paid placement is **not live**.
+Status: Phase 1 private collection plus service-only matching foundation, updated November 5, 2026. Paid placement is **not live**.
 
 This document is the product, privacy, security and operating contract for the private resume pool. It should be read before changing the Talent Network UI, database, storage policies, owner metrics, privacy policy, terms, or employer-facing commercial copy.
 
@@ -16,7 +16,7 @@ The Talent Network is optional and free for students. It is separate from:
 
 Joining one system never implies consent to another. A Google account does not enroll a user in the newsletter or Talent Network. A newsletter subscription does not create a candidate profile. A candidate profile does not authorize blanket employer access.
 
-Phase 1 lets an authenticated adult create one structured profile and store one private PDF resume. FirstInternships may use that information internally to identify possible opportunities and contact the candidate. Employers cannot browse, search, export or buy the pool. FirstInternships is not currently submitting candidates or making placements.
+Phase 1 lets an authenticated adult create one structured profile and store one private PDF resume. With separate AI-matching consent, the structured profile enters a service-only finder immediately and a trusted worker may later derive a limited job-related resume index. FirstInternships may use that information internally to identify possible opportunities and contact the candidate. Employers cannot browse, search, export or buy the pool. FirstInternships is not currently submitting candidates or making placements.
 
 ## 2. Student promise
 
@@ -50,13 +50,15 @@ The resume may contain contact information the candidate chose to include. Treat
 
 ## 4. Consent model
 
-The candidate must affirm all three items before a profile can be saved:
+The candidate must affirm all three placement items before a profile can be saved:
 
 1. They are at least 18.
 2. They want FirstInternships to use the profile and resume internally to identify relevant opportunities and contact them.
 3. They understand employer sharing is limited to a separately approved, specific opportunity.
 
-The current consent version is `2026-10-27`. The database, not the browser clock, records consent time. Changes to material purpose, employer disclosure, automated decision-making or student fees require a new consent version and a re-consent design before deployment.
+The placement consent version is `2026-10-27`. The separate AI-matching consent version is `2026-11-04`. New AI-enabled saves must affirm both; existing profiles default to AI matching off and are never silently opted in. The database, not the browser clock, records consent time. Changes to material purpose, employer disclosure, automated decision-making or student fees require a new consent version and a re-consent design before deployment.
+
+AI consent permits job-related extraction and internal matching suggestions for human review. It does not permit an automated qualification decision, rejection, employer search, or employer disclosure. The candidate can turn AI matching off without deleting the underlying profile or PDF; that action deletes the derived index and pending indexing job.
 
 The later placement phase must not reinterpret Phase 1 consent as permission to share. `talent_employer_share_permissions` is deliberately service-only and opportunity-specific. A future approval flow must name the employer, role, information to be shared, fee arrangement where relevant, expiration and revocation path.
 
@@ -69,6 +71,9 @@ The later placement phase must not reinterpret Phase 1 consent as permission to 
 - Profile writes use authenticated RPC functions that enforce consent version, required fields, file path, list limits and per-opportunity sharing mode on the server.
 - Consent history is append-only and excludes resume content, email, school, desired role and protected-trait data.
 - The reserved employer-permission table has no public client function and no employer-facing read path.
+- `talent_resume_index_jobs`, `talent_resume_index`, `talent_match_suggestions`, `talent_ai_candidate_pool`, and the finder/worker functions are service-role only. Anonymous and authenticated browser roles receive no direct access.
+- A consented profile is privately findable from bounded structured fields immediately. Resume enrichment is asynchronous. The derived index stores only bounded skills, role keywords, experience keywords, and a job-related summary—not raw extracted text, identity, contact details, school, links, filenames, paths, or protected-trait fields.
+- A worker may receive the deterministic private object path only after claiming an eligible queue item through the service-role function. Never expose that function or credential to a browser, AI assistant, employer, or public MCP server.
 - Owner metrics use the service role on the server/owner machine and report counts only. They must never print names, emails, schools, URLs, resume paths, resume content or individual preferences.
 
 Never make the resume bucket public, use a permanent public URL, put a resume URL in analytics, or send candidate fields through Vercel/Cloudflare events.
@@ -82,6 +87,7 @@ The signed-in page provides:
 - JSON export of structured profile fields;
 - a short-lived signed link to download the candidate's own resume; and
 - explicit deletion of the profile and stored resume without a native browser confirmation dialog.
+- a separate control to disable AI matching and delete the derived index/queue while keeping the profile and PDF.
 
 Deletion removes the candidate profile and opportunity-permission rows. A minimal consent/deletion event may remain to document the instruction and prevent accidental reuse. Auth and newsletter records are separate and are not deleted by Talent Network deletion.
 
@@ -121,7 +127,7 @@ The EEOC says employment agencies are covered when they regularly refer employee
 
 ## 9. Matching policy
 
-Phase 1 does not automatically rank or reject candidates. Future matching may use job-related information such as field, role, degree, graduation timing, broad location and work arrangement. It must not use protected traits or proxies designed to reproduce protected-trait preferences.
+Phase 1 may use the private service-only finder to suggest candidates to trained FirstInternships reviewers. It does not automatically qualify, rank for an employer, reject, or share candidates. Matching may use job-related information such as field, role, degree, graduation timing, broad location, work arrangement, skills, and experience keywords. It must not use protected traits or proxies designed to reproduce protected-trait preferences. Any numeric or text relevance result is a review aid, not a hiring score.
 
 Every referral decision should preserve:
 
@@ -153,6 +159,8 @@ For every Talent Network change:
 7. Confirm no talent event contains user-entered values.
 8. Update privacy/terms copy before changing data categories or purposes.
 9. Apply the additive Supabase migration before enabling a dependent production UI.
-10. Verify create, update, pause, resume, export, resume download and deletion in production with a non-owner test account.
+10. Confirm AI-off profiles are absent from the finder and disabling AI deletes the queue/index without deleting the profile or PDF.
+11. Confirm finder and worker functions are executable only by `service_role`, return no forbidden identity/contact/path fields, and require the current resume snapshot.
+12. Verify create, update, pause, resume, AI disable, export, resume download and deletion in production with a non-owner test account.
 
 Never delete or rewrite existing auth users or newsletter records while deploying Talent Network schema.

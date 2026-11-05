@@ -114,14 +114,14 @@ function Header({ planner, pageType }) {
   const accountLabel = account.status === "signed-in" ? "My alerts" : "Get matches";
   const links = [
     ["Find internships", "/internships", ["directory", "year", "field", "topic", "program"]],
-    ["Talent network", "/talent-network", ["talent"]],
+    ["Upload resume", "/talent-network", ["talent"]],
     ["Application help", "/guides", ["guides", "guide"]],
     ["Deadlines", "/internship-deadlines", ["deadlines"]],
     ["Plan an application", "/application-timeline", ["timeline"]],
   ];
   return <header className="site-header">
     <a className="brand" href="/" aria-label="FirstInternships home"><BrandIdentity /></a>
-    <nav className="main-nav" aria-label="Main navigation">{links.map(([label, href, types], index) => <a className={index === 0 ? "nav-primary" : undefined} aria-current={types.includes(pageType) ? "page" : undefined} key={href} href={href}>{label}</a>)}</nav>
+    <nav className="main-nav" aria-label="Main navigation">{links.map(([label, href, types], index) => <a className={index === 0 ? "nav-primary" : href === "/talent-network" ? "nav-talent" : undefined} aria-current={types.includes(pageType) ? "page" : undefined} key={href} href={href}>{label}</a>)}</nav>
     {accountFeatureEnabled() && <a className="account-nav" href="/account"><BellRing size={16} /> {accountLabel}</a>}
     <a className="saved-nav" href="/saved"><Bookmark size={16} /> Saved <span>{planner.saved.length}</span></a>
     <button className="menu-button" onClick={() => setOpen(!open)} aria-expanded={open} aria-controls={open ? "mobile-menu" : undefined} aria-label={open ? "Close navigation" : "Open navigation"}>{open ? <X size={21} /> : <Menu size={21} />}</button>
@@ -351,8 +351,8 @@ function Home({ planner }) {
     </div></section>
     <section className="source-strip container" aria-label="Programs in the directory"><p><span>{PROGRAMS.length} sourced pathways</span><small>Independent guides. Not employer endorsements.</small></p><div>{["microsoft-explore", "nasa-ostem", "doe-suli", "goldman-sachs-summer-analyst"].map(id => { const p = PROGRAMS.find(item => item.id === id); return <a href={programPath(p)} key={id}>{p.company === "US Department of Energy" ? "DOE Labs" : p.company}<ArrowUpRight size={13} /></a>; })}</div></section>
     <section className="container section" id="year-guide"><div className="section-heading"><div><p className="eyebrow">Start here / choose one</p><h2>What year are you in?</h2></div><p className="section-aside">One tap gets you to internships<br />with confirmed year eligibility.</p></div><YearLinks /><div className="explore-fields"><span>Not sure? Browse by interest instead</span><FieldLinks /></div></section>
-    {accountFeatureEnabled() && <section className="container account-home-cta"><AccountConversionCTA source="home" /></section>}
     <TalentConversionCTA className="container" />
+    {accountFeatureEnabled() && <section className="container account-home-cta"><AccountConversionCTA source="home" /></section>}
     <section className="free-forever container" aria-labelledby="free-forever-title"><div><p className="eyebrow">Our student promise</p><h2 id="free-forever-title">Free forever. No premium tier between you and the facts.</h2><p>The internship directory, application guides, deadlines, comparison tools and private browser planner stay free for students. Clearly labeled advertising and partnerships fund the work instead of student subscriptions or application fees.</p></div><a className="button secondary" href="/about#funding">How funding works <ArrowRight size={16} /></a></section>
     <section className="container focused-edit"><div className="section-heading"><div><p className="eyebrow">A more specific starting point</p><h2>Find your kind of opportunity.</h2></div><p className="section-aside">Paid pathways. Transfer routes.<br />A summer of research.</p></div><TopicCards /></section>
     <section className="discovery-tools container" aria-label="Application planning tools"><a href="/internship-deadlines"><span className="tool-icon"><CalendarDays size={24} /></span><div><p className="eyebrow">The application calendar</p><h2>Good timing is a head start.</h2><p>Published cutoffs, time zones, and a calendar you can take with you.</p></div><ArrowUpRight size={24} /></a><a href="/compare"><span className="tool-icon"><GitCompareArrows size={24} /></span><div><p className="eyebrow">A clearer shortlist</p><h2>Compare the way in.</h2><p>Requirements, pay, and preparation. Side by side, without the tab chaos.</p></div><ArrowUpRight size={24} /></a><a href="/application-timeline"><span className="tool-icon"><CalendarDays size={24} /></span><div><p className="eyebrow">Your preparation timeline</p><h2>Make room for the next step.</h2><p>Turn a target date into a plan. Take its checklist and calendar with you.</p></div><ArrowUpRight size={24} /></a></section>

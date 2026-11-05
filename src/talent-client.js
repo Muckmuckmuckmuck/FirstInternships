@@ -2,6 +2,7 @@ import { getAccountClient } from "./account-client.js";
 
 export const TALENT_NETWORK_PATH = "/talent-network";
 export const TALENT_CONSENT_VERSION = "2026-10-27";
+export const TALENT_AI_MATCHING_CONSENT_VERSION = "2026-11-04";
 export const TALENT_RESUME_BUCKET = "candidate-resumes";
 export const TALENT_RESUME_MAX_BYTES = 5 * 1024 * 1024;
 export const TALENT_WORK_MODES = Object.freeze(["on-site", "hybrid", "remote"]);
@@ -51,6 +52,7 @@ export function cleanTalentProfile(value = {}, validFieldIds = null) {
     ageConfirmed: value.ageConfirmed === true,
     placementConsent: value.placementConsent === true,
     specificShareOnly: value.specificShareOnly === true,
+    aiMatchingConsent: value.aiMatchingConsent === true,
   };
 }
 
@@ -67,6 +69,7 @@ export function validateTalentProfile(profile, { hasResume = false, validFieldId
   if (!clean.ageConfirmed) return "The Talent Network is currently limited to people who are at least 18.";
   if (!clean.placementConsent) return "Confirm that you want FirstInternships to use this profile to identify relevant opportunities and contact you.";
   if (!clean.specificShareOnly) return "Confirm that employer sharing requires your approval for a specific opportunity.";
+  if (!clean.aiMatchingConsent) return "Confirm that FirstInternships may use AI-assisted, job-related matching with human review.";
   return "";
 }
 
@@ -99,6 +102,11 @@ export function normalizeTalentProfile(value) {
     resumeUploadedAt: root.resumeUploadedAt ?? root.resume_uploaded_at ?? null,
     consentVersion: cleanText(root.consentVersion ?? root.consent_version, 40),
     consentedAt: root.consentedAt ?? root.consented_at ?? null,
+    aiMatchingEnabled: root.aiMatchingEnabled === true || root.ai_matching_enabled === true,
+    aiConsentVersion: cleanText(root.aiConsentVersion ?? root.ai_matching_consent_version, 40),
+    aiConsentedAt: root.aiConsentedAt ?? root.ai_matching_consented_at ?? null,
+    resumeIndexStatus: cleanText(root.resumeIndexStatus ?? root.resume_index_status, 30) || "needs_consent",
+    resumeIndexedAt: root.resumeIndexedAt ?? root.resume_indexed_at ?? null,
     createdAt: root.createdAt ?? root.created_at ?? null,
     updatedAt: root.updatedAt ?? root.updated_at ?? null,
   };
@@ -143,7 +151,7 @@ export async function saveMyTalentProfile({ profile, file = null, existingProfil
     uploaded = true;
   }
 
-  const { data, error } = await accountClient.rpc("save_my_talent_profile", {
+  const { data, error } = await accountClient.rpc("save_my_talent_profile_for_ai", {
     p_full_name: clean.fullName,
     p_school: clean.school,
     p_degree: clean.degree,
@@ -162,6 +170,8 @@ export async function saveMyTalentProfile({ profile, file = null, existingProfil
     p_placement_consent: clean.placementConsent,
     p_specific_share_only: clean.specificShareOnly,
     p_resume_replaced: Boolean(file),
+    p_ai_consent_version: TALENT_AI_MATCHING_CONSENT_VERSION,
+    p_ai_matching_consent: clean.aiMatchingConsent,
   });
   if (error) {
     if (uploaded && !existingProfile?.resumeUploadedAt) {
@@ -169,6 +179,16 @@ export async function saveMyTalentProfile({ profile, file = null, existingProfil
     }
     throw error;
   }
+  return normalizeTalentProfile(data);
+}
+
+export async function disableMyAiMatching(client = null) {
+  const accountClient = client || await getAccountClient();
+  const { data, error } = await accountClient.rpc("set_my_ai_matching_enabled", {
+    p_enabled: false,
+    p_consent_version: TALENT_AI_MATCHING_CONSENT_VERSION,
+  });
+  if (error) throw error;
   return normalizeTalentProfile(data);
 }
 

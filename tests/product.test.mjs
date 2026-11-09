@@ -361,12 +361,13 @@ test("the free-forever promise protects student access while commercial revenue 
 });
 
 test("AdSense review and launch paths fail closed around verification, consent, placement and disclosure", async () => {
-  const [appSource, styles, buildSource, exampleEnv, publicConfig, privacy, terms, robots, readiness] = await Promise.all([
+  const [appSource, styles, buildSource, exampleEnv, publicConfig, vercelConfig, privacy, terms, robots, readiness] = await Promise.all([
     readFile("src/FirstInternships.jsx", "utf8"),
     readFile("src/styles.css", "utf8"),
     readFile("scripts/build.mjs", "utf8"),
     readFile(".env.example", "utf8"),
     readFile("config/adsense.json", "utf8"),
+    readFile("vercel.json", "utf8"),
     readFile("public/privacy.html", "utf8"),
     readFile("public/terms.html", "utf8"),
     readFile("dist/robots.txt", "utf8"),
@@ -381,19 +382,26 @@ test("AdSense review and launch paths fail closed around verification, consent, 
   assert.match(exampleEnv, /VITE_ADSENSE_SITE_VERIFICATION=false[\s\S]*VITE_ADSENSE_ENABLED=false[\s\S]*VITE_ADSENSE_CONSENT_READY=false/);
   assert.match(publicConfig, /"siteVerification": true/);
   assert.match(publicConfig, /"client": "ca-pub-\d{16}"/);
+  assert.match(vercelConfig, /"build"[\s\S]*"VITE_ADSENSE_ENABLED": "true"[\s\S]*"VITE_ADSENSE_CONSENT_READY": "true"[\s\S]*"VITE_ADSENSE_SLOT_TOP": "\d+"[\s\S]*"VITE_ADSENSE_SLOT_IN_FEED": "\d+"/);
 
   assert.match(appSource, /VITE_ADSENSE_ENABLED === "true"[\s\S]*VITE_ADSENSE_CONSENT_READY === "true"/);
   assert.match(appSource, /slot !== "VITE_ADSENSE_SLOT_SIDEBAR"/, "sidebar ads must stay dormant around navigation and application controls");
   assert.match(appSource, /!document\.querySelector\("\.ad-slot"\)/, "pages without launch inventory must not load the ad-serving script");
   assert.match(appSource, /aria-label="Advertisement" data-nosnippet/);
   assert.match(appSource, /ad-slot-frame/);
+  assert.match(appSource, /IntersectionObserver[\s\S]*rootMargin: "900px 0px"/, "lower ad inventory must initialize near the viewport instead of competing with the first render");
+  assert.match(appSource, /window\.location\.hostname !== CF_BEACON_HOST[\s\S]*document\.querySelector\("\.ad-slot"\)/, "preview deployments must not request production ads");
+  assert.match(appSource, /const LIST_AD_BREAKS = \[6, 18, 36\]/);
+  assert.match(appSource, /programs\.length - after >= 4[\s\S]*slice\(0, 3\)/, "long lists must retain real content below each break and cap manual inventory");
+  assert.match(appSource, /EditorialSections sections=\{guide\.sections\} adAfter=\{3\}/, "long-form guides should place their first unit after complete editorial sections");
+  assert.match(appSource, /Questions items=\{program\.faqs\}[\s\S]*<AdSlot slot="VITE_ADSENSE_SLOT_IN_FEED" \/>[\s\S]*<section id="sources">/, "the lower program-guide unit must stay between preparation content and source notes");
   assert.match(styles, /\.ad-slot\{[^}]*min-height:280px[^}]*margin:52px 0[^}]*border:/, "ad inventory must reserve space and remain visually separated");
   assert.match(styles, /\.prose>\.ad-slot\+section\{[^}]*padding-top:28px[^}]*border-top:/, "an article ad must not visually merge into the next action section");
   assert.match(robots, /User-agent: Mediapartners-Google\nAllow: \//);
 
   for (const text of ["third-party vendors, including Google", "prior visits", "My Ad Center", "YourAdChoices", "Google-certified consent-management platform", "reopen privacy and cookie settings"]) assert.ok(privacy.includes(text), text);
   assert.match(terms, /never required or encouraged to click an advertisement/i);
-  for (const text of ["cannot guarantee approval", "VITE_ADSENSE_SITE_VERIFICATION", "three-choice European message", "Do not enable Auto ads", "Never click the site's live ads"]) assert.ok(readiness.includes(text), text);
+  for (const text of ["cannot guarantee approval", "VITE_ADSENSE_SITE_VERIFICATION", "three-choice European message", "Do not enable Auto ads", "Never click the site's live ads", "after the 6th, 18th, and 36th real listing", "within 900 pixels of the viewport"]) assert.ok(readiness.includes(text), text);
 
   const defaultHome = await readFile("dist/index.html", "utf8");
   assert.match(defaultHome, /<meta name="google-adsense-account" content="ca-pub-8699000461416332">/, "the production build must preserve the public ownership signal");

@@ -1,6 +1,6 @@
 # AdSense readiness and launch runbook
 
-Updated October 26, 2026.
+Updated November 8, 2026.
 
 This runbook makes FirstInternships technically ready to connect to AdSense without turning on ad requests prematurely. It cannot guarantee approval: Google reviews the full live site, account, traffic, content, and policy compliance, and only Google can approve or reject it.
 
@@ -12,7 +12,9 @@ Repository-controlled launch protections are complete:
 - Students can read all editorial content and use the directory without paying, clicking an ad, or creating an account.
 - Ad units are clearly labeled `Advertisement`, visually separate from editorial cards, and absent from account, planner, comparison, legal, and error pages.
 - Sidebar units are dormant at launch because those sidebars contain navigation, filters, saving, comparison, or application controls.
-- Each launch page has at most one in-content unit. The first mobile viewport provides useful content before an ad.
+- Long program and guide articles use two in-content units separated by substantial original content. Long directory, year, field, and focused-collection lists use at most three units after the 6th, 18th, and 36th real listing, and omit a break unless at least four real listings remain below it. Short result sets stay ad-free or use only one unit.
+- The homepage uses two mid-page banners after complete content sections. The first mobile viewport always provides useful content before an ad.
+- Every unit waits until it is within 900 pixels of the viewport before requesting inventory, so adding lower-page inventory does not make the first render compete with ads a visitor never approaches.
 - Ad containers reserve space before the network script finishes so an ad cannot shift an application or navigation control under a pointer.
 - Ad requests stay off unless live mode, consent readiness, a valid publisher ID, and valid required slot IDs are all present.
 - Review mode can publish the official publisher meta tag and root `ads.txt` without requesting an ad.
@@ -35,12 +37,17 @@ The account-side setup was checked on October 25, 2026:
 - The public verification tag and exact publisher line in `/ads.txt` are live.
 
 Site review was requested from the `firstinternships.com` detail page on
-October 26, 2026. AdSense now labels the site `Getting ready`; that means review
-is in progress, not that the site is approved. The public ownership meta tag and
-exact publisher line in `/ads.txt` were rechecked immediately before submission.
-Google's ads.txt status still showed `Not found` and may lag the live public file
-while it is recrawled. Live ad requests must remain disabled until approval,
-regional consent testing, and the launch-unit configuration are all complete.
+October 26, 2026. On November 8, AdSense changed the site to `Ready`, displayed
+`Your site is ready to show ads`, and reported `Ads.txt detected` / `Authorized`.
+The AdSense privacy dashboard still showed two active European-regulation
+messages and two active US-state messages. Two responsive display units were
+created for FirstInternships: `firstinternships-home-banner-responsive`
+(`1888510669`) and `firstinternships-content-responsive` (`8309789649`). The
+public publisher and slot identifiers, consent-ready flag, and activation flag
+are pinned in Vercel's source-controlled `build.env` configuration so the next
+Git deployment can serve them. The client still refuses to load the ad script on
+any hostname other than `firstinternships.com`, so previews do not request live
+inventory.
 
 ## Phase 1: connect the site for review
 
@@ -77,12 +84,21 @@ regional consent testing, and the launch-unit configuration are all complete.
 5. Test the published messages with AdSense's supported test parameters in a clean browser profile. Test accept, reject, manage options, refresh persistence, and revocation. Test EEA/UK/Swiss behavior and applicable US state behavior rather than assuming a US-local test covers all regions.
 6. Keep `VITE_ADSENSE_CONSENT_READY=false` until those checks pass. This flag is an operational lock, not a CMP and not legal certification.
 
-## Phase 3: create restrained launch inventory
+## Phase 3: create controlled manual inventory
 
-Create only these two responsive display units for launch:
+Create only these two responsive display-unit definitions for launch. A unit ID may support more than one deliberately placed instance on a sufficiently long page:
 
-- `VITE_ADSENSE_SLOT_TOP`: a mid-page banner used after substantial introductory content on home and collection pages.
+- `VITE_ADSENSE_SLOT_TOP`: a mid-page banner used after substantial homepage content.
 - `VITE_ADSENSE_SLOT_IN_FEED`: one in-content unit used after a meaningful block of directory or article content.
+
+The reviewed placement map is:
+
+- Home: two banners, both below the main discovery and conversion content.
+- Full directory, class-year hubs, field hubs, and focused collections: insert after 6, 18, and 36 real program cards only when at least four real cards remain below the insertion. Never exceed three units in a list.
+- Program guides: one unit after eligibility and timing, then one after preparation/checklist/questions and before source notes.
+- Application guides: one unit after three complete editorial sections and one after the final practical callout.
+- Guide library: one unit after the first substantive category and a second only when the unfiltered result set contains at least 18 guides.
+- Account, Talent Network, saved planner, comparison, application timeline, deadline tools, legal, contact, partnership, editorial-process, and error pages: no ad inventory.
 
 The existing `VITE_ADSENSE_SLOT_SIDEBAR` variable is reserved for a future policy and usability review. It is intentionally not rendered because current sidebars contain important controls.
 
@@ -90,7 +106,7 @@ Do not enable Auto ads for the initial launch. Manual units make density, contro
 
 ## Phase 4: live activation
 
-After AdSense marks the site approved and the privacy tests pass, set the Production variables:
+After AdSense marks the site approved and the privacy tests pass, set the Production variables. For this static Vite deployment, the same public values may be pinned in Vercel `build.env`; no private credential belongs there:
 
 ```text
 VITE_ADSENSE_SITE_VERIFICATION=true
@@ -114,7 +130,8 @@ For each relevant page confirm:
 - the word `Advertisement` remains visible and the unit does not resemble an internship listing;
 - no horizontal overflow, content jump, focus trap, or unexpected scroll occurs;
 - the account prompt closes or stays hidden while an ad is in view;
-- one page never loads duplicate AdSense scripts or initializes the same unit twice;
+- one page never loads duplicate AdSense scripts or initializes the same rendered unit twice;
+- lower-page units initialize only as they approach the viewport, and long list pages never exceed the three reviewed list breaks;
 - account, saved, comparison, legal, and error surfaces do not display ad units;
 - the CMP choices persist and the privacy-choice/revocation path reopens them;
 - `/ads.txt`, the publisher meta tag, canonical tags, sitemap, and robots file remain correct.

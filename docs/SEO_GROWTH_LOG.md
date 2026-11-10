@@ -2,6 +2,31 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-08 — transcript CTR and current AT&T TDP opportunity refresh
+
+### Baseline
+
+- Window: October 11–November 7, 2026, the latest complete 28 days available in Search Console during this release.
+- Site totals reached 960 clicks, 89,736 impressions, 1.1% CTR and average position 9.1, up from the 802 clicks and 79,700 impressions recorded for October 5–November 1. The site is still growing, but high-impression page-one results leave substantial recoverable click-through demand.
+- `/guides/do-internships-ask-for-transcripts` recorded 8 clicks from 1,303 impressions at 0.6% CTR and average position 4.5. Its visible queries included `do internships ask for transcripts`, `do internships look at transcripts`, `do companies ask for transcripts for internships`, `do internships require transcripts` and `what is a transcript for internship`. The URL added more than 1,000 impressions since its October 24 refresh, well past the recorded reassessment threshold.
+- `/programs/att-technology-development-internship` recorded 8 clicks from 1,192 impressions at 0.7% CTR and average position 9.2. The exact visible query `at&t technology development program` produced 193 impressions, no clicks and average position 10.0; AT&T/TDP spelling variants and assessment intent added further page-one impressions.
+- AT&T's official program overview still says 2027 hiring has finished, but its current official job search now lists four TDP internship postings dated September 21 across Atlanta, Bothell, Dallas and Middletown. Those postings do not name a cycle year or closing date, so they cannot be labeled Summer 2027 or Summer 2028 from timing alone.
+
+### Changes
+
+- Preserved the transcript guide URL, changed its title to `Do Internships Ask for Transcripts? What to Send`, and sharpened the description around unofficial versus official copies, employer verification and when not to upload one.
+- Added a server-rendered definition of an internship transcript to the quick-answer panel and article body while preserving the direct answer that transcript requirements are not universal. The guide remains practical and does not encourage students to send an unrequested academic record.
+- Preserved the AT&T TDP URL and matched its title to the exact high-impression program name. Reverified the current location-specific postings and expanded the guide with current availability, four tracks, five-day office attendance, work authorization, the published assessment sequence and the annualized-pay caveat.
+- Removed the cycle-unspecified current TDP listings from the Summer 2027 collection rather than guessing a year. The separate broad AT&T Summer 2027 guide remains in that collection and remains labeled closed.
+- Added the newly current AT&T page to the homepage's reviewed-current links and replaced lower-demand footer links with the AT&T TDP and transcript URLs, creating ordinary sitewide internal discovery without adding a duplicate page.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for the transcript and AT&T TDP URLs, interpreted with average position and query mix.
+- Supporting query families: `do internships ask for transcripts`, `do internships require transcripts`, `what is a transcript for internship`, `at&t technology development program`, `att tdp`, `at&t technology development program internship` and `tdp assessment`.
+- Guardrails: no new URL for either established intent, no false cycle-year claim, no conversion of an annualized salary range into internship-term earnings, no advice to upload an unrequested transcript and no gate before either answer.
+- Reassess each URL after another 500 impressions or 28 days. Preserve these canonical URLs and refresh current AT&T availability sooner only when the official listings change.
+
 ## 2026-11-03 — directory regression fix and Wells Fargo live-opening refresh
 
 ### Baseline

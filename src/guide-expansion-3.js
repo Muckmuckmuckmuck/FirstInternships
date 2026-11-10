@@ -54,15 +54,16 @@ export const GUIDE_EXPANSION_3 = [
   },
   {
     slug: "do-internships-ask-for-transcripts",
-    updated: "2026-10-24",
-    title: "Do Internships Ask for Transcripts? What to Expect",
-    description: "Sometimes. Learn when internships request unofficial or official transcripts, what employers check, whether GPA matters, and how to submit the right file.",
+    updated: "2026-11-08",
+    title: "Do Internships Ask for Transcripts? What to Send",
+    description: "Not always. See when internships require unofficial or official transcripts, what employers verify, whether GPA matters, and when not to upload one.",
     category: "Resumes & applications",
     relatedGuideSlugs: ["internship-application-file-format", "do-internships-check-gpa", "ask-for-internship-recommendation-letter"],
     programIds: ["nih-sip", "bridgewater-investment-associate-2027", "doe-suli", "federal-reserve-board"],
     intro: "Sometimes. Research, government and some finance programs may require a transcript with the application; other employers request one later or never ask. The current posting controls. Use an unofficial copy only when it is accepted, order an official copy only when required, and never edit the academic record.",
     quickAnswerTitle: "Transcript requests at a glance",
     quickAnswers: [
+      ["What is a transcript for an internship?", "It is your school's academic record of courses, grades and enrollment details—not your resume, degree audit or a course list you created yourself."],
       ["Do most internships require one?", "No universal rule. Some ask during the application, some verify later, and many do not request a transcript."],
       ["Unofficial or official?", "Use the exact wording. An unofficial PDF usually comes from your student portal; an official copy usually comes through the registrar."],
       ["What can an employer check?", "Enrollment, expected graduation, coursework, prerequisites and GPA when the opening says those facts matter."],
@@ -70,6 +71,7 @@ export const GUIDE_EXPANSION_3 = [
     ],
     sections: [
       ["The short answer: sometimes", "There is no universal internship transcript rule. Some research, government and finance programs require one with the application because academic eligibility is part of screening. Some employers ask only after an interview or conditional offer, and many private-sector internships never request one. Search the current posting, application checklist and portal for ‘transcript,’ ‘academic record,’ ‘proof of enrollment’ and ‘supporting documents.’ If none appears, do not assume a hidden requirement or send an academic record the employer did not request."],
+      ["What a transcript is in an internship application", "A transcript is a school-issued academic record that normally lists courses, grades, academic terms and enrollment information. It is not your resume, a degree-audit screenshot, a course list you typed or a diploma. Internship programs use it only when academic facts matter to their process—for example, confirming current enrollment, prerequisites, a graduation window or a stated GPA rule. The application should tell you whether it wants an unofficial student copy, an official registrar copy or a different document such as proof of enrollment."],
       ["Unofficial and official transcripts are different", "An unofficial transcript is usually a student-accessible academic record downloaded from your school portal. An official transcript is issued through the registrar or an approved delivery service and may carry a fee or processing delay. If the application says unofficial, do not spend time ordering an official copy. If it says official, follow the named delivery method. A screenshot, degree audit or self-written course list is not automatically a transcript just because it shows classes."],
       ["Employers ask for different reasons", "A program may use the record to confirm current enrollment, an expected graduation window, completed prerequisites, a minimum GPA or progress in a relevant degree. Research and public-sector programs often need course-level detail, while another employer may request a transcript only after an offer or not at all. The request does not mean every grade carries equal weight, and the absence of a request does not mean you should volunteer one."],
       ["Download and inspect the file early", "Open the actual exported PDF before the deadline. Confirm that it shows your name, institution, current courses where relevant, completed terms and the expected information the program requests. Check that every page is present, upright and readable at normal zoom. Give the file a plain name such as Lastname_Firstname_Transcript.pdf. If a recent grade, transfer course or enrollment status is missing, ask your registrar what document accurately covers it rather than editing the PDF yourself."],

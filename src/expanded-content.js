@@ -291,8 +291,8 @@ export const TOPICS = [
       "ihg-us-corporate-internships-2027", "booking-com-software-engineering-internship-2027",
       // Added 2026-10-16: current consumer and food-employer sources explicitly name 2027 roles or interest routes.
       "nestle-usa-microbiology-internship-2027", "church-dwight-finance-internship-2027", "smucker-summer-internship-interest-2027", "clorox-rd-internship-2027", "unilever-netherlands-marketing-internship-2027", "mcdonalds-progressive-young-farmer-2027", "cargill-grain-origination-sales-intern-2027",
-      // Added 2026-10-16: official telecom and connectivity sources explicitly name 2027 cycles or current roles. AT&T's two pages stay useful but are labeled closed.
-      "att-summer-internship-program", "att-technology-development-internship", "t-mobile-software-engineering-internship-2027", "spectrum-summer-internship-program-2027", "cox-automotive-product-management-intern-2027", "motorola-solutions-software-engineer-intern-2027", "motorola-solutions-finance-accounting-intern-2027",
+      // Added 2026-10-16: official telecom and connectivity sources explicitly name 2027 cycles or current roles. AT&T's broad 2027 page stays useful but is labeled closed; the cycle-unspecified current TDP listings moved out after the November 8 recheck.
+      "att-summer-internship-program", "t-mobile-software-engineering-internship-2027", "spectrum-summer-internship-program-2027", "cox-automotive-product-management-intern-2027", "motorola-solutions-software-engineer-intern-2027", "motorola-solutions-finance-accounting-intern-2027",
       // Added 2026-10-17: current official infrastructure and construction sources explicitly name Summer 2027 roles or active 2027 student searches.
       "aecom-bridge-engineering-intern-summer-2027", "bechtel-ai-innovation-intern-2027", "skanska-heavy-civil-internship-2027", "kiewit-scholars-internship-summer-2027", "wsp-us-summer-internship-program-2027", "hdr-structural-engineering-intern-summer-2027",
       // Added 2026-10-17: these official design and environmental-consulting sources explicitly name current Summer 2027 roles.

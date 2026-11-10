@@ -497,6 +497,7 @@ export const FEATURED_PROGRAM_IDS = [
 // demand or carrying newly published 2027 information. Keep this deliberately
 // small and reviewed; it is an internal-priority signal, not a live ranking.
 export const CURRENT_PROGRAM_IDS = [
+  "att-technology-development-internship",
   "ge-aerospace-us-internships-coops",
   "enterprise-mobility-management-internship",
   "mars-sophomore-experience",
@@ -541,11 +542,11 @@ export const FOOTER_GUIDE_LINKS = [
   ["email-templates-for-internships", "Internship email templates"],
   ["internship-interview-guide", "Internship interview prep"],
   ["internship-application-status-meanings", "What internship application statuses mean"],
-  ["internship-housing-and-relocation", "Internship housing and relocation"],
+  ["do-internships-ask-for-transcripts", "Do internships ask for transcripts?"],
   ["do-internships-check-gpa", "Do internships check GPA?"],
 ];
 // Sitewide footer links to the program guides students search for most
-// (Search Console impressions, October 2026), labelled the way they search.
+// (Search Console impressions, November 2026), labelled the way they search.
 // Keep this short: it is a handful of high-demand pages, not a directory.
 export const FOOTER_PROGRAM_LINKS = [
   ["world-bank-wbg-pioneers", "World Bank internship"],
@@ -554,7 +555,7 @@ export const FOOTER_PROGRAM_LINKS = [
   ["capital-one-early-internship", "Capital One Early Internship"],
   ["evercore-investment-banking-summer-analyst", "Evercore summer analyst"],
   ["paramount-internships", "Paramount internships"],
-  ["gilead-internship-program", "Gilead internships"],
+  ["att-technology-development-internship", "AT&T Technology Development Program"],
   ["pfizer-futures-internship", "Pfizer summer internship"],
 ];
 export const footerPrograms = () => FOOTER_PROGRAM_LINKS.map(([id, label]) => [PROGRAMS.find(program => program.id === id), label]).filter(([program]) => program);

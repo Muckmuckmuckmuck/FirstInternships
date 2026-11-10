@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, currentPrograms, featuredPrograms, fieldPath, footerPrograms, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
+import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, currentPrograms, featuredPrograms, fieldPath, footerGuides, footerPrograms, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
 import { LEGACY_REDIRECTS } from "../src/legacy.js";
 import { FIELD_INTERVIEW_PREP, GUIDE_INTERVIEW_PREP, INTERVIEW_PREP } from "../src/interview-prep.js";
 import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, hasPublishedCutoff, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
@@ -82,27 +82,30 @@ test("October 14 guide expansion answers high-intent eligibility and timing ques
   const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
   assert.ok(guides.every(Boolean));
   assert.ok(guides.filter(guide => guide.slug !== "do-internships-ask-for-transcripts").every(guide => guide.updated === "2026-10-14"));
-  assert.equal(GUIDES.find(guide => guide.slug === "do-internships-ask-for-transcripts").updated, "2026-10-24");
+  assert.equal(GUIDES.find(guide => guide.slug === "do-internships-ask-for-transcripts").updated, "2026-11-08");
   assert.ok(guides.every(guide => guide.sections.length >= 8 && guide.example?.text));
   assert.ok(guides.every(guide => guide.sections.flat().join(" ").split(/\s+/).length >= 500), "new search guides must remain substantive, not thin keyword pages");
   assert.ok(guides.every(guide => guide.programIds.length >= 4));
   assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
   assert.equal(GUIDES.find(guide => guide.slug === "what-does-rolling-basis-mean-internships").topicSlug, "summer-2027-college-internships");
 });
-test("October 24 transcript guide gives an answer-first path and related document help", async () => {
+test("November 8 transcript guide answers the proven search task and related document questions", async () => {
   const transcript = GUIDES.find(guide => guide.slug === "do-internships-ask-for-transcripts");
   const fileFormat = GUIDES.find(guide => guide.slug === "internship-application-file-format");
-  assert.equal(transcript.title, "Do Internships Ask for Transcripts? What to Expect");
+  assert.equal(transcript.title, "Do Internships Ask for Transcripts? What to Send");
   assert.ok(transcript.description.length >= 120 && transcript.description.length <= 180);
-  assert.equal(transcript.updated, "2026-10-24");
-  assert.equal(transcript.quickAnswers.length, 4);
+  assert.equal(transcript.updated, "2026-11-08");
+  assert.equal(transcript.quickAnswers.length, 5);
   assert.match(transcript.sections[0][1], /no universal internship transcript rule/i);
+  assert.match(transcript.sections[1][0], /what a transcript is/i);
+  assert.match(transcript.sections[1][1], /school-issued academic record/i);
   assert.ok(transcript.relatedGuideSlugs.includes(fileFormat.slug));
   assert.equal(fileFormat.updated, "2026-10-24");
   assert.ok(fileFormat.relatedGuideSlugs.includes(transcript.slug));
 
   const html = await readFile(`dist${guidePath(transcript)}.html`, "utf8");
   assert.match(html, /Transcript requests at a glance/);
+  assert.match(html, /What is a transcript for an internship\?/);
   assert.match(html, /Do most internships require one\?/);
   assert.match(html, /The short answer: sometimes/);
 });
@@ -401,7 +404,8 @@ test("AdSense review and launch paths fail closed around verification, consent, 
 
   for (const text of ["third-party vendors, including Google", "prior visits", "My Ad Center", "YourAdChoices", "Google-certified consent-management platform", "reopen privacy and cookie settings"]) assert.ok(privacy.includes(text), text);
   assert.match(terms, /never required or encouraged to click an advertisement/i);
-  for (const text of ["cannot guarantee approval", "VITE_ADSENSE_SITE_VERIFICATION", "three-choice European message", "Do not enable Auto ads", "Never click the site's live ads", "after the 6th, 18th, and 36th real listing", "within 900 pixels of the viewport"]) assert.ok(readiness.includes(text), text);
+  for (const text of ["cannot guarantee approval", "VITE_ADSENSE_SITE_VERIFICATION", "three-choice European message", "Conservative Auto ads | Nov 2026", "winner application is off", "Keep vignette ads off", "Never click the site's live ads", "after the 6th, 18th, and 36th real listing", "within 900 pixels of the viewport"]) assert.ok(readiness.includes(text), text);
+  for (const text of ["uses Google AdSense", "eligible public editorial and directory pages", "Google's privacy-message system uses a Google-certified", "consent, refusal or opt-out"]) assert.ok(privacy.includes(text), text);
 
   const defaultHome = await readFile("dist/index.html", "utf8");
   assert.match(defaultHome, /<meta name="google-adsense-account" content="ca-pub-8699000461416332">/, "the production build must preserve the public ownership signal");
@@ -593,8 +597,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-03</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-03</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-08</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-08</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -694,8 +698,9 @@ test("account disclosures cover Google auth boundaries and separate newsletter c
     readFile("public/privacy.html", "utf8"),
     readFile("public/terms.html", "utf8"),
   ]);
+  assert.match(privacy, /Updated November 9, 2026/, "privacy disclosure date");
+  assert.match(terms, /Updated November 5, 2026/, "terms disclosure date");
   for (const [name, document] of [["privacy", privacy], ["terms", terms]]) {
-    assert.match(document, /Updated November 5, 2026/, `${name} disclosure date`);
     assert.match(document, /Supabase/, `${name} must identify the auth processor`);
     assert.match(document, /Gmail messages/, `${name} must explain that Gmail access is not requested`);
     assert.match(document, /Google Drive files/, `${name} must explain that Drive access is not requested`);
@@ -929,6 +934,7 @@ test("October growth batch preserves publisher-specific years, dates and applica
   assert.match(PROGRAMS.find(p => p.id === "port-authority-summer-2027").status, /interest form/i);
   assert.equal(PROGRAMS.find(p => p.id === "amtrak-internships-coops").firstYear, 2);
   assert.deepEqual(currentPrograms().map(program => program.id), [
+    "att-technology-development-internship",
     "ge-aerospace-us-internships-coops", "enterprise-mobility-management-internship", "mars-sophomore-experience",
     "kimberly-clark-engineering-internships-2027", "honeywell-university-internships",
     "roblox-software-engineer-intern-2027", "tsmc-arizona-engineering-internships-2027", "rocket-lab-additive-manufacturing-intern-2027", "applied-materials-internship-program",
@@ -1351,17 +1357,24 @@ test("October 16 telecom and media wave adds current, closed and evergreen pathw
   ];
   const programs = ids.map(id => PROGRAMS.find(program => program.id === id));
   assert.ok(programs.every(Boolean));
-  assert.ok(programs.every(program => program.verified === "2026-10-16" && program.updated === "2026-10-16"));
+  assert.ok(programs.filter(program => program.id !== "att-technology-development-internship").every(program => program.verified === "2026-10-16" && program.updated === "2026-10-16"));
   assert.ok(programs.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
   assert.ok(programs.every(program => program.sources.length >= 2 && program.sources.some(source => source.url === program.url)));
-  assert.deepEqual(PROGRAMS.find(program => program.id === "att-technology-development-internship").years, [3]);
+  const attTdp = PROGRAMS.find(program => program.id === "att-technology-development-internship");
+  assert.deepEqual(attTdp.years, [3]);
+  assert.equal(attTdp.verified, "2026-11-08");
+  assert.equal(attTdp.seoTitle, "AT&T Technology Development Program Internship");
+  assert.match(attTdp.status, /current TDP internship postings/i);
+  assert.match(attTdp.timing, /do not publish a closing date or cycle year/i);
+  assert.match(attTdp.pitfall, /annualized, not the total amount/i);
+  assert.ok(currentPrograms().some(program => program.id === attTdp.id));
   assert.deepEqual(PROGRAMS.find(program => program.id === "spectrum-summer-internship-program-2027").years, [2, 3, 4]);
   assert.match(PROGRAMS.find(program => program.id === "att-summer-internship-program").status, /finished/i);
   const summer = TOPICS.find(topic => topic.slug === "summer-2027-college-internships");
-  for (const id of ids.filter(id => !["comcast-college-internship-program", "siriusxm-early-career-internships", "echostar-summer-internship-program"].includes(id))) {
+  for (const id of ids.filter(id => !["att-technology-development-internship", "comcast-college-internship-program", "siriusxm-early-career-internships", "echostar-summer-internship-program"].includes(id))) {
     assert.ok(summer.programIds.includes(id), `Summer 2027 collection: ${id}`);
   }
-  for (const id of ["comcast-college-internship-program", "siriusxm-early-career-internships", "echostar-summer-internship-program"]) {
+  for (const id of ["att-technology-development-internship", "comcast-college-internship-program", "siriusxm-early-career-internships", "echostar-summer-internship-program"]) {
     assert.ok(!summer.programIds.includes(id), `${id}: evergreen program must stay out of the 2027 collection`);
   }
 });
@@ -1935,9 +1948,12 @@ test("October 20 Search Console refresh sharpens high-impression snippets and cu
 
   const footerIds = footerPrograms().map(([program]) => program.id);
   assert.ok(footerIds.includes("world-bank-wbg-pioneers"));
-  assert.ok(footerIds.includes("gilead-internship-program"));
+  assert.ok(footerIds.includes("att-technology-development-internship"));
   assert.ok(!footerIds.includes("netflix-internships"));
   assert.ok(!footerIds.includes("meta-internships"));
+  const footerGuideSlugs = footerGuides().map(([guide]) => guide.slug);
+  assert.ok(footerGuideSlugs.includes("do-internships-ask-for-transcripts"));
+  assert.ok(!footerGuideSlugs.includes("internship-housing-and-relocation"));
 });
 test("October 30 Search Console refresh improves the high-impression directory result", async () => {
   const directory = resolvePage("/internships");

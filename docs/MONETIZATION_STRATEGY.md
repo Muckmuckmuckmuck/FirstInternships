@@ -42,7 +42,7 @@ The site already contains gated, labeled ad slots for the top, in-feed and deskt
 5. `VITE_ADSENSE_ENABLED=true` is intentionally enabled.
 6. Production is tested with ads loaded, blocked, rejected and unavailable.
 
-Keep the public publisher identity and review switch in `config/adsense.json` during site review so the publisher meta tag and root `ads.txt` can be verified without requesting ads. Environment overrides remain available for alternate deployments. Use the two manual in-content/banner unit definitions only in the controlled placements documented in `docs/ADSENSE_READINESS.md`: two units on long articles, up to three widely separated units in long program-card lists, and two homepage banners below complete content sections. Lower units initialize near the viewport. Sidebar units and Auto ads stay off. The first page viewport should deliver useful content before an ad on mobile. Track page RPM and viewability beside Core Web Vitals, organic clicks, bounce/engagement and outbound application clicks. Never encourage ad clicks or style advertising like an employer application control.
+Keep the public publisher identity and review switch in `config/adsense.json` so the publisher meta tag and root `ads.txt` remain verifiable. Environment overrides remain available for alternate deployments. Use the two manual in-content/banner unit definitions only in the controlled placements documented in `docs/ADSENSE_READINESS.md`: two units on long articles, up to three widely separated units in long program-card lists, and two homepage banners below complete content sections. Lower units initialize near the viewport. The first page viewport should deliver useful content before an ad on mobile. A 50% Auto ads experiment is testing the lowest available in-page load, widest spacing, anchor ads and desktop side rails; vignette, multiplex and intent-driven formats are off, and the result cannot auto-apply. Track page RPM and viewability beside Core Web Vitals, organic clicks, bounce/engagement, signup completion and outbound application clicks. Never encourage ad clicks or style advertising like an employer application control.
 
 ### 3. Newsletter sponsorship
 
@@ -93,8 +93,8 @@ The `/partners` page publishes only inventory counts computed from maintained si
 
 1. Connect first-party Search Console/analytics reporting and establish a weekly baseline.
 2. Confirm account and newsletter production metrics are observable without exposing personal data.
-3. AdSense review was requested on October 26; monitor the `Getting ready` state without enabling ad requests prematurely.
-4. After approval and regional consent testing, turn on the smallest tested ad configuration and measure it before adding density.
+3. AdSense marked FirstInternships `Ready` and ads.txt `Authorized` on November 8; keep the Policy Center clear and the published European and US-state messages active.
+4. Measure the manual baseline and conservative 50% Auto ads experiment before adding density or permanently applying the variation.
 5. Use `/partners` to collect sponsor and employer demand.
 6. Create a rate card only after audience and engagement numbers are defensible.
 7. Publish sponsorship/disclosure language before the first paid campaign goes live.

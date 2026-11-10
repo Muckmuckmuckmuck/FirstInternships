@@ -1,6 +1,6 @@
 # AdSense readiness and launch runbook
 
-Updated November 8, 2026.
+Updated November 9, 2026.
 
 This runbook makes FirstInternships technically ready to connect to AdSense without turning on ad requests prematurely. It cannot guarantee approval: Google reviews the full live site, account, traffic, content, and policy compliance, and only Google can approve or reject it.
 
@@ -48,6 +48,21 @@ are pinned in Vercel's source-controlled `build.env` configuration so the next
 Git deployment can serve them. The client still refuses to load the ad script on
 any hostname other than `firstinternships.com`, so previews do not request live
 inventory.
+
+The first post-approval account audit on November 9 found 8 manual impressions,
+0 clicks, $1.12 impression RPM, 50% Active View viewability and $0.01 estimated
+earnings in the available 30-day report. This is an early delivery baseline, not
+a mature revenue sample: AdSense marked the site `Ready` only on November 8.
+Production verification confirmed that the publisher script loads once on the
+canonical hostname and that a near-viewport manual unit completes a real request.
+
+A controlled Auto ads experiment named `Conservative Auto ads | Nov 2026` is
+running from November 10, 2026 through February 8, 2027 on 50% of traffic. The
+variation uses the lowest available in-page ad-count setting, the widest
+available in-page spacing, banner ads, anchor ads and desktop side rails.
+Multiplex, intent-driven and full-screen vignette formats are off. Automatic
+winner application is off, so no experiment result becomes the permanent site
+configuration without a manual review of revenue and product guardrails.
 
 ## Phase 1: connect the site for review
 
@@ -102,7 +117,12 @@ The reviewed placement map is:
 
 The existing `VITE_ADSENSE_SLOT_SIDEBAR` variable is reserved for a future policy and usability review. It is intentionally not rendered because current sidebars contain important controls.
 
-Do not enable Auto ads for the initial launch. Manual units make density, control separation, and mobile review predictable. Consider Auto ads only after approval, consent validation, Core Web Vitals review, and a deliberate placement audit.
+Keep permanent Auto ads off while the controlled experiment runs. The experiment
+may show a deliberately conservative variation to 50% of traffic, but it must not
+auto-apply a winner. Review page RPM, viewability, Core Web Vitals, organic
+traffic, engagement, signup completion and outbound-application clicks before
+choosing either the original or the variation. Keep vignette ads off; the site
+already uses conversion prompts and must not stack full-screen interruptions.
 
 ## Phase 4: live activation
 

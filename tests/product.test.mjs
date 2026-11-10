@@ -2548,3 +2548,18 @@ test("the finance field page and interview guide carry one disclosed Prepalyst l
   const other = await readFile(`dist${fieldPath(FIELDS.find(f => f.id === "business"))}.html`, "utf8");
   assert.doesNotMatch(other, /prepalyst\.com/);
 });
+
+test("robots.txt keeps crawl on sitemap pages and never blocks one", async () => {
+  const [robots, sitemap, analyticsSource] = await Promise.all([readFile("dist/robots.txt", "utf8"), readFile("dist/sitemap.xml", "utf8"), readFile("src/analytics.js", "utf8")]);
+  const general = robots.split("User-agent: *")[1];
+  assert.ok(general, "robots.txt needs a general group");
+  const disallowed = [...general.matchAll(/^Disallow: (.+)$/gm)].map(match => match[1].trim());
+  for (const path of ["/api/", "/_vercel/insights/", "/_vercel/speed-insights/", "/application-timeline?", "/account?"]) assert.ok(disallowed.includes(path), `robots.txt should disallow ${path}`);
+  const sitemapPaths = [...sitemap.matchAll(/<loc>https:\/\/firstinternships\.com([^<]*)<\/loc>/g)].map(match => match[1] || "/");
+  assert.ok(sitemapPaths.length > 500);
+  for (const path of sitemapPaths) for (const rule of disallowed) assert.ok(!path.startsWith(rule), `${path} is in the sitemap but blocked by Disallow: ${rule}`);
+  // The bare tool and account pages stay crawlable so their canonical and noindex remain visible.
+  for (const path of ["/application-timeline", "/account"]) assert.ok(!disallowed.some(rule => path.startsWith(rule)), `${path} must stay crawlable`);
+  assert.match(analyticsSource, /AUTOMATED_AGENT = \/googlebot\|/, "crawler renders must not be measured as visitors");
+  assert.match(analyticsSource, /analyticsEnabled = \(\) => import\.meta\.env\.VITE_ANALYTICS_ENABLED === "true" && !automatedVisitor\(\)/);
+});

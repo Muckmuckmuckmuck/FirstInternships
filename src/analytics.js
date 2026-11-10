@@ -1,7 +1,13 @@
 // Privacy-minimized public funnel measurement. Events contain only a fixed
 // action name; never add email addresses, newsletter preferences, search
 // terms, planner data, saved programs, notes, or other visitor input here.
-export const analyticsEnabled = () => import.meta.env.VITE_ANALYTICS_ENABLED === "true";
+// Search crawlers render pages with timers fast-forwarded, so without this
+// they would record page views and engaged-view events that are not visitors
+// and spend the site's crawl budget on tracking requests. Known crawlers and
+// automated browsers are never measured. Only called after hydration.
+const AUTOMATED_AGENT = /googlebot|google-inspectiontool|googleother|adsbot|mediapartners|bingbot|applebot|duckduckbot|yandexbot|baiduspider|slurp|petalbot|ahrefsbot|semrushbot|gptbot|claudebot|headlesschrome|lighthouse/i;
+const automatedVisitor = () => typeof navigator !== "undefined" && (navigator.webdriver === true || AUTOMATED_AGENT.test(navigator.userAgent || ""));
+export const analyticsEnabled = () => import.meta.env.VITE_ANALYTICS_ENABLED === "true" && !automatedVisitor();
 
 const eventNamePattern = /^[a-z][a-z0-9_]{1,63}$/;
 const pageEvents = new Set();

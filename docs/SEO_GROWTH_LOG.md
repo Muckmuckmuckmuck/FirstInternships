@@ -2,6 +2,30 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-10 — NSA exact-query CTR reassessment
+
+### Baseline
+
+- Window: October 12–November 8, 2026, the latest complete 28 days available in Search Console during this release.
+- Site totals reached 981 clicks, 92,700 impressions, 1.1% CTR and average position 9.1.
+- `/programs/nsa-summer-internships` recorded 18 clicks from 2,095 impressions at 0.9% CTR and average position 8.5. The October 23 baseline was 20 clicks from 1,539 impressions at 1.3% CTR and average position 8.2, so the established URL added 556 impressions and passed its documented 200-impression reassessment threshold.
+- The exact visible query `nsa internships` produced 206 impressions, no clicks and average position 10.5. `nsa summer internships`, 2027 word-order variants and acceptance-rate intent added more page-one or striking-distance impressions.
+- Pfizer produced a larger raw 2,188-impression opportunity, but its snippet and current assessment guidance changed on November 2. That younger test remains untouched rather than being rewritten from a report that still includes substantial pre-change data.
+
+### Changes
+
+- Rechecked NSA's official Student Programs, Intelligence Community student-program and application-process pages on November 10. The official page still labels the material `2027 Summer Internships`, says college applications begin August 15 and describes paid 12-week placements, while no Summer 2028 dates are published.
+- Preserved the canonical NSA URL and changed its title to `NSA Internships 2027: Eligibility, Pay & Dates`, leading with the exact high-impression query instead of the narrower `NSA Summer Internships` order.
+- Tightened the description around the closed 2027 status, paid format, eligibility, clearance, majors, housing and timing. Added direct, server-rendered answers for whether NSA internships are open and how to apply through the official student page without implying that the next cycle is available.
+- Kept the existing sitewide `NSA internships` footer link and established program URL. No duplicate page, year permutation or separate acceptance-rate page was created.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/programs/nsa-summer-internships`, interpreted with average position and query mix.
+- Supporting query families: `nsa internships`, `nsa summer internships`, Summer 2027 variants, application timing and acceptance-rate questions.
+- Guardrails: no open-now claim, no invented Summer 2028 date, no unsupported acceptance-rate estimate, no URL change, no JobPosting markup and no gate before the useful answer.
+- Reassess after another 500 impressions or 28 days. Refresh sooner only if NSA publishes the next official cycle.
+
 ## 2026-11-08 — transcript CTR and current AT&T TDP opportunity refresh
 
 ### Baseline

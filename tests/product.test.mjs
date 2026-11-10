@@ -597,8 +597,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-08</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-08</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-10</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-10</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -2089,18 +2089,9 @@ test("October 26 Paramount refresh answers Summer 2027 search intent without inv
   assert.match(paramount.eligibility.join(" "), /currently enrolled at an accredited college or university/);
   assert.doesNotMatch(`${paramount.status} ${paramount.timing}`, /applications are open|Summer 2027 intake is open/i);
 });
-test("October 23 Search Console refresh improves NSA and Evercore search intent", async () => {
-  const nsa = PROGRAMS.find(program => program.id === "nsa-summer-internships");
+test("October 23 Search Console refresh improves Evercore search intent", async () => {
   const evercore = PROGRAMS.find(program => program.id === "evercore-investment-banking-summer-analyst");
-  assert.ok(nsa && evercore);
-
-  assert.equal(nsa.seoTitle, "NSA Summer Internships 2027: Eligibility & Dates");
-  assert.equal(nsa.url, "https://www.nsa.gov/Careers/Student-Programs/");
-  assert.ok(nsa.sources.some(source => source.url === nsa.url));
-  assert.equal(nsa.verified, "2026-10-23");
-  assert.match(nsa.timing, /August 15/);
-  assert.ok(nsa.faqs.some(([question, answer]) => /acceptance rate/i.test(question) && /does not publish/i.test(answer)));
-
+  assert.ok(evercore);
   assert.equal(evercore.seoTitle, "Evercore Internship 2028: Deadline & Eligibility");
   assert.equal(evercore.deadlineDate, "2026-11-15");
   assert.equal(evercore.verified, "2026-10-23");
@@ -2108,12 +2099,32 @@ test("October 23 Search Console refresh improves NSA and Evercore search intent"
   assert.ok(evercore.faqs.some(([question, answer]) => /accepting applications/i.test(question) && /October 23, 2026/i.test(answer)));
   assert.ok(evercore.faqs.some(([question, answer]) => /\$120,000/.test(question) && /not the amount paid/i.test(answer)));
 
-  for (const program of [nsa, evercore]) {
-    assert.ok(program.seoTitle.length <= 52);
-    assert.ok(program.seoDescription.length >= 120 && program.seoDescription.length <= 180);
-    const html = await readFile(`dist${programPath(program)}.html`, "utf8");
-    assert.ok(html.includes(program.seoTitle.replace(/&/g, "&amp;")));
-  }
+  assert.ok(evercore.seoTitle.length <= 52);
+  assert.ok(evercore.seoDescription.length >= 120 && evercore.seoDescription.length <= 180);
+  const html = await readFile(`dist${programPath(evercore)}.html`, "utf8");
+  assert.ok(html.includes(evercore.seoTitle.replace(/&/g, "&amp;")));
+});
+test("November 10 NSA reassessment aligns the exact internship query without inventing a new cycle", async () => {
+  const nsa = PROGRAMS.find(program => program.id === "nsa-summer-internships");
+  assert.ok(nsa);
+  assert.equal(nsa.seoTitle, "NSA Internships 2027: Eligibility, Pay & Dates");
+  assert.ok(nsa.seoTitle.length <= 52);
+  assert.ok(nsa.seoDescription.length >= 120 && nsa.seoDescription.length <= 180);
+  assert.equal(nsa.url, "https://www.nsa.gov/Careers/Student-Programs/");
+  assert.ok(nsa.sources.some(source => source.url === nsa.url));
+  assert.equal(nsa.verified, "2026-11-10");
+  assert.equal(nsa.updated, "2026-11-10");
+  assert.match(nsa.status, /Summer 2027 cycle closed/);
+  assert.match(nsa.timing, /August 15/);
+  assert.match(nsa.timing, /Summer 2028 dates are not yet published/);
+  assert.ok(nsa.faqs.some(([question, answer]) => /internships open/i.test(question) && /No for Summer 2027/.test(answer) && /not a guaranteed next opening/.test(answer)));
+  assert.ok(nsa.faqs.some(([question, answer]) => /How do I apply/i.test(question) && /official Student Programs page/.test(answer) && /window is closed/.test(answer)));
+  assert.ok(nsa.faqs.some(([question, answer]) => /acceptance rate/i.test(question) && /does not publish/i.test(answer)));
+
+  const html = await readFile(`dist${programPath(nsa)}.html`, "utf8");
+  assert.match(html, /<title>NSA Internships 2027: Eligibility, Pay &amp; Dates<\/title>/);
+  assert.match(html, /Are NSA internships open\?/);
+  assert.match(html, /How do I apply for an NSA internship\?/);
 });
 test("October 30 NVIDIA refresh aligns the snippet with exact Ignite search intent", async () => {
   const nvidia = PROGRAMS.find(program => program.id === "nvidia-ignite");

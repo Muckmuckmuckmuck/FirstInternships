@@ -185,8 +185,8 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
   },
   {
     id: "nsa-summer-internships", company: "National Security Agency", title: "Summer Internship Programs", initials: "NS", color: "#27405e",
-    seoTitle: "NSA Summer Internships 2027: Eligibility & Dates",
-    seoDescription: "NSA Summer 2027 internships are closed. Review paid 12-week programs, citizenship, clearance, GPA, housing and the August application timeline.",
+    seoTitle: "NSA Internships 2027: Eligibility, Pay & Dates",
+    seoDescription: "NSA internships for Summer 2027 are closed. Review who qualifies, paid 12-week programs, clearance steps, majors, housing and the August application timeline.",
     fields: ["public-service", "technology", "engineering", "research"],
     firstYear: null, years: [], yearLabel: "Freshman to PhD · program-specific", pay: "Paid", location: "Fort Meade, MD, plus sites in CO, GA, HI, TX and UT", mode: "In person; 10–12 weeks",
     summary: "Paid 12-week summer internships across STEM, language and intelligence analysis, and mission-support work at NSA sites that require suitability processing for a TS/SCI clearance.",
@@ -218,7 +218,9 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
     pitfall: "NSA's cycle runs most of an academic year ahead. Summer 2027 applications closed in early September 2026 for internships starting in mid-May 2027, so a student who begins looking in January has missed that summer.",
     materials: ["Transcript named per the announcement", "PDF resume", "Optional cover letter naming your target programs", "October–April availability for processing"],
     faqs: [
+      ["Are NSA internships open?", "No for Summer 2027. NSA's official page still identifies the current information as 2027 Summer Internships. The student-program page says college summer applications begin August 15, but Summer 2028 dates have not been published. Use August 15 as a date to check the official job board, not a guaranteed next opening."],
       ["When do NSA summer internship applications open?", "For Summer 2027, NSA's USAJOBS announcements opened August 15–19, 2026 and closed September 5–6, 2026, about eight months before internships began in mid-May. Summer 2028 dates are not published yet; the last cycle is a guide to how early to prepare, not a promise of the next dates."],
+      ["How do I apply for an NSA internship?", "Start on NSA's official Student Programs page and follow its job-board link when a college internship announcement is live. Complete the profile, add a resume with detailed education and employment dates, include every document required by the announcement, answer the qualification questions, review the package and submit. The Summer 2027 window is closed."],
       ["Are NSA internships paid?", "Yes. NSA says its student programs are paid, with salary based on education level, and the Summer 2027 announcements listed the GG-4 to GG-9 range. NSA says it may also offer paid time off, subsidized housing assistance and travel reimbursement to eligible students."],
       ["Can freshmen apply for NSA internships?", "Some programs take them. NSA describes its summer programs as open from undergraduate freshmen up to PhD students depending on each program's education requirements, so check the specific program's level before applying."],
       ["Do I need a security clearance before I apply?", "No, but you must be able to obtain one. Applicants need US citizenship (dual citizens can apply) and must complete NSA's suitability process, which includes security and psychological processing, before a final offer."],
@@ -227,7 +229,7 @@ export const EMPLOYERS_PUBLIC_MEDIA_PROGRAMS = [
       ["What is the NSA internship acceptance rate?", "NSA does not publish a Summer Internship Program acceptance rate on the official pages reviewed here. Applicant-volume estimates from forums or third-party sites cannot establish your odds. Check the live qualifications, submit the complete package on time and continue applying elsewhere while the long suitability process runs."],
     ],
     guideSlugs: [G.assessment, G.interview, G.when],
-    verified: "2026-10-23", updated: "2026-10-23",
+    verified: "2026-11-10", updated: "2026-11-10",
   },
   {
     id: "white-house-internship", company: "The White House", title: "White House Internship Program", initials: "WH", color: "#3b4a6b",

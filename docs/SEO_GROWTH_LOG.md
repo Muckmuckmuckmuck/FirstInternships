@@ -2,6 +2,30 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-12 — Pfizer exact-query and closed-window reassessment
+
+### Baseline
+
+- Window: October 14–November 10, 2026, the latest complete 28 days available in Search Console during this release.
+- Site totals reached 1,120 clicks, 102,000 impressions, 1.1% CTR and average position 9.1. Organic traffic is still growing, while click-through remains the main recoverable constraint.
+- `/programs/pfizer-futures-internship` recorded 31 clicks from 3,817 impressions at 0.8% CTR and average position 8.7. That is 1,629 more impressions than the 2,188-impression report captured on November 10, exceeding the page's 500-impression reassessment threshold.
+- The exact visible query `pfizer internships summer 2027` produced 176 impressions, one click, 0.6% CTR and average position 9.4. `pfizer summer internship 2027` produced 86 impressions and no clicks at position 9.0; application and Pfizer Futures variants added further page-one or striking-distance demand.
+- The existing snippet still promised `Deadline & Apply` even though the official November 8 window had ended. Pfizer's current assessment guidance also now gives selected applicants seven days (168 hours), not the five days (120 hours) captured on November 2.
+
+### Changes
+
+- Rechecked Pfizer's official Futures, assessment-guidance and early-careers pages on November 12. Preserved the exact undergraduate, GPA, authorization, age and commute requirements while correcting the assessment completion period to seven days.
+- Preserved the canonical Pfizer URL and changed its title to `Pfizer Internships Summer 2027: Eligibility & Dates`, matching the highest visible exact-query order without suggesting that applications remain open.
+- Changed the description, status, application steps and direct answers to say that the Summer 2027 window ended November 8. Added a clear no-current-opening answer and future-cycle monitoring guidance without inventing a Summer 2028 date.
+- Kept the existing footer link and life-sciences inventory. No duplicate Pfizer page, year permutation or unsupported live-job markup was created.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/programs/pfizer-futures-internship`, interpreted with average position and query mix.
+- Supporting query families: `pfizer internships summer 2027`, word-order variants, `pfizer futures internship`, application intent and assessment questions.
+- Guardrails: no open-now claim, no invented next cycle, no URL change, no JobPosting markup, no gated answer and no change to application, account, newsletter, resume or advertising systems.
+- Reassess after another 1,000 impressions or 28 days. Refresh sooner only if Pfizer publishes another official cohort or changes the assessment process.
+
 ## 2026-11-10 — NSA exact-query CTR reassessment
 
 ### Baseline

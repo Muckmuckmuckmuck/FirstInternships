@@ -597,8 +597,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-10</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-10</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-12</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-12</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -2140,24 +2140,28 @@ test("October 30 NVIDIA refresh aligns the snippet with exact Ignite search inte
   assert.match(html, /<title>NVIDIA Ignite Internship: Eligibility, Pay &amp; Dates<\/title>/);
   assert.match(html, /How hard is it to get into NVIDIA Ignite\?/);
 });
-test("November 2 Pfizer refresh matches summer intent and current assessment guidance", async () => {
+test("November 12 Pfizer reassessment matches exact query intent and current closed status", async () => {
   const pfizer = PROGRAMS.find(program => program.id === "pfizer-futures-internship");
   assert.ok(pfizer);
-  assert.equal(pfizer.seoTitle, "Pfizer Summer Internship 2027: Deadline & Apply");
+  assert.equal(pfizer.seoTitle, "Pfizer Internships Summer 2027: Eligibility & Dates");
   assert.ok(pfizer.seoTitle.length <= 52);
   assert.ok(pfizer.seoDescription.length >= 120 && pfizer.seoDescription.length <= 180);
-  assert.equal(pfizer.verified, "2026-11-02");
-  assert.equal(pfizer.updated, "2026-11-02");
-  assert.match(pfizer.status, /available through Nov\. 8/);
-  assert.match(pfizer.timing, /five days \(120 hours\)/);
+  assert.equal(pfizer.verified, "2026-11-12");
+  assert.equal(pfizer.updated, "2026-11-12");
+  assert.match(pfizer.status, /window ended Nov\. 8/);
+  assert.match(pfizer.timing, /seven days \(168 hours\)/);
+  assert.match(pfizer.timing, /future application cycle/);
   assert.ok(pfizer.sources.some(source => /pfizer-futures-assessment-guidance/.test(source.url)));
   assert.ok(pfizer.faqs.some(([question, answer]) => /Who can apply/i.test(question) && /freshmen through seniors/i.test(answer)));
-  assert.ok(pfizer.faqs.some(([question, answer]) => /use HireVue/i.test(question) && /30–45 minutes/.test(answer) && /120 hours/.test(answer)));
+  assert.ok(pfizer.faqs.some(([question, answer]) => /internships open/i.test(question) && /^No\./.test(answer) && /not published a future/.test(answer)));
+  assert.ok(pfizer.faqs.some(([question, answer]) => /How do I apply/i.test(question) && /window closed/.test(answer) && /official Futures page/.test(answer)));
+  assert.ok(pfizer.faqs.some(([question, answer]) => /use HireVue/i.test(question) && /30–45 minutes/.test(answer) && /168 hours/.test(answer)));
 
   const html = await readFile(`dist${programPath(pfizer)}.html`, "utf8");
-  assert.match(html, /<title>Pfizer Summer Internship 2027: Deadline &amp; Apply<\/title>/);
+  assert.match(html, /<title>Pfizer Internships Summer 2027: Eligibility &amp; Dates<\/title>/);
+  assert.match(html, /Are Pfizer internships open for Summer 2027\?/);
   assert.match(html, /Who can apply to Pfizer Futures 2027\?/);
-  assert.match(html, /Assessment format, expected invitation timing, five-day completion window/);
+  assert.match(html, /Assessment format, expected invitation timing, seven-day completion window/);
 });
 test("November 2 Spotify refresh answers Summer 2027 opening and eligibility intent", async () => {
   const spotify = PROGRAMS.find(program => program.id === "spotify-global-summer");

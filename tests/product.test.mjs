@@ -66,7 +66,7 @@ test("October 12 guide expansion adds complete high-intent student playbooks", (
   ];
   const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
   assert.ok(guides.every(Boolean));
-  assert.ok(guides.every(guide => guide.updated === (guide.slug === "internship-application-status-meanings" ? "2026-11-03" : "2026-10-12")));
+  assert.ok(guides.every(guide => guide.updated === (guide.slug === "internship-application-status-meanings" ? "2026-11-12" : "2026-10-12")));
   assert.equal(guides.reduce((total, guide) => total + guide.sections.length, 0), 54);
   assert.ok(guides.every(guide => guide.sections.length >= 8 && guide.example?.text));
   assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
@@ -271,7 +271,7 @@ test("October 21 growth release strengthens directory discovery and opens an eth
   assert.match(built, /<link rel="canonical" href="https:\/\/firstinternships\.com\/partners">/);
   assert.match(built, /<meta name="robots" content="index, follow, max-image-preview:large">/);
 });
-test("October 28 Search Console pass improves directory and application-status answers", async () => {
+test("November 12 Search Console follow-up consolidates application-status intent", async () => {
   const directory = resolvePage("/internships");
   assert.ok(directory.title.length <= 52);
   assert.match(directory.title, /College Internships for Freshmen–Seniors: \d+/);
@@ -280,14 +280,16 @@ test("October 28 Search Console pass improves directory and application-status a
   for (const route of ["/summer-2027-college-internships", "/paid-college-internships", "/internship-deadlines", "/guides"]) assert.match(directoryHtml, new RegExp(`href="${route}"`));
 
   const statusGuide = GUIDES.find(guide => guide.slug === "internship-application-status-meanings");
-  assert.equal(statusGuide.title, "How to Check Internship Application Status");
-  assert.equal(statusGuide.updated, "2026-11-03");
-  assert.equal(statusGuide.quickAnswerTitle, "Internship application statuses at a glance");
+  assert.equal(statusGuide.title, "Internship Application Status: What Each Stage Means");
+  assert.ok(statusGuide.title.length <= 52);
+  assert.equal(statusGuide.updated, "2026-11-12");
+  assert.equal(statusGuide.quickAnswerTitle, "What each internship application status means");
   assert.equal(statusGuide.quickAnswers.length, 7);
   assert.ok(statusGuide.relatedGuideSlugs.includes("how-to-follow-up-on-an-internship-email"));
   assert.ok(statusGuide.description.length >= 120 && statusGuide.description.length <= 180);
   const statusHtml = await readFile(`dist${guidePath(statusGuide)}.html`, "utf8");
-  assert.match(statusHtml, /Internship application statuses at a glance/);
+  assert.match(statusHtml, /<title>Internship Application Status: What Each Stage Means<\/title>/);
+  assert.match(statusHtml, /What each internship application status means/);
   assert.match(statusHtml, /How to check your internship application status/);
   assert.match(statusHtml, /Under review or in process/);
   assert.match(statusHtml, /When to follow up/);

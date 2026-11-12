@@ -38,14 +38,14 @@ export const GUIDE_EXPANSION_2 = [
   },
   {
     slug: "internship-application-status-meanings",
-    updated: "2026-11-03",
-    title: "How to Check Internship Application Status",
-    description: "Learn how to check an internship application status, what submitted, under review, assessment, inactive and interview mean, and when to follow up.",
+    updated: "2026-11-12",
+    title: "Internship Application Status: What Each Stage Means",
+    description: "Check your internship application status and understand submitted, under review, assessment, interview, inactive, withdrawn and offer-stage portal labels.",
     category: "Interviews & follow-ups",
     relatedGuideSlugs: ["how-to-follow-up-on-an-internship-email", "how-many-internships-should-i-apply-to", "internship-thank-you-email-after-interview"],
     programIds: ["goldman-sachs-summer-analyst", "deloitte-internships", "pinterest-software-engineering-intern", "federal-reserve-board"],
     intro: "To check an internship application status, open the employer's applicant portal and the email account used to apply, then compare both with any stated recruiting timeline. Portal labels such as submitted, under review, assessment, interview, inactive and closed are workflow signals, not promises about the decision or timing. Employers do not use them consistently, so their own messages and instructions remain authoritative.",
-    quickAnswerTitle: "Internship application statuses at a glance",
+    quickAnswerTitle: "What each internship application status means",
     quickAnswers: [
       ["How to check your status", "Use the employer's applicant portal and the email account on the application. Record the role, requisition number, last update and any promised decision window."],
       ["Submitted or received", "The system accepted the application. It does not prove a recruiter has reviewed it or confirmed your eligibility."],

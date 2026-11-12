@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-12 — application-status meaning and check consolidation
+
+### Baseline
+
+- Window: October 14–November 10, 2026, the latest complete 28 days available in Search Console during this release.
+- `/guides/internship-application-status-meanings` recorded 21 clicks from 1,772 impressions at 1.2% CTR and average position 5.8. It added 709 impressions since the November 3 baseline of 1,063, exceeding the page's 500-impression reassessment threshold while CTR stayed at 1.2%.
+- The visible query sample still included `how to check internship application status`, `internship status`, `intern status`, `applicant status meaning` and `application submitted status`. Search Console privacy filtering exposed only a small portion of the page total, so those rows are directional rather than a complete query map.
+- The existing title promised only the checking task even though the URL, at-a-glance panel and full guide already answered the broader status-meaning task. Splitting those phrases into another guide would duplicate intent and divide the established URL's authority.
+
+### Changes
+
+- Preserved the established URL and changed its title to `Internship Application Status: What Each Stage Means`, leading with the shared query concept and giving a concrete reason to click at the tested 52-character limit.
+- Tightened the description around both tasks: checking the current status and interpreting submitted, under-review, assessment, interview, inactive, withdrawn and offer-stage labels.
+- Renamed the server-rendered quick-answer panel to `What each internship application status means`. The first answer still gives the portal-and-email checking sequence, followed immediately by concise definitions, so the snippet promise and visible answer remain aligned.
+- Kept the existing internal links from the homepage, guide graph, footer and employer guides. No duplicate status page, gated answer, FAQ rich-result markup or new sitemap URL was created.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/guides/internship-application-status-meanings`, interpreted with average position and query mix.
+- Supporting query families: application-status meanings, checking an internship application, submitted, under review, assessment, interview, inactive, withdrawn and offer stages.
+- Guardrails: no promise that a portal label predicts an outcome, no duplicate guide, no account gate, no change to accounts, newsletters, resumes, ads or employer facts.
+- Reassess after another 1,000 impressions or 28 days. Preserve the canonical URL and avoid another title rewrite before the threshold unless Google exposes a clearly different intent.
+
 ## 2026-11-12 — Pfizer exact-query and closed-window reassessment
 
 ### Baseline

@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-12 — Evercore deadline and two-application-limit reassessment
+
+### Baseline
+
+- Window: October 14–November 10, 2026, the latest complete 28 days available in Search Console during this release.
+- Site totals reached 1,120 clicks, 102,332 impressions, 1.1% CTR and average position 9.1.
+- `/programs/evercore-investment-banking-summer-analyst` recorded 2 clicks from 1,703 impressions at 0.1% CTR and average position 9.0. That is 1,063 more impressions than the October 23 baseline of 640, exceeding the page's 200-impression reassessment threshold while CTR fell from 0.3%.
+- Visible query demand included `evercore internships` (85 impressions, no clicks, position 9.4), `how many evercore internships can i apply to` (54 impressions, no clicks, position 6.2), deadline/opening questions and multiple Summer 2028 analyst variants. The existing page answered those questions, but its singular title did not expose the unusually important two-application constraint.
+
+### Changes
+
+- Rechecked Evercore's official New York Generalist posting and current Americas summer-internship board on November 12. The posting still gives a November 15, 2026 date-only cutoff, a maximum of two applications and no restored slot after withdrawal; the board showed 25 summer-internship results, including 21 analyst opportunities.
+- Preserved the established canonical URL and changed its title to `Evercore Internships 2028: Deadline & Two-App Limit`, leading with the plural high-impression query and the decision that distinguishes this application process.
+- Tightened the description, current status and visible answers around the deadline, two-slot rule and choice of teams or locations. Added a concise current-board answer covering M&A, capital markets, equities, private capital, restructuring, real estate and technology without projecting one posting's eligibility onto every opening.
+- Added the current official board as a source. No duplicate Evercore page, JobPosting markup, employer affiliation signal, gated answer or invented closing time was added.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/programs/evercore-investment-banking-summer-analyst`, interpreted with average position and the deadline's passage.
+- Supporting query families: `evercore internships`, Summer 2028 analyst variants, application count, withdrawal, deadline, opening date and role-selection questions.
+- Guardrails: preserve the stable URL, one-posting eligibility boundary, date-only cutoff semantics, two-application rule, salary-rate caveat and free visible answer.
+- Reassess after another 1,000 impressions or 28 days. Refresh sooner only if the official board removes the roles after the November 15 cutoff or publishes a materially different cycle.
+
 ## 2026-11-12 — application-status meaning and check consolidation
 
 ### Baseline

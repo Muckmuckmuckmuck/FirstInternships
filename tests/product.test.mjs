@@ -972,7 +972,7 @@ test("October 13 finance expansion preserves official cycle facts and honest unk
   const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
   assert.ok(batch.every(Boolean));
   assert.ok(batch.filter(program => !["bridgewater-investment-associate-2027", "evercore-investment-banking-summer-analyst"].includes(program.id)).every(program => program.verified === "2026-10-13"));
-  assert.equal(PROGRAMS.find(program => program.id === "evercore-investment-banking-summer-analyst").verified, "2026-10-23", "Evercore was rechecked while its Summer 2028 posting remained live");
+  assert.equal(PROGRAMS.find(program => program.id === "evercore-investment-banking-summer-analyst").verified, "2026-11-12", "Evercore was rechecked while its Summer 2028 posting remained live");
   assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
   assert.ok(batch.every(program => program.sources.some(source => source.url === program.url)));
 
@@ -2091,14 +2091,18 @@ test("October 26 Paramount refresh answers Summer 2027 search intent without inv
   assert.match(paramount.eligibility.join(" "), /currently enrolled at an accredited college or university/);
   assert.doesNotMatch(`${paramount.status} ${paramount.timing}`, /applications are open|Summer 2027 intake is open/i);
 });
-test("October 23 Search Console refresh improves Evercore search intent", async () => {
+test("November 12 Search Console reassessment aligns Evercore deadline and application-limit intent", async () => {
   const evercore = PROGRAMS.find(program => program.id === "evercore-investment-banking-summer-analyst");
   assert.ok(evercore);
-  assert.equal(evercore.seoTitle, "Evercore Internship 2028: Deadline & Eligibility");
+  assert.equal(evercore.seoTitle, "Evercore Internships 2028: Deadline & Two-App Limit");
   assert.equal(evercore.deadlineDate, "2026-11-15");
-  assert.equal(evercore.verified, "2026-10-23");
-  assert.equal(evercore.updated, "2026-10-30");
-  assert.ok(evercore.faqs.some(([question, answer]) => /accepting applications/i.test(question) && /October 23, 2026/i.test(answer)));
+  assert.equal(evercore.verified, "2026-11-12");
+  assert.equal(evercore.updated, "2026-11-12");
+  assert.match(evercore.status, /open through Nov\. 15 at Nov\. 12 review/);
+  assert.ok(evercore.sources.some(source => /candidate\/jobboard\/vacancy\/2\/adv/.test(source.url)));
+  assert.ok(evercore.faqs.some(([question, answer]) => /accepting applications/i.test(question) && /November 12, 2026/i.test(answer)));
+  assert.ok(evercore.faqs.some(([question, answer]) => /how many Evercore internships/i.test(question) && /two applications per year/i.test(answer)));
+  assert.ok(evercore.faqs.some(([question, answer]) => /which Evercore Summer 2028 internships/i.test(question) && /capital markets, equities, private capital/.test(answer)));
   assert.ok(evercore.faqs.some(([question, answer]) => /\$120,000/.test(question) && /not the amount paid/i.test(answer)));
 
   assert.ok(evercore.seoTitle.length <= 52);

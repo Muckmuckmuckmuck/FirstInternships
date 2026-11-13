@@ -117,13 +117,33 @@ test("October 14 guide wave four covers GPA, graduation, schedules and offer dec
     "how-to-decline-an-internship-offer",
   ];
   const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
+  const duration = GUIDES.find(guide => guide.slug === "how-long-do-internships-last");
   assert.ok(guides.every(Boolean));
-  assert.ok(guides.every(guide => guide.updated === "2026-10-14"));
+  assert.ok(guides.filter(guide => guide !== duration).every(guide => guide.updated === "2026-10-14"));
+  assert.equal(duration.updated, "2026-11-12");
   assert.ok(guides.every(guide => guide.sections.length === 8 && guide.example?.text));
   assert.ok(guides.every(guide => guide.sections.flat().join(" ").split(/\s+/).length >= 600), "new search guides must remain substantive, not thin keyword pages");
   assert.ok(guides.every(guide => guide.programIds.length >= 4));
   assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
   assert.equal(GUIDES.find(guide => guide.slug === "how-long-do-internships-last").topicSlug, "summer-2027-college-internships");
+});
+test("November 12 Search Console refresh answers internship length before the long-form guide", async () => {
+  const duration = GUIDES.find(guide => guide.slug === "how-long-do-internships-last");
+  assert.ok(duration);
+  assert.equal(duration.title, "How Long Are Internships? Typical Weeks & Hours");
+  assert.ok(duration.title.length <= 52);
+  assert.ok(duration.description.length >= 120 && duration.description.length <= 180);
+  assert.match(duration.description, /summer internships last 8–12 weeks/i);
+  assert.equal(duration.quickAnswerTitle, "Typical internship length and hours");
+  assert.equal(duration.quickAnswers.length, 5);
+  assert.ok(duration.quickAnswers.some(([question, answer]) => /how long are summer internships/i.test(question) && /eight to twelve weeks/i.test(answer)));
+  assert.ok(duration.quickAnswers.some(([question, answer]) => /how many hours/i.test(question) && /expected weekly hours/i.test(answer)));
+
+  const html = await readFile(`dist${guidePath(duration)}.html`, "utf8");
+  assert.match(html, /<title>How Long Are Internships\? Typical Weeks &amp; Hours<\/title>/);
+  assert.match(html, /Typical internship length and hours/);
+  assert.match(html, /How long are summer internships\?/);
+  assert.match(html, /Eight to twelve weeks is a common range/);
 });
 test("October 15 industrial and consumer wave adds broad official-source coverage", () => {
   const ids = [

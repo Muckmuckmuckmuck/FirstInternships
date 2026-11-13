@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-12 — internship-duration answer-first refresh
+
+### Baseline
+
+- Window: October 14–November 10, 2026, the latest complete 28 days available in Search Console during this release.
+- `/guides/how-long-do-internships-last` recorded no clicks from 718 impressions at 0% CTR and average position 8.6.
+- Visible demand included `how long are internships` (43 impressions, position 14.1), `how long do internships last`, `how long are summer internships`, `how many weeks are summer internships` (10 impressions, position 7.9) and several usually/college-student variants. The article already covered the shared intent, so a second page would duplicate it.
+- The existing title added hours and schedules but used the lower-volume `do internships last` order, while the description asked readers to compare formats without giving the common summer range in the snippet.
+
+### Changes
+
+- Preserved the established canonical URL and changed its title to `How Long Are Internships? Typical Weeks & Hours`, leading with the largest visible query while keeping the length and schedule scope clear.
+- Rewrote the description to answer that most structured summer internships last 8–12 weeks before distinguishing semester placements and co-ops.
+- Added a server-rendered quick-answer block covering summer length, typical formats, weekly hours, date flexibility and the academic-calendar dates to compare. The detailed guide remains free and visible immediately after the concise answer.
+- Renamed the first article section to expose the eight-to-twelve-week answer in the page outline. No duplicate duration guide, gated answer, unsupported universal schedule or new sitemap URL was created.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/guides/how-long-do-internships-last`, interpreted with average position and query mix.
+- Supporting query families: how long internships last, how many weeks summer internships run, typical weekly hours, semester length, co-op length and schedule flexibility.
+- Guardrails: retain the employer-specific-offer caveat, avoid presenting 8–12 weeks as a guarantee, keep the existing canonical URL and preserve the full planning guide.
+- Reassess after another 750 impressions or 28 days. Avoid another title rewrite before that threshold unless Search Console exposes a materially different intent.
+
 ## 2026-11-12 — Evercore deadline and two-application-limit reassessment
 
 ### Baseline

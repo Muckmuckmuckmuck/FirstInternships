@@ -2,6 +2,29 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-12 — internship-reference question-led refresh
+
+### Baseline
+
+- Window: October 14–November 10, 2026, the latest complete 28 days available in Search Console during this release.
+- `/guides/internship-references-guide` recorded 8 clicks from 967 impressions at 0.8% CTR and average position 5.7.
+- The privacy-filtered query table exposed only 11 of the page's 967 impressions, but its visible terms included `internship reference`, `references for internship` and the explicit question `do internships ask for references`. Those rows are directional, not a complete query inventory.
+- The article already explained reference lists, recommendation letters and selection, but its title started with a broad noun phrase and its opening did not answer the yes-or-no question in the first sentence.
+
+### Changes
+
+- Preserved the established canonical URL and changed the title to `Do Internships Ask for References? What to Know`, matching the visible question-led intent without claiming every internship uses references.
+- Rewrote the description and introduction to answer `sometimes` immediately, distinguishing employer reference checks from research-program recommendation letters.
+- Added a server-rendered quick-answer block covering when references are requested, who to choose, whether references belong on a resume, the difference between a contact reference and a letter, and why permission comes first.
+- Renamed the first article section to make the requested-versus-unrequested decision explicit. The full guide, reference-request email template and application links remain free and visible; no duplicate page, gate, FAQ rich-result markup or new sitemap URL was created.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/guides/internship-references-guide`, interpreted with average position and the privacy-filtered query mix.
+- Supporting query families: whether internships ask for references, internship reference lists, who qualifies as a reference, references on a resume and reference versus recommendation-letter language.
+- Guardrails: no universal-reference claim, no instruction to upload unrequested documents, no family-or-friend default, no gated answer and no URL change.
+- Reassess after another 750 impressions or 28 days. Avoid another title rewrite before that threshold unless Search Console exposes a materially different intent.
+
 ## 2026-11-12 — internship-duration answer-first refresh
 
 ### Baseline

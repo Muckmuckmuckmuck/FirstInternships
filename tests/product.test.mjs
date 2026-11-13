@@ -251,13 +251,33 @@ test("October 16 guide wave answers distinct interview, offer, resume and refere
     "internship-references-guide",
   ];
   const guides = slugs.map(slug => GUIDES.find(guide => guide.slug === slug));
+  const references = GUIDES.find(guide => guide.slug === "internship-references-guide");
   assert.ok(guides.every(Boolean));
-  assert.ok(guides.every(guide => guide.updated === "2026-10-16"));
+  assert.ok(guides.filter(guide => guide !== references).every(guide => guide.updated === "2026-10-16"));
+  assert.equal(references.updated, "2026-11-12");
   assert.ok(guides.every(guide => guide.sections.length === 8 && guide.example?.text));
   assert.ok(guides.every(guide => guide.sections.flat().join(" ").split(/\s+/).length >= 600), "new search guides must remain substantive, not thin keyword pages");
   assert.ok(guides.every(guide => guide.programIds.length >= 4));
   assert.ok(guides.every(guide => guide.programIds.every(id => PROGRAMS.some(program => program.id === id))));
   assert.equal(new Set(guides.map(guide => guide.category)).size, 4, "the wave should cover four distinct application stages");
+});
+test("November 12 Search Console refresh answers the internship-reference question before the long-form guide", async () => {
+  const references = GUIDES.find(guide => guide.slug === "internship-references-guide");
+  assert.ok(references);
+  assert.equal(references.title, "Do Internships Ask for References? What to Know");
+  assert.ok(references.title.length <= 52);
+  assert.ok(references.description.length >= 120 && references.description.length <= 180);
+  assert.match(references.description, /some internships ask for references or recommendation letters, while others do not/i);
+  assert.equal(references.quickAnswerTitle, "Internship references at a glance");
+  assert.equal(references.quickAnswers.length, 5);
+  assert.ok(references.quickAnswers.some(([question, answer]) => /do internships ask for references/i.test(question) && /sometimes/i.test(answer)));
+  assert.ok(references.quickAnswers.some(([question, answer]) => /references go on my resume/i.test(question) && /separate/i.test(answer)));
+
+  const html = await readFile(`dist${guidePath(references)}.html`, "utf8");
+  assert.match(html, /<title>Do Internships Ask for References\? What to Know<\/title>/);
+  assert.match(html, /Internship references at a glance/);
+  assert.match(html, /Do internships ask for references\?/);
+  assert.match(html, /Some employers ask for contact references later in the hiring process/);
 });
 test("route resolution supports clean URLs and rejects unknown routes", () => {
   assert.equal(resolvePage("/programs/nasa-ostem.html").program.id, "nasa-ostem");

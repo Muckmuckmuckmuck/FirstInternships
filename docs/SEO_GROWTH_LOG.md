@@ -2,6 +2,31 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-14 — New York Times current-role refresh and Wirecutter expansion
+
+### Baseline
+
+- Window: October 15–November 11, 2026, the latest complete 28 days available in Search Console during this release.
+- Site totals reached 1,139 clicks from 106,049 impressions at 1.1% CTR and average position 9.1. The traffic base continues to grow, while low click-through on page-one results remains the largest recoverable search opportunity.
+- `/programs/nytimes-internships-outside-newsroom` recorded 22 clicks from 1,065 impressions at 2.1% CTR and average position 7.0, making it the fourth-highest-clicked program page in the visible report.
+- The guide still said Summer 2027 roles would post the week of October 26 and close November 2. The official program page now says roles began posting Friday, October 30 and started closing the week of November 9, while selected official role pages still displayed application forms at review.
+
+### Changes
+
+- Preserved the established New York Times canonical URL and changed its title to `New York Times Internships 2027: Open Roles & Pay`, aligning the result with the broad employer-and-cycle task without creating a competing employer overview.
+- Rechecked the official program page plus current Wirecutter Editorial Projects and ML Scientist postings. The guide now explains the June 7 start, ten-week term, role-specific $20 and $40 hourly examples, weekly hours, hybrid New York arrangement, two-to-four-role guidance and application-material differences.
+- Removed the false universal November 2 deadline. The status and direct answers now say that selected roles were available at the November 14 review while the employer had already begun closing other postings; every visitor is told to verify the exact role.
+- Added one distinct program page for the current Wirecutter Editorial Projects internship. It covers the undergraduate/graduate/recent-graduate audience, $20 hourly rate, 40-hour week, resume-and-cover-letter packet, requisition, workflow evidence and the employer's instruction not to generate substantive application content with AI.
+- Added the new role to the existing Summer 2027 collection and employer-related graph. The build now contains 559 sourced program guides, 649 prerendered pages and 647 sitemap URLs while staying inside the existing transfer budgets.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/programs/nytimes-internships-outside-newsroom`, interpreted with average position and current-role query mix.
+- Expansion metrics: impressions, clicks and average position for `/programs/nyt-wirecutter-editorial-projects-intern-2027`, plus ordinary internal discovery from the New York Times overview and Summer 2027 collection.
+- Supporting query families: `new york times internships 2027`, `new york times summer internship`, `wirecutter internship`, `wirecutter editorial projects intern`, application timing, pay and role requirements.
+- Guardrails: preserve the established overview URL, keep pay role-specific, do not invent a universal deadline, do not relabel the broad program as a reporting internship, keep unknown college-year semantics and leave the complete guidance free and ungated.
+- Reassess the overview after another 750 impressions or 28 days. Reassess the new role after 200 impressions or a material official status change; strengthen these URLs instead of publishing keyword-order duplicates.
+
 ## 2026-11-14 — NASCAR Summer 2027 exact-query and source refresh
 
 ### Baseline

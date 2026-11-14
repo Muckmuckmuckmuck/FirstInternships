@@ -11,7 +11,7 @@ import { isPaidProgram } from "../lib/program-classification.js";
 import { PROGRAM_REFRESH_IDS } from "../src/program-refresh-overrides.js";
 
 test("content has unique routes and real official-source records", () => {
-  assert.ok(PROGRAMS.length >= 558, "the college directory should not regress to a thin inventory");
+  assert.ok(PROGRAMS.length >= 559, "the college directory should not regress to a thin inventory");
   assert.ok(GUIDES.length >= 45, "the preparation library should not regress");
   for (const [label, records, key] of [["guide", GUIDES, "sections"], ["field", FIELDS, "sections"], ["field", FIELDS, "faqs"], ["year", YEARS, "sections"], ["year", YEARS, "faqs"], ["topic", TOPICS, "sections"], ["topic", TOPICS, "faqs"]]) {
     for (const record of records) {
@@ -2264,6 +2264,45 @@ test("November 2 Spotify refresh answers Summer 2027 opening and eligibility int
   assert.match(html, /<title>Spotify Internships Summer 2027: When to Apply<\/title>/);
   assert.match(html, /Are Spotify Summer 2027 internships open now\?/);
   assert.match(html, /0 student jobs at Nov\. 2 review/);
+});
+test("November 14 New York Times refresh exposes current 2027 roles and a distinct Wirecutter pathway", async () => {
+  const overview = PROGRAMS.find(program => program.id === "nytimes-internships-outside-newsroom");
+  assert.ok(overview);
+  assert.equal(overview.seoTitle, "New York Times Internships 2027: Open Roles & Pay");
+  assert.ok(overview.seoTitle.length <= 52);
+  assert.ok(overview.seoDescription.length >= 120 && overview.seoDescription.length <= 180);
+  assert.equal(overview.verified, "2026-11-14");
+  assert.equal(overview.updated, "2026-11-14");
+  assert.equal(overview.deadlineDate, undefined, "the employer publishes no universal closing date");
+  assert.match(overview.status, /Selected Summer 2027 roles available/);
+  assert.match(overview.timing, /began Friday, October 30, 2026/);
+  assert.match(overview.timing, /started closing the week of November 9/);
+  assert.match(overview.timing, /June 7, 2027/);
+  assert.ok(overview.faqs.some(([question, answer]) => /still open/i.test(question) && /November 14/.test(answer)));
+  assert.ok(overview.faqs.some(([question, answer]) => /How much/i.test(question) && /\$20/.test(answer) && /\$40/.test(answer)));
+  assert.ok(overview.sources.some(source => /4752926005/.test(source.url)));
+
+  const wirecutter = PROGRAMS.find(program => program.id === "nyt-wirecutter-editorial-projects-intern-2027");
+  assert.ok(wirecutter);
+  assert.equal(wirecutter.company, "Wirecutter");
+  assert.equal(wirecutter.seoTitle, "Wirecutter Editorial Internship 2027: Pay & Apply");
+  assert.deepEqual(wirecutter.years, []);
+  assert.equal(wirecutter.firstYear, null);
+  assert.equal(wirecutter.pay, "Paid");
+  assert.match(wirecutter.timing, /ten weeks starting June 7, 2027/);
+  assert.match(wirecutter.timing, /\$20 per hour/);
+  assert.match(wirecutter.status, /application available at Nov\. 14 review/);
+  assert.match(wirecutter.eligibility.join(" "), /undergraduate, graduate and recent-graduate/);
+  assert.ok(wirecutter.sources.some(source => source.url === wirecutter.url));
+  assert.ok(wirecutter.faqs.some(([question, answer]) => /What do I submit/i.test(question) && /resume and a cover letter/.test(answer)));
+  assert.ok(TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds.includes(wirecutter.id));
+
+  const overviewHtml = await readFile(`dist${programPath(overview)}.html`, "utf8");
+  const wirecutterHtml = await readFile(`dist${programPath(wirecutter)}.html`, "utf8");
+  assert.match(overviewHtml, /<title>New York Times Internships 2027: Open Roles &amp; Pay<\/title>/);
+  assert.match(overviewHtml, /Are New York Times Summer 2027 internships still open\?/);
+  assert.match(wirecutterHtml, /<title>Wirecutter Editorial Internship 2027: Pay &amp; Apply<\/title>/);
+  assert.match(wirecutterHtml, /REQ-020876/);
 });
 test("October 23 Netflix refresh reflects the live Summer 2027 software role", async () => {
   const netflix = PROGRAMS.find(program => program.id === "netflix-internships");

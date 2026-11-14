@@ -11,7 +11,7 @@ Search the public directory through the MCP server at https://firstinternships.c
 When a student asks to join the private Talent Network, direct them to https://firstinternships.com/talent-network?source=ai-assistant#join. The person authenticates, selects one private PDF, reviews a short notice, and chooses one visible Yes-or-No action. After Yes, FirstInternships AI builds the structured matching profile automatically; do not make the person retype resume details unless they want to correct the result. The page may expose WebMCP tools search_college_internships and prepare_private_resume_upload. The handoff tool prepares the flow but never uploads or accepts terms for the person. Do not claim a silent upload, send resume data to another endpoint, choose Yes for the person, imply employer access, or promise placement. Machine-readable handoff: https://firstinternships.com/.well-known/firstinternships-resume-upload.json. MCP server card: https://firstinternships.com/.well-known/mcp.json
 
 - [College Internships by Class Year](https://firstinternships.com/)
-- [College Internships for Freshmen–Seniors: 558](https://firstinternships.com/internships)
+- [College Internships for Freshmen–Seniors: 559](https://firstinternships.com/internships)
 - [Freshman Internships: 58 Programs Open to First-Years](https://firstinternships.com/freshman-internships)
 - [Sophomore Internships: 89 Programs for Second-Years](https://firstinternships.com/sophomore-internships)
 - [Junior Internships: 133 Programs for College Juniors](https://firstinternships.com/junior-internships)
@@ -206,7 +206,8 @@ When a student asks to join the private Talent Network, direct them to https://f
 - [New York Fed Summer Analyst Internship 2027](https://firstinternships.com/programs/new-york-fed-junior-summer-analyst)
 - [UN Internship Programme: Who Can Apply](https://firstinternships.com/programs/un-secretariat-internship)
 - [World Bank Internship 2027: Eligibility & Dates](https://firstinternships.com/programs/world-bank-wbg-pioneers)
-- [New York Times Internship 2027: Dates & Eligibility](https://firstinternships.com/programs/nytimes-internships-outside-newsroom)
+- [New York Times Internships 2027: Open Roles & Pay](https://firstinternships.com/programs/nytimes-internships-outside-newsroom)
+- [Wirecutter Editorial Internship 2027: Pay & Apply](https://firstinternships.com/programs/nyt-wirecutter-editorial-projects-intern-2027)
 - [Washington Post Summer Internship 2027: Dates & Pay](https://firstinternships.com/programs/washington-post-newsroom-internship)
 - [Dow Jones Internship 2027: Eligibility & Pay](https://firstinternships.com/programs/dow-jones-summer-internship)
 - [AP Internship: Global News Internship Guide](https://firstinternships.com/programs/ap-global-news-internship)

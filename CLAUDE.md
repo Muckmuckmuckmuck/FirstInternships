@@ -12,7 +12,7 @@ An independent, free internship directory for current undergraduate college stud
 
 The student-facing product remains free forever. Do not introduce student subscriptions, application fees, placement fees, paid access to sourced facts, premium directory rank, or a paywall around the directory, guides, deadlines, comparisons, browser planner, account, opted-in alerts, or private Talent Network profile. Revenue comes from clearly labeled advertising, sponsorships, employer campaigns, and any future disclosed employer-paid placements, with payment kept separate from editorial facts and ordinary ordering.
 
-The directory includes 558 sourced program application guides, four college-year hubs, 20 field hubs, six focused opportunity collections, 47 original preparation guides, editorial, partnership and contact pages, a browser-local planner, and an optional private Talent Network. The production build currently emits 648 prerendered pages and 646 sitemap URLs. These are curated pathways, not a real-time vacancies feed. Applications take place on official employer sites.
+The directory includes 559 sourced program application guides, four college-year hubs, 20 field hubs, six focused opportunity collections, 47 original preparation guides, editorial, partnership and contact pages, a browser-local planner, and an optional private Talent Network. The production build currently emits 649 prerendered pages and 647 sitemap URLs. These are curated pathways, not a real-time vacancies feed. Applications take place on official employer sites.
 
 ## Code and content
 

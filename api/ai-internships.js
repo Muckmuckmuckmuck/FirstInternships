@@ -4,7 +4,10 @@ function publicHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Cache-Control", "public, max-age=0, s-maxage=900, stale-while-revalidate=86400");
+  // The catalog only changes with a deployment. Let assistants reuse the same
+  // bounded search response instead of invoking compute again every 15 minutes.
+  // Vercel invalidates deployment-scoped cache entries when a new release ships.
+  res.setHeader("Cache-Control", "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800");
   res.setHeader("X-Content-Type-Options", "nosniff");
 }
 

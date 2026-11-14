@@ -13,6 +13,7 @@ import {
 } from "../src/talent-client.js";
 import { parseGeminiJson, sanitizeTalentAiProfile, TALENT_FIELD_IDS, talentAiPrompt } from "../lib/talent-ai.js";
 import { normalizeAgentSearchInput, searchInternshipsForAgent } from "../lib/agent-internship-search.js";
+import aiSearchHandler from "../api/ai-internships.js";
 import mcpHandler, { FIRSTINTERNSHIPS_MCP_TOOLS } from "../api/mcp.js";
 
 const FIELD_IDS = ["technology", "finance", "engineering"];
@@ -152,6 +153,22 @@ test("AI-native search is bounded, sourced, and keeps placement claims honest", 
   assert.match(search.results[0].officialUrl, /^https:\/\//);
   assert.equal(search.talentNetwork.placementPromise, false);
   assert.match(search.notice, /not an offer or placement/i);
+});
+
+test("AI-native search reuses bounded public responses instead of repeatedly invoking compute", async () => {
+  const response = await new Promise(resolve => {
+    const res = {
+      headers: {},
+      setHeader(name, value) { this.headers[name] = value; },
+      status(code) { this.statusCode = code; return this; },
+      json(payload) { resolve({ status: this.statusCode, payload, headers: this.headers }); },
+      end() { resolve({ status: this.statusCode, payload: null, headers: this.headers }); },
+    };
+    aiSearchHandler({ method: "GET", query: { q: "software", limit: "2" } }, res);
+  });
+  assert.equal(response.status, 200);
+  assert.equal(response.payload.results.length, 2);
+  assert.match(response.headers["Cache-Control"], /max-age=300, s-maxage=86400, stale-while-revalidate=604800/);
 });
 
 test("public MCP exposes search and a consent-safe handoff, never a direct resume upload", async () => {

@@ -168,6 +168,7 @@ function ProgramCard({ program, planner }) {
   </article>;
 }
 const LIST_AD_BREAKS = [6, 18, 36];
+const COLLECTION_PAGE_SIZE = 30;
 function ProgramCardList({ programs, planner, adBreaks = [] }) {
   // Keep at least four real listings beneath an ad. Short result sets should
   // never turn into ad-heavy screens, while very long hubs receive a maximum
@@ -177,6 +178,16 @@ function ProgramCardList({ programs, planner, adBreaks = [] }) {
     <ProgramCard key={program.id} program={program} planner={planner} />,
     breaks.includes(index + 1) ? <AdSlot key={`ad-after-${index + 1}`} slot="VITE_ADSENSE_SLOT_IN_FEED" placement="in-feed" /> : null,
   ])}</div>;
+}
+function BrowsableProgramList({ programs, planner, label = "program guides" }) {
+  const [visibleLimit, setVisibleLimit] = useState(COLLECTION_PAGE_SIZE);
+  const visible = programs.slice(0, visibleLimit);
+  const remaining = programs.length - visible.length;
+  return <>
+    <ProgramCardList programs={visible} planner={planner} adBreaks={LIST_AD_BREAKS} />
+    {remaining > 0 && <button type="button" className="button secondary directory-more" onClick={() => setVisibleLimit(limit => limit + COLLECTION_PAGE_SIZE)}>Show {Math.min(COLLECTION_PAGE_SIZE, remaining)} more programs</button>}
+    {programs.length > COLLECTION_PAGE_SIZE && <details className="directory-link-index collection-link-index"><summary>Browse all {programs.length} {label} A–Z</summary><nav aria-label={`All ${label}`}>{[...programs].sort((a, b) => a.company.localeCompare(b.company) || a.title.localeCompare(b.title)).map(program => <a key={program.id} href={programPath(program)}>{program.company}: {program.title}</a>)}</nav></details>}
+  </>;
 }
 function readingMinutes(guide) {
   return Math.max(1, Math.ceil([guide.intro, ...guide.sections.flat(), guide.example?.text || ""].join(" ").split(/\s+/).length / 200));
@@ -455,7 +466,7 @@ function Collection({ page, planner }) {
     {narrowOptions.length > 1 && <CollectionNarrow page={page} options={narrowOptions} value={narrow} setValue={setNarrow} label={page.year ? "Narrow by the kind of work" : "Narrow by your college year"} />}
     {visibleCount === 0 && <div className="empty-state"><Search size={26} /><h2>Nothing in that combination yet.</h2><p>We have not reviewed a program matching all of those choices. That is a gap in our coverage, not a statement that none exists.</p><button className="button" onClick={() => { setQuery(""); setPaidOnly(false); setNarrow("all"); }}>Show everything again</button></div>}
     {page.year && <YearAtAGlance year={item} programs={allMatches} />}
-    {matches.length > 0 && <section className="collection-programs" id="program-list"><p className="eyebrow">{matches.length} confirmed program-level matches</p><h2>{page.year ? `Programs to check for ${item.name.toLowerCase()} students` : `${item.name} pathways`}</h2><p className="muted">{page.year ? "A program-level year match is a starting point. Open a guide to check credits, student status, dates, location and authorization." : "Some programs span several fields. Open a guide to match the exact role to your coursework, experience and availability."}</p><ProgramCardList programs={matches} planner={planner} adBreaks={LIST_AD_BREAKS} /></section>}
+    {matches.length > 0 && <section className="collection-programs" id="program-list"><p className="eyebrow">{matches.length} confirmed program-level matches</p><h2>{page.year ? `Programs to check for ${item.name.toLowerCase()} students` : `${item.name} pathways`}</h2><p className="muted">{page.year ? "A program-level year match is a starting point. Open a guide to check credits, student status, dates, location and authorization." : "Some programs span several fields. Open a guide to match the exact role to your coursework, experience and availability."}</p><BrowsableProgramList key={`${narrow}-${query}-${paidOnly}`} programs={matches} planner={planner} label={`${item.name.toLowerCase()} program guides`} /></section>}
     {page.year && shownRoleSpecific.length > 0 && <section className="collection-programs role-specific"><p className="eyebrow">{shownRoleSpecific.length} highlighted possibilities</p><h2>Check the role before counting yourself in.</h2><p className="muted">These employers do not publish one universal minimum year, or they describe a preferred year rather than a hard rule. The individual opening decides.</p><div className="cards">{shownRoleSpecific.map(p => <ProgramCard key={p.id} program={p} planner={planner} />)}</div>{hiddenRoleSpecific > 0 && <p className="collection-more">There are {hiddenRoleSpecific} more opening-specific pathways in the full directory. <a className="text-link" href="/internships">Browse every program <ArrowRight size={14} /></a></p>}</section>}
     <section className="section collection-editorial"><h2>{page.year ? `Applying as a ${item.name.toLowerCase()} student` : `How to approach ${item.name.toLowerCase()} applications`}</h2>
       <div className="collection-guide-body"><div><EditorialSections sections={item.sections} />{page.field && fieldInterviewPrepFor(item.id) && <p className="interview-prep-note">Preparing for a finance interview? Practice with Prepalyst&apos;s free <a href={fieldInterviewPrepFor(item.id).href} target="_blank" rel="noopener">{fieldInterviewPrepFor(item.id).label}</a>. Prepalyst is a sister site from FirstInternships&apos; founder.</p>}</div><aside className="quick-check"><ShieldCheck size={23} /><h2>Four things to verify</h2><ul><li>Current enrollment and graduation date</li><li>Required credits, GPA, and coursework</li><li>Work authorization or citizenship</li><li>Term, location, schedule, and costs</li></ul><a className="text-link" href="/guides/how-to-apply-for-an-internship">Use the full application checklist <ArrowRight size={15} /></a></aside></div>
@@ -472,7 +483,7 @@ function TopicPage({ topic, planner }) {
     <div className="topic-jump"><a className="button" href="#pathways">Explore {matches.length} pathways <ArrowRight size={16} /></a><a className="text-link" href="#questions">Questions before you apply <ArrowRight size={15} /></a></div>
     <div className="review-line"><ShieldCheck size={15} /> Sources reviewed <ReviewSpan programs={matches} /><a href="/about">How we verify</a></div>
     <div className="collection-layout"><EditorialSections sections={topic.sections} /><aside className="quick-check"><p className="eyebrow">A useful shortlist</p><h2>Three checks before the click.</h2><ol><li>Does my enrollment and degree timeline fit?</li><li>Are the current dates and work arrangement confirmed?</li><li>Can I prepare the requested evidence and attend the full term?</li></ol><a className="text-link" href="/compare">Compare requirements <ArrowRight size={15} /></a><a className="text-link" href="/internship-deadlines">Check published cutoffs <ArrowRight size={15} /></a></aside></div>
-    <section className="collection-programs" id="pathways"><p className="eyebrow">Sourced program pathways / not live vacancies</p><h2>{topic.name}: programs to investigate</h2><p className="muted">A match here is a starting point. Read the college-year conditions, source status, and current official opening. Closed cohorts remain clearly labeled for future preparation.</p><ProgramCardList programs={matches} planner={planner} adBreaks={LIST_AD_BREAKS} /></section>
+    <section className="collection-programs" id="pathways"><p className="eyebrow">Sourced program pathways / not live vacancies</p><h2>{topic.name}: programs to investigate</h2><p className="muted">A match here is a starting point. Read the college-year conditions, source status, and current official opening. Closed cohorts remain clearly labeled for future preparation.</p><BrowsableProgramList programs={matches} planner={planner} label={`${topic.name.toLowerCase()} program guides`} /></section>
     <div className="prose narrow"><Questions items={topic.faqs} /></div><section className="section"><h2>Prepare your next step</h2><GuideCards items={guides} /></section><section className="section"><h2>Explore another focused collection</h2><div className="topic-crosslinks">{TOPICS.filter(t => t.slug !== topic.slug).map(t => <a key={t.slug} href={topicPath(t)}>{t.name} <ArrowUpRight size={15} /></a>)}</div><YearLinks /></section></div>;
 }
 function Checklist({ program, planner }) {

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
-import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, currentPrograms, featuredPrograms, fieldPath, footerGuides, footerPrograms, guidePath, guidesForProgram, programHeading, programPath, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
+import { PROGRAMS, FIELDS, YEARS, GUIDES, TOPICS, ROUTES, SITE, currentPrograms, featuredPrograms, fieldPath, footerGuides, footerPrograms, guidePath, guidesForProgram, programHeading, programPath, programsForField, programsForTopic, relatedPrograms, resolvePage, searchPrograms, programsForYear, topicPath } from "../src/content.js";
 import { LEGACY_REDIRECTS } from "../src/legacy.js";
 import { FIELD_INTERVIEW_PREP, GUIDE_INTERVIEW_PREP, INTERVIEW_PREP } from "../src/interview-prep.js";
 import { calendarText, comparisonPath, deadlineCalendar, deadlineState, filterQuery, foldCalendarLine, hasPublishedCutoff, readFilters, sanitizeComparison, sortPrograms } from "../src/directory-tools.js";
@@ -659,6 +659,10 @@ test("sitemap matches maintained pages and legacy pages cannot leak into the bui
   assert.equal(globalHeaders.find(header => header.key === "X-Frame-Options")?.value, "DENY");
   const assetCache = deployment.headers.find(rule => rule.source === "/assets/(.*)")?.headers.find(header => header.key === "Cache-Control")?.value;
   assert.equal(assetCache, "public, max-age=31536000, immutable");
+  const publicCache = deployment.headers.find(rule => rule.source === "/((?!api/|assets/).*)")?.headers || [];
+  assert.match(publicCache.find(header => header.key === "Cache-Control")?.value || "", /max-age=300/);
+  assert.match(publicCache.find(header => header.key === "CDN-Cache-Control")?.value || "", /max-age=3600/);
+  assert.match(publicCache.find(header => header.key === "Vercel-CDN-Cache-Control")?.value || "", /max-age=86400/);
   for (const source of ["/sitemap.xml", "/robots.txt", "/llms.txt"]) {
     assert.match(deployment.headers.find(rule => rule.source === source)?.headers.find(header => header.key === "Cache-Control")?.value || "", /s-maxage=3600/);
   }
@@ -1324,8 +1328,16 @@ test("collection and guide-list structured data matches visible inventory", asyn
     const list = graph.find(item => item["@type"] === "ItemList");
     assert.equal(list.numberOfItems, programsForTopic(topic).length);
     assert.deepEqual(list.itemListElement.map(item => item.url), programsForTopic(topic).map(p => `${SITE}${programPath(p)}`));
+    for (const program of programsForTopic(topic)) assert.ok(html.includes(`href="${programPath(program)}"`), `${topic.slug}: compact inventory must link ${program.id}`);
     assert.ok(!graph.some(item => item["@type"] === "FAQPage"), "visible Q&A does not imply eligibility for Google FAQ rich results");
   }
+  for (const field of FIELDS) {
+    const html = await readFile(`dist${fieldPath(field)}.html`, "utf8");
+    for (const program of programsForField(field.id)) assert.ok(html.includes(`href="${programPath(program)}"`), `${field.id}: compact inventory must link ${program.id}`);
+  }
+  const paid = await readFile("dist/paid-college-internships.html", "utf8");
+  const business = await readFile("dist/internships/business.html", "utf8");
+  for (const html of [paid, business]) assert.ok((html.match(/class="job-card"/g) || []).length <= 30, "large hubs should prerender a focused first batch of cards");
   const library = await readFile("dist/guides.html", "utf8");
   const graph = JSON.parse(library.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])["@graph"];
   assert.equal(graph.find(item => item["@type"] === "ItemList").numberOfItems, GUIDES.length);

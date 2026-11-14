@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir, readdir, copyFile } from "node:fs/promises"
 import { resolve, relative, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
+import { gzipSync } from "node:zlib";
 import { loadEnv } from "vite";
 import { LEGACY_REDIRECTS } from "../src/legacy.js";
 
@@ -128,6 +129,54 @@ const generatedPublic = {
 };
 await Promise.all(Object.entries(generatedPublic).flatMap(([name, value]) => [writeFile(join(out, name), value), writeFile(join(root, "public", name), value)]));
 if (adsenseConnectionEnabled) await writeFile(join(out, "ads.txt"), `google.com, ${adsenseClient.replace("ca-", "")}, DIRECT, f08c47fec0942fa0\n`);
+
+// Keep organic growth from quietly turning every visit into a larger transfer.
+// These budgets cover compressed HTML plus the assets referenced by that page.
+// They are deliberately above today's measured maximums, but close enough that
+// the next substantial catalog increase must reduce or route-split the payload.
+const transferBudgets = Object.freeze({
+  clientAssetsGzip: 900 * 1024,
+  pageHtmlGzip: 90 * 1024,
+  firstLoadGzip: 980 * 1024,
+});
+async function outputFiles(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...await outputFiles(file));
+    else files.push(file);
+  }
+  return files;
+}
+const htmlFiles = (await outputFiles(out)).filter(file => file.endsWith(".html"));
+const compressedAssets = new Map();
+let largestHtml = { bytes: 0, file: "" };
+let largestFirstLoad = { bytes: 0, file: "" };
+let largestClientAssets = 0;
+for (const file of htmlFiles) {
+  const html = await readFile(file, "utf8");
+  const htmlBytes = gzipSync(Buffer.from(html)).length;
+  if (htmlBytes > largestHtml.bytes) largestHtml = { bytes: htmlBytes, file };
+  const references = [...new Set([...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map(match => match[1]))];
+  let assetBytes = 0;
+  for (const reference of references) {
+    if (!compressedAssets.has(reference)) compressedAssets.set(reference, gzipSync(await readFile(join(out, reference.slice(1)))).length);
+    assetBytes += compressedAssets.get(reference);
+  }
+  largestClientAssets = Math.max(largestClientAssets, assetBytes);
+  const firstLoadBytes = htmlBytes + assetBytes;
+  if (firstLoadBytes > largestFirstLoad.bytes) largestFirstLoad = { bytes: firstLoadBytes, file };
+}
+const budgetFailure = [
+  ["client assets", largestClientAssets, transferBudgets.clientAssetsGzip],
+  [`HTML (${relative(out, largestHtml.file)})`, largestHtml.bytes, transferBudgets.pageHtmlGzip],
+  [`first load (${relative(out, largestFirstLoad.file)})`, largestFirstLoad.bytes, transferBudgets.firstLoadGzip],
+].find(([, actual, limit]) => actual > limit);
+if (budgetFailure) {
+  const [label, actual, limit] = budgetFailure;
+  throw new Error(`Transfer budget exceeded for ${label}: ${Math.ceil(actual / 1024)} KiB > ${Math.ceil(limit / 1024)} KiB.`);
+}
+console.log(`Transfer budgets: client ${Math.ceil(largestClientAssets / 1024)} KiB; largest HTML ${Math.ceil(largestHtml.bytes / 1024)} KiB; largest first load ${Math.ceil(largestFirstLoad.bytes / 1024)} KiB.`);
 const deployment = JSON.parse(await readFile(join(root, "vercel.json"), "utf8"));
 const expected = Object.entries(LEGACY_REDIRECTS);
 for (const [from, to] of expected) if (!deployment.redirects?.some(r => r.source === from && r.destination === to)) throw new Error(`Missing deployment redirect: ${from} → ${to}`);

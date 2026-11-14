@@ -2,6 +2,31 @@
 
 Use this file to keep Search Console evidence, the intervention and the reassessment window together. Search Console totals and visible query rows can be privacy-filtered; they are directional evidence, not a promise that every click or impression appears in the table.
 
+## 2026-11-14 — NASCAR Summer 2027 exact-query and source refresh
+
+### Baseline
+
+- Window: October 15–November 11, 2026, the latest complete 28 days available in Search Console during this release.
+- Site totals reached 1,139 clicks, 106,049 impressions, 1.1% CTR and average position 9.1.
+- `/programs/nascar-next-internship-2027` recorded 9 clicks from 884 impressions at 1.0% CTR and average position 7.6.
+- The visible query `nascar internships summer 2027` accounted for 184 impressions, two clicks, 1.1% CTR and average position 8.3. `nascar next internship program` added 100 impressions at position 7.7, while `nascar summer internships`, `nascar next internship 2027` and shorter NASCAR internship variants produced additional page-one impressions with no clicks.
+- The guide led with singular `NASCAR Internship 2027` wording. NASCAR's official page has since added exact dates, the required orientation weekend, weekly hours and a staged interview timeline, while clarifying relocation help as potentially available rather than guaranteed.
+
+### Changes
+
+- Rechecked NASCAR's official internship page on November 14 and preserved the established canonical URL. The title now leads with the highest-impression exact-query order: `NASCAR Internships Summer 2027: Dates & Apply`.
+- Updated the description, summary, timing and direct answers with the May 26–July 30 dates, required May 28–31 orientation, typical 40-hour weekday schedule, occasional event work and the expected early-December application opening.
+- Corrected eligibility to current Spring 2027 enrollment, including students graduating that spring, and removed the unsupported broader recent-graduate wording. Preserved the exact sophomore-through-senior undergraduate filter and separate graduate-student eligibility.
+- Added the current selection sequence: up to three interest areas, on-demand video interviews from December through February and finalist Microsoft Teams interviews in January or February. Corrected relocation language from a guaranteed mileage-based stipend to NASCAR's current `may be available` wording.
+- Kept the application deadline unknown because NASCAR has not published one. No duplicate NASCAR page, JobPosting markup, open-now claim, guaranteed placement or guaranteed relocation benefit was added.
+
+### Measurement
+
+- Primary metrics: clicks and CTR for `/programs/nascar-next-internship-2027`, interpreted with average position and query mix.
+- Supporting query families: `nascar internships summer 2027`, NASCAR Next, NASCAR summer internships, application timing, program dates and interview process.
+- Guardrails: preserve the stable URL, expected-not-open status, exact enrollment wording, sophomore floor, no-sponsorship rule, unknown deadline and non-guaranteed placement or relocation support.
+- Reassess after another 750 impressions or 28 days. Refresh sooner only if NASCAR publishes the live application, exact deadline or materially different selection details.
+
 ## 2026-11-12 — internship-reference question-led refresh
 
 ### Baseline

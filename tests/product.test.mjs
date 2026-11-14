@@ -639,8 +639,8 @@ test("every built page contains crawlable content and unique SEO metadata", asyn
 test("sitemap matches maintained pages and legacy pages cannot leak into the build", async () => {
   const sitemap = await readFile("dist/sitemap.xml", "utf8");
   assert.ok(!sitemap.includes("/saved")); assert.ok(!sitemap.includes("/compare")); assert.ok(!sitemap.includes("/account")); assert.ok(!sitemap.includes("/404")); assert.ok(!sitemap.includes("high-school"));
-  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-12</lastmod>`), "homepage freshness should reflect the current content release");
-  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-12</lastmod>`), "directory freshness should reflect the current search release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/</loc><lastmod>2026-11-14</lastmod>`), "homepage freshness should reflect the current content release");
+  assert.ok(sitemap.includes(`<loc>${SITE}/internships</loc><lastmod>2026-11-14</lastmod>`), "directory freshness should reflect the current search release");
   for (const lastmod of [...sitemap.matchAll(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/g)].map(match => match[1])) assert.ok(Date.parse(`${lastmod}T00:00:00Z`) <= Date.now(), `future sitemap lastmod: ${lastmod}`);
   for (const route of ROUTES.filter(r => !["/saved", "/compare", "/account", "/404"].includes(r))) assert.ok(sitemap.includes(`<loc>${SITE}${route}</loc>`));
   for (const program of PROGRAMS) assert.ok(sitemap.includes(`<loc>${SITE}${programPath(program)}</loc><lastmod>${program.updated || program.verified}</lastmod>`));
@@ -1089,8 +1089,9 @@ test("October 11 expansion preserves sourced eligibility, cycle status and dates
   ];
   const batch = ids.map(id => PROGRAMS.find(program => program.id === id));
   assert.ok(batch.every(Boolean));
-  assert.ok(batch.filter(program => program.id !== "health-career-connection-summer-2027").every(program => program.verified === "2026-10-11"));
+  assert.ok(batch.filter(program => !["health-career-connection-summer-2027", "nascar-next-internship-2027"].includes(program.id)).every(program => program.verified === "2026-10-11"));
   assert.equal(PROGRAMS.find(program => program.id === "health-career-connection-summer-2027").verified, "2026-10-25");
+  assert.equal(PROGRAMS.find(program => program.id === "nascar-next-internship-2027").verified, "2026-11-14");
   assert.ok(batch.every(program => program.prepare.length >= 2 && program.faqs.length >= 3));
   assert.ok(batch.every(program => ["Paid", "Unpaid", "Check opening", "Check program"].includes(program.pay)));
 
@@ -1111,6 +1112,30 @@ test("October 11 expansion preserves sourced eligibility, cycle status and dates
   const summer2027 = TOPICS.find(topic => topic.slug === "summer-2027-college-internships").programIds;
   for (const id of ["aig-summer-internship-2027", "gallagher-sales-internship-2027", "breakthrough-teaching-fellowship-2027", "health-career-connection-summer-2027", "kp-launch-college-program-2027", "chci-congressional-internship-2027", "apaics-congressional-internship-summer-2027", "ccai-foster-youth-internship-2027", "noaa-lapenta-internship-2027", "nps-scientists-in-parks-summer-2027", "la-times-summer-internships-2027", "nascar-next-internship-2027", "kohls-apparel-design-intern-2027", "nordstrom-corporate-internships-2027"]) assert.ok(summer2027.includes(id), `Summer 2027 collection: ${id}`);
   assert.ok(!summer2027.includes("television-academy-spring-2027"), "a closed spring cycle is not a Summer 2027 listing");
+});
+
+test("November 14 NASCAR refresh matches Summer 2027 search intent and current official dates", async () => {
+  const nascar = PROGRAMS.find(program => program.id === "nascar-next-internship-2027");
+  assert.ok(nascar);
+  assert.equal(nascar.seoTitle, "NASCAR Internships Summer 2027: Dates & Apply");
+  assert.ok(nascar.seoTitle.length <= 52);
+  assert.ok(nascar.seoDescription.length >= 120 && nascar.seoDescription.length <= 180);
+  assert.equal(nascar.updated, "2026-11-14");
+  assert.deepEqual(nascar.years, [2, 3, 4]);
+  assert.match(nascar.status, /expected to open early Dec 2026/i);
+  assert.match(nascar.timing, /May 26–July 30/);
+  assert.match(nascar.timing, /orientation May 28–31/);
+  assert.match(nascar.timing, /40 hours Monday through Friday/);
+  assert.match(nascar.pitfall, /relocation help is only described as potentially available/i);
+  assert.equal(nascar.deadline, undefined);
+  assert.equal(nascar.deadlineDate, undefined);
+  assert.ok(nascar.faqs.some(([question, answer]) => /interview process/i.test(question) && /three interest areas/i.test(answer)));
+
+  const html = await readFile(`dist${programPath(nascar)}.html`, "utf8");
+  assert.match(html, /<title>NASCAR Internships Summer 2027: Dates &amp; Apply<\/title>/);
+  assert.match(html, /May 26–July 30, 2027/);
+  assert.match(html, /What is the NASCAR internship interview process\?/);
+  assert.match(html, /"dateModified":"2026-11-14"/);
 });
 
 test("high-interest growth batch keeps role-specific eligibility and honest 2027 status", () => {
